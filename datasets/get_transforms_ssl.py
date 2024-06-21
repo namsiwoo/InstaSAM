@@ -499,11 +499,10 @@ class LabelEncoding(object):
     encode the 3-channel labels into one channel integer label map
     """
 
-    def __init__(self, num_labels=2, num_points=1, r=8):
+    def __init__(self, num_labels=2, num_points=1):
         self.num_labels = num_labels
         self.num_points = num_points
-        self.r = r
-        print('r = ', self.r)
+
 
     def __call__(self, imgs):
         assert self.num_points < len(imgs)

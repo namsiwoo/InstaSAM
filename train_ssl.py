@@ -554,6 +554,23 @@ if __name__ == '__main__':
     if args.result != None:
         os.makedirs(args.result, exist_ok=True)
 
+    if args.data == "MoNuSeg":
+        if args.shift == 0:
+            args.data_path = '/media/NAS/nas_70/open_dataset/MoNuSeg/MoNuSeg/via instance learning data_for_train/MoNuSeg'
+        else:
+            args.data_path = '/media/NAS/nas_70/open_dataset/MoNuSeg/MoNuSeg_shift{:s}/via instance learning data_for_train/MoNuSeg_shift{:s}'.format(args.shift)
+    elif args.data == "CPM":
+        if args.shift == 0:
+            args.data_path = '/media/NAS/nas_70/open_dataset/CPM/CPM 17/via instance learning data_for_train/CPM 17'
+        else:
+            args.data_path = '/media/NAS/nas_70/open_dataset/CPM/CPM 17_shift{:s}/via instance learning data_for_train/CPM 17_shift{:s}'.format(args.shift)
+    elif args.data == "CoNSeP":
+        if args.shift == 0:
+            args.data_path = '/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP/via instance learning data_for_train/CoNSeP'
+        else:
+            args.data_path = '/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP_shift{:s}/via instance learning data_for_train/CoNSeP_shift{:s}'.format(args.shift)
+
+
     print('=' * 40)
     print(' ' * 14 + 'Arguments')
     for arg in sorted(vars(args)):

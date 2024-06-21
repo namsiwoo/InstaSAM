@@ -12,6 +12,104 @@ from scipy.ndimage.morphology import binary_dilation
 import skimage.morphology, skimage.measure
 
 
+class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
+    def __init__(self, args, split, use_mask=False):
+        self.args = args
+        self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
+        self.split = split
+        self.use_mask = use_mask
+
+        self.mean = np.array([123.675, 116.28, 103.53])
+        self.std = np.array([58.395, 57.12, 57.375])
+
+        # create image augmentation
+        from datasets.get_transforms_ssl import get_transforms
+
+        if self.split == 'train':
+            self.transform = get_transforms({
+                # 'random_resize': [0.8, 1.25],
+                'horizontal_flip': True,
+                'random_affine': 0.3,
+                'random_rotation': 90,
+                'random_crop': 224,
+                'label_encoding': [0, 1], #new_label: 3 else 2
+                'to_tensor': 1, # number of img
+                'normalize': np.array([self.mean, self.std])
+            })
+        else:
+            self.transform = get_transforms({
+                'to_tensor': 1,
+                'normalize': np.array([self.mean, self.std])
+            })
+
+        # read samples
+        self.samples = self.read_samples(self.root_dir, self.split, few_shot=args.few_shot)
+
+        # set num samples
+        self.num_samples = len(self.samples)
+        print('{} dataset {} loaded'.format(self.split, self.num_samples))
+
+    def read_samples(self, root_dir, split, few_shot=False):
+        if split == 'train':
+            if few_shot==False:
+                samples = os.listdir(os.path.join(root_dir, 'images', split))
+            else:
+                samples = os.listdir(os.path.join(root_dir, 'images', 'train_few_shot'))
+            # samples = os.listdir(os.path.join('/media/NAS/nas_32/siwoo/CPM/train'))
+
+        else:
+            root_dir = self.root_dir.split('/')
+            new_dir = ''
+            for dir in root_dir[:-2]:
+                new_dir += dir + '/'
+            with open(os.path.join(new_dir, 'train_val_test.json')) as f:
+                split_dict = json.load(f)
+            filename_list = split_dict[split]
+            samples = [os.path.join(f) for f in filename_list]
+
+        # samples = os.listdir(os.path.join(root_dir, 'images', split))
+        return samples
+
+    def __getitem__(self, index):
+        img_name = self.samples[index % len(self.samples)]
+
+        if self.split == 'train':
+            # 1) read image
+            img = Image.open(os.path.join(self.root_dir, 'images', self.split, img_name)).convert('RGB')
+
+            point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
+            # point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
+            point = binary_dilation(np.array(point), iterations=2)
+            point = Image.fromarray(point)
+
+            if self.use_mask == True:
+                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
+                # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
+                box_label = skimage.morphology.label(box_label)
+                box_label = Image.fromarray(box_label.astype(np.uint16))
+
+                sample = [img, box_label, point]#, cluster_label, voronoi_label]  # , new_mask
+            else:
+                sample = [img, point]
+            sample = self.transform(sample)
+
+        else:
+            root_dir = self.root_dir.split('/')
+            new_dir = ''
+            for dir in root_dir[:-2]:
+                new_dir += dir + '/'
+
+            img = Image.open(os.path.join(new_dir, 'images', img_name)).convert('RGB')
+            mask = Image.open(os.path.join(new_dir, 'labels_instance', img_name[:-4] + '_label.png'))
+
+            sample = [img, mask]
+            sample = self.transform(sample)
+
+        return sample, str(img_name[:-4])
+
+    def __len__(self):
+        return self.num_samples
+
 class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
     def __init__(self, args, split, ssl=False):
         self.args = args
