@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from datasets.MoNuSeg_dataset import MoNuSeg_weak_dataset
+from datasets.MoNuSeg_dataset import Crop_dataset, MoNuSeg_weak_dataset
 
 import models
 
@@ -96,8 +96,6 @@ def main(args):
     sam_model = models.sam.SAM(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
     sam_model.optimizer = torch.optim.AdamW(sam_model.parameters(), lr=args.lr)
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer, 20, eta_min=1.0e-7)
-
-
     sam_model = load_checkpoint(sam_model, sam_checkpiont)
 
     for name, para in sam_model.named_parameters():
@@ -124,9 +122,13 @@ def main(args):
     #     else:
     #         print('********', name)
 
+    if args.data_type == 'crop':
+        train_dataset = Crop_dataset(args, 'train', ssl=True)
+        val_dataset = Crop_dataset(args, 'val', ssl=True)
+    else:
+        train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
+        val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
 
-    train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
-    val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True)
     val_dataloader = DataLoader(val_dataset)
@@ -513,18 +515,15 @@ if __name__ == '__main__':
     parser.add_argument('--plt', action='store_true')
     parser.add_argument('--sup', action='store_true')
 
-    # parser.add_argument('--data',default='/media/NAS/nas_70/open_dataset/MoNuSeg/MoNuSeg/via instance learning data_for_train/MoNuSeg',help='path to dataset')
-    # parser.add_argument('--data', default='/media/NAS/nas_70/open_dataset/MoNuSeg/MoNuSeg_shift8/via instance learning data_for_train/MoNuSeg_shift8', help='path to dataset')
 
-    # parser.add_argument('--data',default='/media/NAS/nas_70/open_dataset/CPM/CPM 17/via instance learning data_for_train/CPM 17',help='path to dataset')
-    # parser.add_argument('--data', default='/media/NAS/nas_70/open_dataset/CPM/CPM 17_shift6/via instance learning data_for_train/CPM 17_shift6', help='path to dataset')
-
-    # parser.add_argument('--data', default='/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP/via instance learning data_for_train/CoNSeP', help='path to dataset')
-    # parser.add_argument('--data', default='/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP_shift4/via instance learning data_for_train/CoNSeP_shift4', help='path to dataset')
+    parser.add_argument('--data_type',default='crop',help='crop, patch')
+    parser.add_argument('--data',default='MoNuSeg',help='MoNuSeg, CPM 17, CoNSeP, TNBC')
+    parser.add_argument('--shift',default='0',help='0, 2, 4, 6, 8')
+    parser.add_argument('--fs', action='store_true', help='few-shot setting')
 
     # parser.add_argument('--data', default='/media/NAS/nas_32/siwoo/TNBC/TNBC/via instance learning data_for_train/TNBC', help='path to dataset')
     # parser.add_argument('--data', default='/media/NAS/nas_32/siwoo/TNBC/TNBC_shift4/via instance learning data_for_train/TNBC_shift4', help='path to dataset')
-    parser.add_argument('--data', default='/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch')
+    # parser.add_argument('--data', default='/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch')
     # parser.add_argument('--data', default='/media/NAS/nas_70/open_dataset/MoNuSAC/MoNuSAC')
 
     parser.add_argument('--img_size', default=1024, help='')
@@ -569,7 +568,8 @@ if __name__ == '__main__':
             args.data_path = '/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP/via instance learning data_for_train/CoNSeP'
         else:
             args.data_path = '/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP_shift{:s}/via instance learning data_for_train/CoNSeP_shift{:s}'.format(args.shift)
-
+    else:
+        print('wrong data name was entered')
 
     print('=' * 40)
     print(' ' * 14 + 'Arguments')
