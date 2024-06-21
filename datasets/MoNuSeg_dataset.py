@@ -13,7 +13,7 @@ import skimage.morphology, skimage.measure
 
 
 class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
-    def __init__(self, args, split, use_mask=False):
+    def __init__(self, args, split, use_mask=False, patch=False):
         self.args = args
         self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
         self.split = split

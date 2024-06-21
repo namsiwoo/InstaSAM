@@ -123,8 +123,8 @@ def main(args):
     #         print('********', name)
 
     if args.data_type == 'crop':
-        train_dataset = Crop_dataset(args, 'train', ssl=True)
-        val_dataset = Crop_dataset(args, 'val', ssl=True)
+        train_dataset = Crop_dataset(args, 'train', use_mask=True)
+        val_dataset = Crop_dataset(args, 'val', use_mask=True)
     else:
         train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
         val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
@@ -390,7 +390,6 @@ def test(args, device):
         encoder_mode = {'name': 'sam', 'img_size': args.img_size, 'mlp_ratio': 4, 'patch_size': 16, 'qkv_bias': True, 'use_rel_pos': True, 'window_size': 14, 'out_chans': 256, 'scale_factor': 32, 'input_type': 'fft',
                         'freq_nums': 0.25, 'prompt_type': 'highpass', 'prompt_embed_dim': 256, 'tuning_stage': 1234, 'handcrafted_tune': True, 'embedding_tune': True, 'adaptor': 'adaptor', 'embed_dim': 1280,
                         'depth': 32, 'num_heads': 16, 'global_attn_indexes': [7, 15, 23, 31]}
-
     elif args.model_type == 'vit_l':
         encoder_mode = {'name': 'sam', 'img_size': args.img_size, 'mlp_ratio': 4, 'patch_size': 16, 'qkv_bias': True, 'use_rel_pos': True, 'window_size': 14, 'out_chans': 256, 'scale_factor': 32, 'input_type': 'fft',
                         'freq_nums': 0.25, 'prompt_type': 'highpass', 'prompt_embed_dim': 256, 'tuning_stage': 1234, 'handcrafted_tune': True, 'embedding_tune': True, 'adaptor': 'adaptor', 'embed_dim': 1024,
@@ -568,6 +567,9 @@ if __name__ == '__main__':
             args.data_path = '/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP/via instance learning data_for_train/CoNSeP'
         else:
             args.data_path = '/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP_shift{:s}/via instance learning data_for_train/CoNSeP_shift{:s}'.format(args.shift)
+    elif args.data == 'pannuke':
+        if args.shift == 0:
+            args.data_path = '/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch'
     else:
         print('wrong data name was entered')
 
