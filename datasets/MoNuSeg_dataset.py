@@ -18,6 +18,7 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
         self.split = split
         self.use_mask = use_mask
+        self.patch=patch
 
         self.mean = np.array([123.675, 116.28, 103.53])
         self.std = np.array([58.395, 57.12, 57.375])
@@ -50,22 +51,25 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         print('{} dataset {} loaded'.format(self.split, self.num_samples))
 
     def read_samples(self, root_dir, split, few_shot=False):
-        if split == 'train':
-            if few_shot==False:
-                samples = os.listdir(os.path.join(root_dir, 'images', split))
-            else:
-                samples = os.listdir(os.path.join(root_dir, 'images', 'train_few_shot'))
-            # samples = os.listdir(os.path.join('/media/NAS/nas_32/siwoo/CPM/train'))
+        if self.patch == False:
+            if split == 'train':
+                if few_shot==False:
+                    samples = os.listdir(os.path.join(root_dir, 'images', split))
+                else:
+                    samples = os.listdir(os.path.join(root_dir, 'images', 'train_few_shot'))
+                # samples = os.listdir(os.path.join('/media/NAS/nas_32/siwoo/CPM/train'))
 
+            else:
+                root_dir = self.root_dir.split('/')
+                new_dir = ''
+                for dir in root_dir[:-2]:
+                    new_dir += dir + '/'
+                with open(os.path.join(new_dir, 'train_val_test.json')) as f:
+                    split_dict = json.load(f)
+                filename_list = split_dict[split]
+                samples = [os.path.join(f) for f in filename_list]
         else:
-            root_dir = self.root_dir.split('/')
-            new_dir = ''
-            for dir in root_dir[:-2]:
-                new_dir += dir + '/'
-            with open(os.path.join(new_dir, 'train_val_test.json')) as f:
-                split_dict = json.load(f)
-            filename_list = split_dict[split]
-            samples = [os.path.join(f) for f in filename_list]
+            samples = os.listdir(os.path.join(root_dir, 'images', split))
 
         # samples = os.listdir(os.path.join(root_dir, 'images', split))
         return samples
