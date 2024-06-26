@@ -123,8 +123,11 @@ def main(args):
     #         print('********', name)
 
     if args.data_type == 'crop':
-        train_dataset = Crop_dataset(args, 'train', use_mask=True)
-        val_dataset = Crop_dataset(args, 'val', use_mask=True)
+        patch = False
+        if args.data == 'pannnuke':
+            patch = True
+        train_dataset = Crop_dataset(args, 'train', use_mask=True, patch=patch)
+        val_dataset = Crop_dataset(args, 'val', use_mask=True, patch=patch)
     else:
         train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
         val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
