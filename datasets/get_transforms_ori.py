@@ -493,129 +493,130 @@ class LabelEncoding(object):
     encode the 3-channel labels into one channel integer label map
     """
 
-    def __init__(self, num_points=1, r=8, num_labels=1):
+    def __init__(self, num_points=1, num_labels=0):#r=8, num_labels=1):
         self.num_points = num_points  # start
-        self.r = r
-        print('r = ', self.r)
+        # self.r = r
+        # print('r = ', self.r)
         self.num_labels = num_labels  # end
 
     def __call__(self, imgs):
-        assert self.num_labels + self.num_points < len(imgs)
-        if self.num_labels == 0:  # there is no label to encode
-            return tuple(imgs)
-
-        image = imgs[0]  # input image
-        out_imgs = list(imgs[:-self.num_labels - self.num_points])
-        for i in range(-self.num_labels - self.num_points, -self.num_labels):
-            label = imgs[i]
-            if not isinstance(label, np.ndarray):
-                label = np.array(label)
-
-            # if len(np.unique(label))==2:
-            #     point = np.zeros_like(label)
-            #     label = skimage.morphology.label(label > 0)
-            #     label_regions = skimage.measure.regionprops(label)
-            #     for region in label_regions:
-            #         point[int(region.centroid[0]), int(region.centroid[1])] = 1
-            #         # point[int(region.centroid[0]), int(region.centroid[1])] = 255 #in PU
-            #
-            #     if np.sum(point > 0):
-            #         # point = binary_dilation(point, iterations=2).astype(point.dtype)
-            #         new_label = gaussian_filter(point.astype(np.float), sigma=self.r / 3)
-            #         val = np.min(new_label[point > 0])
-            #         new_label = new_label / val
-            #         new_label[new_label < 0.05] = 0
-            #         new_label[new_label > 1] = 1
-            #         new_label *= 255
-            #     else:
-            #         new_label = np.zeros(point.shape)
-            #     new_label = Image.fromarray(new_label.astype(np.uint8))
-            #
-            #     point = Image.fromarray((point * 255).astype(np.uint8))
-            #     out_imgs.append(point)
-            #     out_imgs.append(new_label)
-            # else:
-            point = np.zeros((label.shape[0], label.shape[1], 7))
-            new_label = np.zeros((label.shape[0], label.shape[1], 7))
-
-            point2 = np.zeros((label.shape[0], label.shape[1], 8))
-            new_label2 = np.zeros((label.shape[0], label.shape[1], 8))
-
-            for i in np.unique(label)[1:]:
-                l = skimage.morphology.label((label==i) > 0)
-                label_regions = skimage.measure.regionprops(l)
-                for region in label_regions:
-                    point[int(region.centroid[0]), int(region.centroid[1]), i-1] = 1
-                    point2[int(region.centroid[0]), int(region.centroid[1]), i-1] = 1
-                    point2[int(region.centroid[0]), int(region.centroid[1]), -1] = 1
-                # point[int(region.centroid[0]), int(region.centroid[1])] = 255 #in PU
-
-                if np.sum(point[:, :, i-1] > 0):
-                    # point = binary_dilation(point, iterations=2).astype(point.dtype)
-                    new_label[:, :, i-1] = gaussian_filter(point[:, :, i-1].astype(np.float), sigma=self.r / 3)
-                    val = np.min(new_label[point[:, :, i-1] > 0, i-1])
-                    new_label[:, :, i-1] = new_label[:, :, i-1] / val
-                    new_label[new_label[:, :, i-1] < 0.05, i-1] = 0
-                    new_label[new_label[:, :, i-1] > 1, i-1] = 1
-
-                    new_label2[:, :, i-1] = gaussian_filter(point[:, :, i-1].astype(np.float), sigma=self.r / 3)
-                    val = np.min(new_label2[point[:, :, i-1] > 0, i-1])
-                    new_label2[:, :, i-1] = new_label2[:, :, i-1] / val
-                    new_label2[new_label2[:, :, i-1] < 0.05, i-1] = 0
-                    new_label2[new_label2[:, :, i-1] > 1, i-1] = 1
-
-                # [:, :, 7] -> total points
-                if np.sum(point2[:, :, -1] > 0):
-                    new_label2[:, :, -1] = gaussian_filter(point2[:, :, -1].astype(np.float), sigma=self.r / 3)
-                    val = np.min(new_label2[point2[:, :, -1] > 0, -1])
-                    new_label2[:, :, -1] = new_label2[:, :, -1] / val
-                    new_label2[new_label2[:, :, -1] < 0.05, -1] = 0
-                    new_label2[new_label2[:, :, -1] > 1, -1] = 1
-                    # import matplotlib.pyplot as plt
-                    # plt.imshow(new_label[:, :, i-1])
-                    # plt.show()
-            new_label *= 255
-            new_label2 *= 255
-            point *= 255
-            # new_label = Image.fromarray(new_label.astype(np.uint8))
-            # point = Image.fromarray((point * 255).astype(np.uint8))
-            # for i in range(1, 9):
-            #     plt.subplot(2, 4, i)
-            #     plt.imshow(new_label2[:, :, i-1])
-            # plt.show()
-            out_imgs.append(new_label2)
-            out_imgs.append(new_label)
-
-
-
-
-        if not isinstance(image, np.ndarray):
-            image = np.array(image)
-
-        for i in range(-self.num_labels, -1):  # labels starts from index -self.num_labels
-            label = imgs[i]
-            if not isinstance(label, np.ndarray):
-                label = np.array(label)
-
-            # ----- for estimated pixel-level label
-
-            new_label = np.ones((label.shape[0], label.shape[1]), dtype=np.uint8) * 2  # ignored
-
-            new_label[label[:, :, 0] > 255 * 0.3] = 0  # background
-            new_label[label[:, :, 1] > 255 * 0.5] = 1  # nuclei
-
-            # remove invalid pixels after transformation
-            new_label[(image[:, :, 0] == 0) * (image[:, :, 1] == 0) * (image[:, :, 2] == 0)] = 0
-
-            new_label = Image.fromarray(new_label.astype(np.uint8))
-            out_imgs.append(new_label)
-
-        label = np.array(imgs[-1])
-        # label[label>0] = 1
-        label = Image.fromarray((label.astype(np.uint8)))
-        out_imgs.append(label)
-
-        return tuple(out_imgs)
+        return imgs
+        # assert self.num_labels + self.num_points < len(imgs)
+        # if self.num_labels == 0:  # there is no label to encode
+        #     return tuple(imgs)
+        #
+        # image = imgs[0]  # input image
+        # out_imgs = list(imgs[:-self.num_labels - self.num_points])
+        # for i in range(-self.num_labels - self.num_points, -self.num_labels):
+        #     label = imgs[i]
+        #     if not isinstance(label, np.ndarray):
+        #         label = np.array(label)
+        #
+        #     # if len(np.unique(label))==2:
+        #     #     point = np.zeros_like(label)
+        #     #     label = skimage.morphology.label(label > 0)
+        #     #     label_regions = skimage.measure.regionprops(label)
+        #     #     for region in label_regions:
+        #     #         point[int(region.centroid[0]), int(region.centroid[1])] = 1
+        #     #         # point[int(region.centroid[0]), int(region.centroid[1])] = 255 #in PU
+        #     #
+        #     #     if np.sum(point > 0):
+        #     #         # point = binary_dilation(point, iterations=2).astype(point.dtype)
+        #     #         new_label = gaussian_filter(point.astype(np.float), sigma=self.r / 3)
+        #     #         val = np.min(new_label[point > 0])
+        #     #         new_label = new_label / val
+        #     #         new_label[new_label < 0.05] = 0
+        #     #         new_label[new_label > 1] = 1
+        #     #         new_label *= 255
+        #     #     else:
+        #     #         new_label = np.zeros(point.shape)
+        #     #     new_label = Image.fromarray(new_label.astype(np.uint8))
+        #     #
+        #     #     point = Image.fromarray((point * 255).astype(np.uint8))
+        #     #     out_imgs.append(point)
+        #     #     out_imgs.append(new_label)
+        #     # else:
+        #     point = np.zeros((label.shape[0], label.shape[1], 7))
+        #     new_label = np.zeros((label.shape[0], label.shape[1], 7))
+        #
+        #     point2 = np.zeros((label.shape[0], label.shape[1], 8))
+        #     new_label2 = np.zeros((label.shape[0], label.shape[1], 8))
+        #
+        #     for i in np.unique(label)[1:]:
+        #         l = skimage.morphology.label((label==i) > 0)
+        #         label_regions = skimage.measure.regionprops(l)
+        #         for region in label_regions:
+        #             point[int(region.centroid[0]), int(region.centroid[1]), i-1] = 1
+        #             point2[int(region.centroid[0]), int(region.centroid[1]), i-1] = 1
+        #             point2[int(region.centroid[0]), int(region.centroid[1]), -1] = 1
+        #         # point[int(region.centroid[0]), int(region.centroid[1])] = 255 #in PU
+        #
+        #         if np.sum(point[:, :, i-1] > 0):
+        #             # point = binary_dilation(point, iterations=2).astype(point.dtype)
+        #             new_label[:, :, i-1] = gaussian_filter(point[:, :, i-1].astype(np.float), sigma=self.r / 3)
+        #             val = np.min(new_label[point[:, :, i-1] > 0, i-1])
+        #             new_label[:, :, i-1] = new_label[:, :, i-1] / val
+        #             new_label[new_label[:, :, i-1] < 0.05, i-1] = 0
+        #             new_label[new_label[:, :, i-1] > 1, i-1] = 1
+        #
+        #             new_label2[:, :, i-1] = gaussian_filter(point[:, :, i-1].astype(np.float), sigma=self.r / 3)
+        #             val = np.min(new_label2[point[:, :, i-1] > 0, i-1])
+        #             new_label2[:, :, i-1] = new_label2[:, :, i-1] / val
+        #             new_label2[new_label2[:, :, i-1] < 0.05, i-1] = 0
+        #             new_label2[new_label2[:, :, i-1] > 1, i-1] = 1
+        #
+        #         # [:, :, 7] -> total points
+        #         if np.sum(point2[:, :, -1] > 0):
+        #             new_label2[:, :, -1] = gaussian_filter(point2[:, :, -1].astype(np.float), sigma=self.r / 3)
+        #             val = np.min(new_label2[point2[:, :, -1] > 0, -1])
+        #             new_label2[:, :, -1] = new_label2[:, :, -1] / val
+        #             new_label2[new_label2[:, :, -1] < 0.05, -1] = 0
+        #             new_label2[new_label2[:, :, -1] > 1, -1] = 1
+        #             # import matplotlib.pyplot as plt
+        #             # plt.imshow(new_label[:, :, i-1])
+        #             # plt.show()
+        #     new_label *= 255
+        #     new_label2 *= 255
+        #     point *= 255
+        #     # new_label = Image.fromarray(new_label.astype(np.uint8))
+        #     # point = Image.fromarray((point * 255).astype(np.uint8))
+        #     # for i in range(1, 9):
+        #     #     plt.subplot(2, 4, i)
+        #     #     plt.imshow(new_label2[:, :, i-1])
+        #     # plt.show()
+        #     out_imgs.append(new_label2)
+        #     out_imgs.append(new_label)
+        #
+        #
+        #
+        #
+        # if not isinstance(image, np.ndarray):
+        #     image = np.array(image)
+        #
+        # for i in range(-self.num_labels, -1):  # labels starts from index -self.num_labels
+        #     label = imgs[i]
+        #     if not isinstance(label, np.ndarray):
+        #         label = np.array(label)
+        #
+        #     # ----- for estimated pixel-level label
+        #
+        #     new_label = np.ones((label.shape[0], label.shape[1]), dtype=np.uint8) * 2  # ignored
+        #
+        #     new_label[label[:, :, 0] > 255 * 0.3] = 0  # background
+        #     new_label[label[:, :, 1] > 255 * 0.5] = 1  # nuclei
+        #
+        #     # remove invalid pixels after transformation
+        #     new_label[(image[:, :, 0] == 0) * (image[:, :, 1] == 0) * (image[:, :, 2] == 0)] = 0
+        #
+        #     new_label = Image.fromarray(new_label.astype(np.uint8))
+        #     out_imgs.append(new_label)
+        #
+        # label = np.array(imgs[-1])
+        # # label[label>0] = 1
+        # label = Image.fromarray((label.astype(np.uint8)))
+        # out_imgs.append(label)
+        #
+        # return tuple(out_imgs)
 
 
 selector = {
@@ -625,7 +626,7 @@ selector = {
     'random_rotation': lambda x: RandomRotation(x),  # take effect on all img
     'random_crop': lambda x: RandomCrop(x),  # take effect on all img
 
-    'label_encoding': lambda x: LabelEncoding(x[0], x[1], x[2]),  # take effect on RGB labels
+    'label_encoding': lambda x: LabelEncoding(x[0], x[1]),#, x[2]),  # take effect on RGB labels
     'to_tensor': lambda x: ToTensor(x),  # take effect on all img
     'normalize': lambda x: Normalize(x[0], x[1])
 }

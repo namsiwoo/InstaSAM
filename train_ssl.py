@@ -107,7 +107,8 @@ def main(args):
         #     para.requires_grad_(False)
 
     sam_model.make_HQ_model(model_type=args.model_type, num_token=args.num_hq_token)
-    # sam_model = load_checkpoint(sam_model, '/media/NAS/nas_187/siwoo/2023/result/CPM_fs/model/Aji_best_model.pth')
+    if args.resume != 0:
+        sam_model = load_checkpoint(sam_model, os.path.join(args.model, str(args.resume)+'_model.pth'))
     sam_model = sam_model.cuda()
 
 
@@ -124,10 +125,10 @@ def main(args):
 
     if args.data_type == 'crop':
         patch = False
-        if args.data == 'pannnuke':
+        if args.data == 'pannuke' or 'cellpose':
             patch = True
-        train_dataset = Crop_dataset(args, 'train', use_mask=True, patch=patch)
-        val_dataset = Crop_dataset(args, 'val', use_mask=True, patch=patch)
+        train_dataset = Crop_dataset(args, 'train', use_mask=args.sup, patch=patch)
+        val_dataset = Crop_dataset(args, 'val', use_mask=args.sup, patch=patch)
     else:
         train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
         val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
@@ -151,21 +152,24 @@ def main(args):
 
         for iter, batch in enumerate(train_dataloader): # batch[0]
             img = batch[0][0]
-
-            img = F.interpolate(img, (args.img_size, args.img_size), mode='bilinear', align_corners=True)
-            label = batch[0][1].squeeze(1)
-            point = batch[0][2]
-            # clu_label = batch[0][3].squeeze(1)
-            # vor_label = batch[0][4].squeeze(1)
             img_name = batch[1][0]
 
-            sam_model.set_input(img, label)#, clu_label, vor_label)
-
-            if args.sup == False:
-                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(point, os.path.join(args.result, str(epoch), img_name+'.png'), epoch) # point, epoch, batch[1][0]
-            else:
+            img = F.interpolate(img, (args.img_size, args.img_size), mode='bilinear', align_corners=True)
+            if args.sup == True:
+                label = batch[0][1].squeeze(1)
+                # point = batch[0][2]
+                sam_model.set_input(img, label)
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
                 bce_local_loss, iou_local_loss = 0, 0
+            else:
+                # label = batch[0][1].squeeze(1)
+                point = batch[0][1]
+                sam_model.set_input(img)
+                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
+                    point, os.path.join(args.result, str(epoch), img_name + '.png'), epoch)  # point, epoch, batch[1][0]
+            # clu_label = batch[0][3].squeeze(1)
+            # vor_label = batch[0][4].squeeze(1)
+
 
             # bce_loss, offset_gt, offset_loss, iou_loss = backwards
             # bce_local_loss, iou_local_loss = backwards_local
@@ -518,10 +522,11 @@ if __name__ == '__main__':
     parser.add_argument('--sup', action='store_true')
 
 
-    parser.add_argument('--data_type',default='crop',help='crop, patch')
+    parser.add_argument('--data_type',default='crop', type=str ,help='crop, patch')
     parser.add_argument('--data',default='MoNuSeg',help='MoNuSeg, CPM 17, CoNSeP, TNBC')
-    parser.add_argument('--shift',default='0',help='0, 2, 4, 6, 8')
+    parser.add_argument('--shift',default='0', type=int, help='0, 2, 4, 6, 8')
     parser.add_argument('--fs', action='store_true', help='few-shot setting')
+    parser.add_argument('--data_path', default='', help='few-shot setting')
 
     # parser.add_argument('--data', default='/media/NAS/nas_32/siwoo/TNBC/TNBC/via instance learning data_for_train/TNBC', help='path to dataset')
     # parser.add_argument('--data', default='/media/NAS/nas_32/siwoo/TNBC/TNBC_shift4/via instance learning data_for_train/TNBC_shift4', help='path to dataset')
@@ -540,8 +545,10 @@ if __name__ == '__main__':
 
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift4_fs2/img', help='')
     # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift_4_fs2/model', help='')
-    parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/pan/img', help='')
-    parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2024/revision/pan/model', help='')
+    parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/cellpose/img', help='')
+    parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2024/revision/cellpose/model', help='')
+    # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/pannuke_sup/img', help='')
+    # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2024/revision/pannuke_sup/model', help='')
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2023/best/CPM_samups_5offset_shift8_2/img', help='')
     # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2023/best/CPM_samups_5offset_shift8_2/model', help='')
 
@@ -573,6 +580,8 @@ if __name__ == '__main__':
     elif args.data == 'pannuke':
         if args.shift == 0:
             args.data_path = '/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch'
+    elif args.data == 'cellpose':
+        args.data_path = '/media/NAS/nas_70/open_dataset/Cellpose'
     else:
         print('wrong data name was entered')
 

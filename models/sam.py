@@ -346,7 +346,6 @@ class SAM(nn.Module):
                 )
 
                 mask_prompt_ori = torch.zeros(b, 1, 224, 224).to(self.device)
-                print(torch.sum(points[b]), 'error image')
                 # self.mask_prompt_adapter, self.mask_prompt_ori = torch.zeros(
                 #     (len(points), 1, 224, 224))  # b, 1 224, 224
 
@@ -403,7 +402,8 @@ class SAM(nn.Module):
         try:
             del mask_prompt, iou_preds, points, point_coord, point_label, sparse_embeddings, dense_embeddings, x_ori, mask_prompt_ori, self.features#ignored_map
         except:
-            print('can not delete mask prompt')
+            # print('can not delete mask prompt')
+            pass
 
         if epoch>500:
             from utils.utils import accuracy_object_level, AJI_fast, save_checkpoint, load_checkpoint, mk_colored
@@ -432,26 +432,26 @@ class SAM(nn.Module):
             aaa.save(img_name[:-4]+'_6binary.png')
 
             import matplotlib.pyplot as plt
-            def colorize(ch, vmin=None, vmax=None):
-                """Will clamp value value outside the provided range to vmax and vmin."""
-                cmap = plt.get_cmap("jet")
-                ch = np.squeeze(ch.astype("float32"))
-                vmin = vmin if vmin is not None else ch.min()
-                vmax = vmax if vmax is not None else ch.max()
-                ch[ch > vmax] = vmax  # clamp value
-                ch[ch < vmin] = vmin
-                ch = (ch - vmin) / (vmax - vmin + 1.0e-16)
-                # take RGB from RGBA heat map
-                ch_cmap = (cmap(ch)[..., :3] * 255).astype("uint8")
-                return ch_cmap
-
-            aaa = colorize(self.masks_hq[0, 0].detach().cpu().numpy())
-            aaa = Image.fromarray(aaa.astype(np.uint8))
-            aaa.save(img_name[:-4]+'_7h.png')
-
-            aaa = colorize(self.masks_hq[0, 1].detach().cpu().numpy())
-            aaa = Image.fromarray(aaa.astype(np.uint8))
-            aaa.save(img_name[:-4]+'_8v.png')
+            # def colorize(ch, vmin=None, vmax=None):
+            #     """Will clamp value value outside the provided range to vmax and vmin."""
+            #     cmap = plt.get_cmap("jet")
+            #     ch = np.squeeze(ch.astype("float32"))
+            #     vmin = vmin if vmin is not None else ch.min()
+            #     vmax = vmax if vmax is not None else ch.max()
+            #     ch[ch > vmax] = vmax  # clamp value
+            #     ch[ch < vmin] = vmin
+            #     ch = (ch - vmin) / (vmax - vmin + 1.0e-16)
+            #     # take RGB from RGBA heat map
+            #     ch_cmap = (cmap(ch)[..., :3] * 255).astype("uint8")
+            #     return ch_cmap
+            #
+            # aaa = colorize(self.masks_hq[0, 0].detach().cpu().numpy())
+            # aaa = Image.fromarray(aaa.astype(np.uint8))
+            # aaa.save(img_name[:-4]+'_7h.png')
+            #
+            # aaa = colorize(self.masks_hq[0, 1].detach().cpu().numpy())
+            # aaa = Image.fromarray(aaa.astype(np.uint8))
+            # aaa.save(img_name[:-4]+'_8v.png')
 
 
             entropy = -torch.sum(torch.sigmoid(self.mask_prompt_adapter[b]) * torch.log(torch.sigmoid(self.mask_prompt_adapter[b]) + 1e-10), dim=0)
