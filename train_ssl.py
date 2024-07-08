@@ -108,7 +108,7 @@ def main(args):
 
     sam_model.make_HQ_model(model_type=args.model_type, num_token=args.num_hq_token)
     if args.resume != 0:
-        sam_model = load_checkpoint(sam_model, os.path.join(args.model, str(args.resume)+'_model.pth'))
+        sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'model', str(args.resume)+'_model.pth'))
     sam_model = sam_model.cuda()
 
 
@@ -146,7 +146,7 @@ def main(args):
     # if (epoch + 1) % 20 == 0:
     #     sam_model = load_checkpoint(sam_model, os.path.join(args.model, str(epoch)+ '_model.pth'))
 
-        os.makedirs(os.path.join(args.result, str(epoch)), exist_ok=True)
+        os.makedirs(os.path.join(args.result, 'img', str(epoch)), exist_ok=True)
         sam_model.train()
         train_loss = 0
 
@@ -166,7 +166,7 @@ def main(args):
                 point = batch[0][1]
                 sam_model.set_input(img)
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
-                    point, os.path.join(args.result, str(epoch), img_name + '.png'), epoch)  # point, epoch, batch[1][0]
+                    point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), epoch)  # point, epoch, batch[1][0]
             # clu_label = batch[0][3].squeeze(1)
             # vor_label = batch[0][4].squeeze(1)
 
@@ -295,9 +295,9 @@ def main(args):
             torch.cuda.empty_cache()
         total_train_loss.append(train_loss)
         print('{} epoch, mean train loss: {}'.format(epoch, total_train_loss[-1]))
-        # print(a)
-        if epoch % 2 == 0:
-            save_checkpoint(os.path.join(args.model, str(epoch) + '_model.pth'), sam_model, epoch)
+
+        # if epoch % 2 == 0:
+        #     save_checkpoint(os.path.join(args.model, 'model', str(epoch) + '_model.pth'), sam_model, epoch)
 
         if epoch >= args.start_val:
             sam_model.eval()
@@ -344,38 +344,38 @@ def main(args):
 
                     instance_map = mk_colored(instance_map) * 255
                     instance_map = Image.fromarray((instance_map).astype(np.uint8))
-                    instance_map.save(os.path.join(args.result, str(epoch), str(img_name) + '_pred_inst.png'))
+                    instance_map.save(os.path.join(args.result, 'img', str(epoch), str(img_name) + '_pred_inst.png'))
 
                     marker = mk_colored(marker) * 255
                     marker = Image.fromarray((marker).astype(np.uint8))
-                    marker.save(os.path.join(args.result, str(epoch), str(img_name) + '_marker.png'))
+                    marker.save(os.path.join(args.result, 'img', str(epoch), str(img_name) + '_marker.png'))
 
                     binary_map = mk_colored(binary_map) * 255
                     binary_map = Image.fromarray((binary_map).astype(np.uint8))
-                    binary_map.save(os.path.join(args.result, str(epoch), str(img_name) + '_pred.png'))
+                    binary_map.save(os.path.join(args.result, 'img', str(epoch), str(img_name) + '_pred.png'))
 
                     pred_flow_vis = Image.fromarray(pred_flow_vis.astype(np.uint8))
-                    pred_flow_vis.save(os.path.join(args.result, str(epoch), str(img_name) + '_flow_vis.png'))
+                    pred_flow_vis.save(os.path.join(args.result, 'img', str(epoch), str(img_name) + '_flow_vis.png'))
 
                     mask = mk_colored(mask[0][0].detach().cpu().numpy()) * 255
                     mask = Image.fromarray((mask).astype(np.uint8))
-                    mask.save(os.path.join(args.result, str(epoch), str(img_name) + '_mask.png'))
+                    mask.save(os.path.join(args.result, 'img', str(epoch), str(img_name) + '_mask.png'))
 
                     del binary_map, instance_map, marker, pred_flow_vis, mask, input
 
-                f = open(os.path.join(args.result, str(epoch), "result.txt"), 'w')
+                f = open(os.path.join(args.result, 'img', str(epoch), "result.txt"), 'w')
                 f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
                         '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
                 f.close()
 
                 if max_Dice < mean_dice:
                     print('save {} epoch!!--Dice: {}'.format(str(epoch), mean_dice))
-                    save_checkpoint(os.path.join(args.model, 'Dice_best_model.pth'), sam_model, epoch)
+                    save_checkpoint(os.path.join(args.model, 'model', 'Dice_best_model.pth'), sam_model, epoch)
                     max_Dice = mean_dice
 
                 if max_Aji < mean_aji:
                     print('save {} epoch!!--Aji: {}'.format(str(epoch), mean_aji))
-                    save_checkpoint(os.path.join(args.model, 'Aji_best_model.pth'), sam_model, epoch)
+                    save_checkpoint(os.path.join(args.model, 'model', 'Aji_best_model.pth'), sam_model, epoch)
                     max_Aji = mean_aji
 
                 print(epoch, ': Average- Dice\tIOU\tAJI: '
@@ -417,7 +417,7 @@ def test(args, device):
 
     # sam_checkpoint = torch.load(os.path.join(args.model, 'Aji_best_model.pth'))
     # sam_model.load_state_dict(sam_checkpoint, strict=False)
-    sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Aji_best_model.pth'))
+    sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'model', 'Aji_best_model.pth'))
     # sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Dice_best_model.pth'))
 
     if args.data_type == 'crop':
@@ -430,7 +430,7 @@ def test(args, device):
 
     test_dataloader = DataLoader(test_dataseet)
 
-    os.makedirs(os.path.join(args.result,'test'), exist_ok=True)
+    os.makedirs(os.path.join(args.result, 'img','test'), exist_ok=True)
     sam_model.eval()
     mean_dice, mean_iou, mean_aji = 0, 0, 0
     mean_dq, mean_sq, mean_pq = 0, 0, 0
@@ -485,26 +485,26 @@ def test(args, device):
 
             instance_map = mk_colored(instance_map) * 255
             instance_map = Image.fromarray((instance_map).astype(np.uint8))
-            instance_map.save(os.path.join(args.result, 'test', str(img_name) + '_pred_inst.png'))
+            instance_map.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_pred_inst.png'))
 
             marker = mk_colored(marker) * 255
             marker = Image.fromarray((marker).astype(np.uint8))
-            marker.save(os.path.join(args.result, 'test', str(img_name) + '_marker.png'))
+            marker.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_marker.png'))
 
             pred = mk_colored(binary_map) * 255
             pred = Image.fromarray((pred).astype(np.uint8))
-            pred.save(os.path.join(args.result, 'test', str(img_name) + '_pred.png'))
+            pred.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_pred.png'))
 
             pred_flow_vis = Image.fromarray(pred_flow_vis.astype(np.uint8))
-            pred_flow_vis.save(os.path.join(args.result, 'test', str(img_name) + '_flow_vis.png'))
+            pred_flow_vis.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_flow_vis.png'))
 
             mask = mk_colored(mask[0][0].detach().cpu().numpy()) * 255
             mask = Image.fromarray((mask).astype(np.uint8))
-            mask.save(os.path.join(args.result, 'test', str(img_name) + '_mask.png'))
+            mask.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_mask.png'))
 
 
 
-    f = open(os.path.join(args.result, 'test', "result.txt"), 'w')
+    f = open(os.path.join(args.result,'img', 'test', "result.txt"), 'w')
     f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
             '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
     f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
@@ -554,8 +554,8 @@ if __name__ == '__main__':
 
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift4_fs2/img', help='')
     # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift_4_fs2/model', help='')
-    parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/cellpose/img', help='')
-    parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2024/revision/cellpose/model', help='')
+    parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/cellpose', help='')
+
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/pannuke_sup/img', help='')
     # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2024/revision/pannuke_sup/model', help='')
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2023/best/CPM_samups_5offset_shift8_2/img', help='')
@@ -567,9 +567,9 @@ if __name__ == '__main__':
 
 
     if args.model != None:
-        os.makedirs(args.model, exist_ok=True)
+        os.makedirs(os.path.join(args.result, 'model'), exist_ok=True)
     if args.result != None:
-        os.makedirs(args.result, exist_ok=True)
+        os.makedirs(os.path.join(args.result, 'img'), exist_ok=True)
 
     if args.data == "MoNuSeg":
         if args.shift == 0:
