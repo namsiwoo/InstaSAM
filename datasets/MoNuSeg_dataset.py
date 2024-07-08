@@ -13,12 +13,12 @@ import skimage.morphology, skimage.measure
 
 
 class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
-    def __init__(self, args, split, use_mask=False, patch=False):
+    def __init__(self, args, split, use_mask=False, data=False):
         self.args = args
         self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
         self.split = split
         self.use_mask = use_mask
-        self.patch=patch
+        self.data=data
 
         self.mean = np.array([123.675, 116.28, 103.53])
         self.std = np.array([58.395, 57.12, 57.375])
@@ -56,7 +56,9 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         print('{} dataset {} loaded'.format(self.split, self.num_samples))
 
     def read_samples(self, root_dir, split, few_shot=False):
-        if self.patch == False:
+        if self.data == 'pannuke' or 'cellpose':
+            samples = os.listdir(os.path.join(root_dir, 'images', split))
+        else:
             if split == 'train':
                 if few_shot==False:
                     samples = os.listdir(os.path.join(root_dir, 'images', split))
@@ -73,10 +75,6 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                     split_dict = json.load(f)
                 filename_list = split_dict[split]
                 samples = [os.path.join(f) for f in filename_list]
-        else:
-            samples = os.listdir(os.path.join(root_dir, 'images', split))
-
-        # samples = os.listdir(os.path.join(root_dir, 'images', split))
         return samples
 
     def __getitem__(self, index):
@@ -89,17 +87,22 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
 
 
             if self.use_mask == True:
-                # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
-                # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
-                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-8]+'_masks.png')))
+                if self.data == 'pannuke':
+                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
+                elif self.data == 'cellpose':
+                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-8]+'_masks.png')))
+                else:
+                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4] + '_label.png')))
 
                 box_label = skimage.morphology.label(box_label)
                 box_label = Image.fromarray(box_label.astype(np.uint16))
 
                 sample = [img, box_label]#, cluster_label, voronoi_label]  # , new_mask
             else:
-                # point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
-                point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-8] + '_labels_point.png')).convert('L')
+                if self.data == 'pannuke':
+                    point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
+                else:
+                    point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-8] + '_labels_point.png')).convert('L')
                 point = binary_dilation(np.array(point), iterations=2)
                 point = Image.fromarray(point)
 
@@ -113,13 +116,14 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
             sample = self.transform(sample)
 
         else:
-            if self.patch == False:
+            if self.data == 'pannuke' or 'cellpose':
+                new_dir = self.root_dir
+
+            else:
                 root_dir = self.root_dir.split('/')
                 new_dir = ''
                 for dir in root_dir[:-2]:
                     new_dir += dir + '/'
-            else:
-                new_dir = self.root_dir
 
             img = Image.open(os.path.join(new_dir, 'images', self.split, img_name)).convert('RGB')
             # mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name)) #pannuke

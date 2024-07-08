@@ -124,11 +124,8 @@ def main(args):
     #         print('********', name)
 
     if args.data_type == 'crop':
-        patch = False
-        if args.data == 'pannuke' or 'cellpose':
-            patch = True
-        train_dataset = Crop_dataset(args, 'train', use_mask=args.sup, patch=patch)
-        val_dataset = Crop_dataset(args, 'val', use_mask=args.sup, patch=patch)
+        train_dataset = Crop_dataset(args, 'train', use_mask=args.sup, data=args.data)
+        val_dataset = Crop_dataset(args, 'val', use_mask=args.sup, data=args.data)
     else:
         train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
         val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
@@ -421,10 +418,7 @@ def test(args, device):
     # sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Dice_best_model.pth'))
 
     if args.data_type == 'crop':
-        patch = False
-        if args.data == 'pannuke' or 'cellpose':
-            patch = True
-        test_dataseet = Crop_dataset(args, 'test', use_mask=args.sup, patch=patch)
+        test_dataseet = Crop_dataset(args, 'test', use_mask=args.sup, data=args.data)
     else:
         test_dataseet = MoNuSeg_weak_dataset(args, 'train', ssl=True)
 
