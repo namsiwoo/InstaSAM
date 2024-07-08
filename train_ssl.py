@@ -565,11 +565,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-
-    if args.model != None:
-        os.makedirs(os.path.join(args.result, 'model'), exist_ok=True)
     if args.result != None:
         os.makedirs(os.path.join(args.result, 'img'), exist_ok=True)
+        os.makedirs(os.path.join(args.result, 'model'), exist_ok=True)
 
     if args.data == "MoNuSeg":
         if args.shift == 0:
