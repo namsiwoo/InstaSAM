@@ -527,6 +527,8 @@ if __name__ == '__main__':
     parser.add_argument('--start_val', default=30, type=int)
     parser.add_argument('--plt', action='store_true')
     parser.add_argument('--sup', action='store_true')
+    parser.add_argument('--train', action='store_true')
+    parser.add_argument('--test', action='store_true')
 
 
     parser.add_argument('--data_type',default='crop', type=str ,help='crop, patch')
@@ -605,8 +607,10 @@ if __name__ == '__main__':
 
     device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
-    # main(args)
-    test(args, device)
+    if args.train==True:
+        main(args)
+    if args.test==True:
+        test(args, device)
 
 
 
