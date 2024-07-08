@@ -420,7 +420,14 @@ def test(args, device):
     sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Aji_best_model.pth'))
     # sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Dice_best_model.pth'))
 
-    test_dataseet = MoNuSeg_weak_dataset(args, 'val')
+    if args.data_type == 'crop':
+        patch = False
+        if args.data == 'pannuke' or 'cellpose':
+            patch = True
+        test_dataseet = Crop_dataset(args, 'test', use_mask=args.sup, patch=patch)
+    else:
+        test_dataseet = MoNuSeg_weak_dataset(args, 'train', ssl=True)
+
     test_dataloader = DataLoader(test_dataseet)
 
     os.makedirs(os.path.join(args.result,'test'), exist_ok=True)
@@ -598,7 +605,7 @@ if __name__ == '__main__':
 
     device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
-    main(args)
+    # main(args)
     test(args, device)
 
 

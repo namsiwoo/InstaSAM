@@ -122,8 +122,9 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 new_dir = self.root_dir
 
             img = Image.open(os.path.join(new_dir, 'images', self.split, img_name)).convert('RGB')
+            # mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name)) #pannuke
             # mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name[:-4] + '_label.png'))
-            mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name[:-8] + '_masks.png'))
+            mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name[:-8] + '_masks.png')) #cellpose
 
             sample = [img, mask]
             sample = self.transform(sample)
