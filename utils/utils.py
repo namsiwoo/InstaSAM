@@ -675,6 +675,63 @@ def get_fast_pq(true, pred, match_iou=0.5):
 
     return [dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
 
+def average_precision(masks_true, masks_pred, threshold=[0.5, 0.75, 0.9]):
+    """
+    Average precision estimation: AP = TP / (TP + FP + FN)
+
+    This function is based heavily on the *fast* stardist matching functions
+    (https://github.com/mpicbg-csbd/stardist/blob/master/stardist/matching.py)
+
+    Args:
+        masks_true (list of np.ndarrays (int) or np.ndarray (int)):
+            where 0=NO masks; 1,2... are mask labels
+        masks_pred (list of np.ndarrays (int) or np.ndarray (int)):
+            np.ndarray (int) where 0=NO masks; 1,2... are mask labels
+
+    Returns:
+        ap (array [len(masks_true) x len(threshold)]):
+            average precision at thresholds
+        tp (array [len(masks_true) x len(threshold)]):
+            number of true positives at thresholds
+        fp (array [len(masks_true) x len(threshold)]):
+            number of false positives at thresholds
+        fn (array [len(masks_true) x len(threshold)]):
+            number of false negatives at thresholds
+    """
+    not_list = False
+    if not isinstance(masks_true, list):
+        masks_true = [masks_true]
+        masks_pred = [masks_pred]
+        not_list = True
+    if not isinstance(threshold, list) and not isinstance(threshold, np.ndarray):
+        threshold = [threshold]
+
+    if len(masks_true) != len(masks_pred):
+        raise ValueError(
+            "metrics.average_precision requires len(masks_true)==len(masks_pred)")
+
+    ap = np.zeros((len(masks_true), len(threshold)), np.float32)
+    tp = np.zeros((len(masks_true), len(threshold)), np.float32)
+    fp = np.zeros((len(masks_true), len(threshold)), np.float32)
+    fn = np.zeros((len(masks_true), len(threshold)), np.float32)
+    n_true = np.array(list(map(np.max, masks_true)))
+    n_pred = np.array(list(map(np.max, masks_pred)))
+
+    for n in range(len(masks_true)):
+        #_,mt = np.reshape(np.unique(masks_true[n], return_index=True), masks_pred[n].shape)
+        if n_pred[n] > 0:
+            iou = _intersection_over_union(masks_true[n], masks_pred[n])[1:, 1:]
+            for k, th in enumerate(threshold):
+                tp[n, k] = _true_positive(iou, th)
+        fp[n] = n_pred[n] - tp[n]
+        fn[n] = n_true[n] - tp[n]
+        ap[n] = tp[n] / (tp[n] + fp[n] + fn[n])
+
+    if not_list:
+        ap, tp, fp, fn = ap[0], tp[0], fp[0], fn[0]
+    return ap, tp, fp, fn
+
+
 def compute_accuracy_1ch(pred, gt, radius=11, return_distance=False):
     """ compute detection accuracy: recall, precision, F1 """
     if not isinstance(pred, np.ndarray):

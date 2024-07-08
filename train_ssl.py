@@ -9,7 +9,7 @@ from datasets.MoNuSeg_dataset import Crop_dataset, MoNuSeg_weak_dataset
 
 import models
 
-from utils.utils import accuracy_object_level, AJI_fast, save_checkpoint, load_checkpoint, mk_colored, get_fast_pq
+from utils.utils import accuracy_object_level, AJI_fast, average_precision, save_checkpoint, load_checkpoint, mk_colored, get_fast_pq
 from utils.vis_flow import flow_to_color
 from utils.hv_process import make_instance_hv, make_instance_sonnet, make_instance_marker
 
@@ -427,7 +427,7 @@ def test(args, device):
     os.makedirs(os.path.join(args.result, 'img','test'), exist_ok=True)
     sam_model.eval()
     mean_dice, mean_iou, mean_aji = 0, 0, 0
-    mean_dq, mean_sq, mean_pq = 0, 0, 0
+    mean_dq, mean_sq, mean_pq, mean_ap = 0, 0, 0, 0
     # if torch.distributed.get_rank() == 0:
 
     with torch.no_grad():
@@ -462,6 +462,7 @@ def test(args, device):
                 dice, iou = accuracy_object_level(instance_map, mask[0][0].detach().cpu().numpy())
                 aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map)
                 pq_list, _ = get_fast_pq(mask[0][0].detach().cpu().numpy(), instance_map) #[dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
+                ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), instance_map)
 
             mean_dice += dice / (len(test_dataloader))  # *len(local_rank))
             mean_iou += iou / (len(test_dataloader))  # len(local_rank))
@@ -470,6 +471,8 @@ def test(args, device):
             mean_dq += pq_list[0] / (len(test_dataloader))  # *len(local_rank))
             mean_sq += pq_list[1] / (len(test_dataloader))  # len(local_rank))
             mean_pq += pq_list[2] / (len(test_dataloader))
+
+            mean_ap += ap / (len(test_dataloader))
 
             # print(len(val_dataloader), mean_dice, mean_aji)
 
@@ -501,8 +504,8 @@ def test(args, device):
     f = open(os.path.join(args.result,'img', 'test', "result.txt"), 'w')
     f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
             '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
-    f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
+    f.write('***test result_mask*** Average- DQ\tSQ\tPQ\tAP: '
+            '\t\t{:.4f}\t{:.4f}\t{:.4f}\t{:4.f}'.format(mean_dq, mean_sq, mean_pq, mean_ap))
     f.close()
     #     # if min_loss > val_losses:
     #     #     print('save {} epoch!!--loss: {}'.format(str(epoch), val_losses))
@@ -511,8 +514,8 @@ def test(args, device):
 
     print('test result: Average- Dice\tIOU\tAJI: '
                  '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
-    print('test result: Average- DQ\tSQ\tPQ: '
-                 '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
+    print('test result: Average- DQ\tSQ\tPQ\tAP: '
+                 '\t\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq, mean_ap))
 
 
 if __name__ == '__main__':
