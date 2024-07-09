@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from datasets.MoNuSeg_dataset import Crop_dataset, MoNuSeg_weak_dataset
+from datasets.MoNuSeg_dataset import Crop_dataset, DeepCell_dataset, MoNuSeg_weak_dataset
 
 import models
 
@@ -126,6 +126,9 @@ def main(args):
     if args.data_type == 'crop':
         train_dataset = Crop_dataset(args, 'train', use_mask=args.sup, data=args.data)
         val_dataset = Crop_dataset(args, 'val', use_mask=args.sup, data=args.data)
+    elif args.data_type == 'npy':
+        train_dataset = DeepCell_dataset(args, 'train', use_mask=args.sup, data=args.data)
+        val_dataset = DeepCell_dataset(args, 'val', use_mask=args.sup, data=args.data)
     else:
         train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
         val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
@@ -419,6 +422,8 @@ def test(args, device):
 
     if args.data_type == 'crop':
         test_dataseet = Crop_dataset(args, 'test', use_mask=args.sup, data=args.data)
+    elif args.data_type == 'npy':
+        test_dataseet = DeepCell_dataset(args, 'test', use_mask=args.sup, data=args.data)
     else:
         test_dataseet = MoNuSeg_weak_dataset(args, 'test', ssl=True)
 
