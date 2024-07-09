@@ -418,9 +418,9 @@ def test(args, device):
     # sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Dice_best_model.pth'))
 
     if args.data_type == 'crop':
-        test_dataseet = Crop_dataset(args, 'test', use_mask=args.sup, data=args.data)
+        test_dataseet = Crop_dataset(args, 'val', use_mask=args.sup, data=args.data)
     else:
-        test_dataseet = MoNuSeg_weak_dataset(args, 'train', ssl=True)
+        test_dataseet = MoNuSeg_weak_dataset(args, 'val', ssl=True)
 
     test_dataloader = DataLoader(test_dataseet)
 
