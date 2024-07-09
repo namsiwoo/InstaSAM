@@ -43,6 +43,7 @@ def create_rgb_image(input_data, channel_colors):
     for img in range(input_data.shape[0]):
         for channel in range(input_data.shape[-1]):
             current_img = input_data[img, :, :, channel]
+            print(np.max(current_img))
             non_zero_vals = current_img[np.nonzero(current_img)]
 
             # if there are non-zero pixels in current channel, we rescale
@@ -50,12 +51,13 @@ def create_rgb_image(input_data, channel_colors):
 
                 percentiles = np.percentile(non_zero_vals, [5, 95])
                 rescaled_intensity = rescale_intensity(current_img,
-                                                       in_range=(percentiles[0], percentiles[1]),
+                                                       in_range=(0, 255),
                                                        out_range='float32')
 
                 # get rgb index of current channel
                 color_idx = np.where(np.isin(valid_channels, channel_colors[channel]))
                 rgb_data[img, :, :, color_idx] = rescaled_intensity
+                print(np.max(rgb_data))
 
     # create a blank array for red channel
     return rgb_data
@@ -81,7 +83,7 @@ test_X = create_rgb_image(test_X, ['green', 'blue'])
 # os.makedirs(os.path.join(npz_dir, 'labels_instance', 'train'))
 for i in range(5): #train_X.shape[0]
     img = train_X[i]
-    img = Image.fromarray(img.astype(np.float32))
+    img = Image.fromarray(img.astype(np.uint16))
     img.save(os.path.join(npz_dir, 'images', 'train', str(i)+'.png'))
 
     print(i, np.unique(train_y[i]))

@@ -596,6 +596,8 @@ if __name__ == '__main__':
             args.data_path = '/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch'
     elif args.data == 'cellpose':
         args.data_path = '/media/NAS/nas_70/open_dataset/Cellpose'
+    elif args.data == 'DeepCell':
+        args.data_path = '/media/NAS/nas_70/open_dataset/DeepCell'
     else:
         print('wrong data name was entered')
 

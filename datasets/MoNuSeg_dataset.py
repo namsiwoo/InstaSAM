@@ -12,6 +12,173 @@ from scipy.ndimage.morphology import binary_dilation
 import skimage.morphology, skimage.measure
 
 
+class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
+    def __init__(self, args, split, use_mask=False, data=False):
+        self.args = args
+        self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
+        self.split = split
+        self.use_mask = use_mask
+        self.data=data
+
+        self.mean = np.array([123.675, 116.28, 103.53])
+        self.std = np.array([58.395, 57.12, 57.375])
+
+        if self.args.sup == True:
+            from datasets.get_transforms_ori import get_transforms
+            n_mask = 0
+        # create image augmentation
+        else:
+            from datasets.get_transforms_ssl import get_transforms
+            n_mask =1
+
+        if self.split == 'train':
+            self.transform = get_transforms({
+                # 'random_resize': [0.8, 1.25],
+                'horizontal_flip': True,
+                'random_affine': 0.3,
+                'random_rotation': 90,
+                'random_crop': 224,
+                'label_encoding': [0, n_mask], #new_label: 3 else 2
+                'to_tensor': 1, # number of img
+                'normalize': np.array([self.mean, self.std])
+            })
+        else:
+            self.transform = get_transforms({
+                'to_tensor': 1,
+                'normalize': np.array([self.mean, self.std])
+            })
+
+        # read samples
+        self.samples_X, self.samples_y = self.read_samples(self.root_dir, self.split, few_shot=args.fs)
+
+        # set num samples
+        self.num_samples = len(self.samples_X)
+        print('{} dataset {} loaded'.format(self.split, self.num_samples))
+
+
+    def read_samples(self, root_dir, split, few_shot=False):
+        samples = np.load(os.path.join(self.root_dir, 'tissuenet_v1.1_{}.npz'.format(split)))
+        samples_X, samples_y = samples['X'], samples['y']
+        return samples_X, samples_y
+
+    def create_rgb_image(input_data, channel_colors):
+        from skimage.exposure import rescale_intensity
+        """Takes a stack of 1- or 2-channel data and converts it to an RGB image
+
+        Args:
+            input_data: 4D stack of images to be converted to RGB
+            channel_colors: list specifying the color for each channel
+
+        Returns:
+            numpy.array: transformed version of input data into RGB version
+
+        Raises:
+            ValueError: if ``len(channel_colors)`` is not equal
+                to number of channels
+            ValueError: if invalid ``channel_colors`` provided
+            ValueError: if input_data is not 4D, with 1 or 2 channels
+        """
+
+        if len(input_data.shape) != 4:
+            raise ValueError('Input data must be 4D, '
+                             f'but provided data has shape {input_data.shape}')
+
+        if input_data.shape[3] > 2:
+            raise ValueError('Input data must have 1 or 2 channels, '
+                             f'but {input_data.shape[-1]} channels were provided')
+
+        valid_channels = ['red', 'green', 'blue']
+        channel_colors = [x.lower() for x in channel_colors]
+
+        if not np.all(np.isin(channel_colors, valid_channels)):
+            raise ValueError('Only red, green, or blue are valid channel colors')
+
+        if len(channel_colors) != input_data.shape[-1]:
+            raise ValueError('Must provide same number of channel_colors as channels in input_data')
+
+        rgb_data = np.zeros(input_data.shape[:3] + (3,), dtype='float32')
+
+        # rescale channels to aid plotting
+        for img in range(input_data.shape[0]):
+            for channel in range(input_data.shape[-1]):
+                current_img = input_data[img, :, :, channel]
+                non_zero_vals = current_img[np.nonzero(current_img)]
+
+                # if there are non-zero pixels in current channel, we rescale
+                if len(non_zero_vals) > 0:
+                    percentiles = np.percentile(non_zero_vals, [5, 95])
+                    rescaled_intensity = rescale_intensity(current_img,
+                                                           in_range=(0, percentiles[1]),
+                                                           out_range='float32')
+
+                    # get rgb index of current channel
+                    color_idx = np.where(np.isin(valid_channels, channel_colors[channel]))
+                    rgb_data[img, :, :, color_idx] = rescaled_intensity
+
+        # create a blank array for red channel
+        return rgb_data
+    def __getitem__(self, index):
+        img_name = str(index)+'.png'
+
+        if self.split == 'train':
+            # 1) read image
+            img = Image.open(os.path.join(self.root_dir, 'images', self.split, img_name)).convert('RGB')
+
+
+
+            if self.use_mask == True:
+                if self.data == 'pannuke':
+                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
+                elif self.data == 'cellpose':
+                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-8]+'_masks.png')))
+                else:
+                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4] + '_label.png')))
+
+                box_label = skimage.morphology.label(box_label)
+                box_label = Image.fromarray(box_label.astype(np.uint16))
+
+                sample = [img, box_label]#, cluster_label, voronoi_label]  # , new_mask
+            else:
+                if self.data == 'pannuke':
+                    point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
+                else:
+                    point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-8] + '_labels_point.png')).convert('L')
+                point = binary_dilation(np.array(point), iterations=2)
+                point = Image.fromarray(point)
+
+
+                # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-8]+'_masks.png')))
+                #
+                # box_label = skimage.morphology.label(box_label)
+                # box_label = Image.fromarray(box_label.astype(np.uint16))
+
+                sample = [img, point]
+            sample = self.transform(sample)
+
+        else:
+            if self.data == 'pannuke' or 'cellpose':
+                new_dir = self.root_dir
+
+            else:
+                root_dir = self.root_dir.split('/')
+                new_dir = ''
+                for dir in root_dir[:-2]:
+                    new_dir += dir + '/'
+
+            img = Image.open(os.path.join(new_dir, 'images', self.split, img_name)).convert('RGB')
+            # mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name)) #pannuke
+            # mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name[:-4] + '_label.png'))
+            mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name[:-8] + '_masks.png')) #cellpose
+
+            sample = [img, mask]
+            sample = self.transform(sample)
+
+        return sample, str(img_name[:-4])
+
+    def __len__(self):
+        return self.num_samples
+
+
 class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
     def __init__(self, args, split, use_mask=False, data=False):
         self.args = args
