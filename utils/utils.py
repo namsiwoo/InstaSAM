@@ -526,7 +526,7 @@ def accuracy_object_level(pred, gt, hausdorff_flag=True):
 
     return (dice_g + dice_s) / 2, (iou_g + iou_s) / 2
 
-def AJI_fast(gt, pred_arr):
+def AJI_fast(gt, pred_arr, name):
     gt = label(gt)
     pred_arr = label(pred_arr)
 
@@ -534,9 +534,9 @@ def AJI_fast(gt, pred_arr):
     # pred_arr[pred_arr>0] = 1
 
     gs, g_areas = np.unique(gt, return_counts=True)  # gs is the instance number of gt, g_areas is the corresponding area.
-    assert np.all(gs == np.arange(len(gs)))
+    assert np.all(gs == np.arange(len(gs))), name
     ss, s_areas = np.unique(pred_arr, return_counts=True)
-    assert np.all(ss == np.arange(len(ss)))
+    assert np.all(ss == np.arange(len(ss))), name
     i_idx, i_cnt = np.unique(np.concatenate([gt.reshape(1, -1), pred_arr.reshape(1, -1)]),
                              return_counts=True, axis=1)
     i_arr = np.zeros(shape=(len(gs), len(ss)), dtype=np.int)

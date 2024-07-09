@@ -332,7 +332,7 @@ def main(args):
                         # dice, iou = accuracy_object_level(instance_map, mask[0][0].detach().cpu().numpy())
                         # aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map)
                         dice, iou = accuracy_object_level(instance_map, mask[0][0].detach().cpu().numpy())
-                        aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map)
+                        aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map, img_name)
 
                     mean_dice += dice / len(val_dataloader)  # *len(local_rank))
                     mean_iou += iou / len(val_dataloader)  # len(local_rank))
@@ -460,7 +460,7 @@ def test(args, device):
                 dice, iou, aji = 0, 0, 0
             else:
                 dice, iou = accuracy_object_level(instance_map, mask[0][0].detach().cpu().numpy())
-                aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map)
+                aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map, img_name)
                 pq_list, _ = get_fast_pq(mask[0][0].detach().cpu().numpy(), instance_map) #[dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
                 ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), instance_map)
 
