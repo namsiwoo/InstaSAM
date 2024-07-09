@@ -103,7 +103,7 @@ if __name__ == '__main__':
     for i in range(len(dict_list)):
         X, y, split = dict_list[i]
         for idx in range(args.num_img):
-            img, label = X[i], y[i]
+            img, label = X[idx], y[idx]
             img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
             img.save(os.path.join(npz_dir, 'images', split, str(idx) + '.png'))
 
