@@ -29,37 +29,6 @@ def init_weights(layer):
         nn.init.normal_(layer.weight, mean=1.0, std=0.02)
         nn.init.constant_(layer.bias, 0.0)
 
-def make_pseudo_offset(pred, vornoi):
-    from skimage import measure
-    from scipy.ndimage.morphology import binary_fill_holes
-    import skimage.morphology as ski_morph
-    cutoff = 0.5
-    min_area = 20
-
-
-    bg = pred < 0.5
-    pred = pred > cutoff
-    pred = measure.label(pred.detach().cpu().numpy())
-    pred = ski_morph.remove_small_objects(pred, min_area)
-    pred = binary_fill_holes(pred > 0)
-    pred = torch.from_numpy(pred).to(vornoi.device.index)
-
-    vornoi = vornoi
-    vornoi[vornoi >0 ] = 1
-    vornoi = vornoi.detach().cpu().numpy()
-
-    region = np.zeros_like(vornoi)
-    for b in range(vornoi.shape[0]):
-        region[b] = measure.label(vornoi[b])
-
-    # import matplotlib.pyplot as plt
-    # plt.imshow(region[0])
-    # plt.colorbar()
-    # plt.savefig('/media/NAS/nas_187/siwoo/2023/result/transformer_freeze_new_h2_pseudo_MO/img/0/pseudo_offset.png')
-
-    region = torch.from_numpy(region).to(pred.device.index)
-    return pred.squeeze(1)*region, bg+pred
-
 def make_point_prompt(points, only_fg=True):
     if only_fg == True:
         point_coords = []
@@ -115,14 +84,6 @@ def make_point_prompt(points, only_fg=True):
         return point_coords_2, point_labels
 
 def make_pseudo_gt(mask_prompt):
-    # bg = torch.zeros(1, 224, 224).to(mask_prompt.device.index) + 0.3
-    # bg = (torch.argmax(torch.cat([bg, mask_prompt], dim=0), dim=0) < 1) * 2
-    #
-    # ignored = torch.zeros(1, 224, 224).to(mask_prompt.device.index) + 0.7
-    # ignored = (torch.argmax(torch.cat([ignored, mask_prompt.device.index], dim=0), dim=0) < 1) * 1
-    #
-    # pseudo_gt = torch.argmax(torch.cat([ignored, bg, mask_prompt.squeeze(1)], dim=0), dim=0) - 1
-
     mask_prompt = torch.sigmoid(mask_prompt.squeeze(1))
     bg = torch.zeros(1, mask_prompt.shape[-2], mask_prompt.shape[-1]).to(mask_prompt.device.index) + 0.5
     pseudo_gt = torch.argmax(torch.cat([bg, mask_prompt], dim=0), dim=0)
@@ -163,6 +124,7 @@ def apply_coords_torch(coords: torch.Tensor, original_size, target_size) -> torc
     coords[..., 0] = coords[..., 0] * (new_w / old_w)
     coords[..., 1] = coords[..., 1] * (new_h / old_h)
     return coords
+
 def _iou_loss(pred, target, ignored_map=None):
     pred = torch.sigmoid(pred)
     if ignored_map == None:
@@ -334,7 +296,6 @@ class SAM(nn.Module):
                         interm_embeddings=None,
                     )
 
-                    self.mask_prompt_ori = torch.softmax(torch.sigmoid(self.postprocess_masks(mask_prompt, self.inp_size,(224, 224))), dim=0)  # b, 1 224, 224
                     mask_prompt_ori = self.postprocess_masks(mask_prompt, self.inp_size,(224, 224))  # b, 1 224, 224
                     # mask_prompt_ori = self.postprocess_masks(mask_prompt, self.inp_size,(300, 300))  # b, 1 224, 224
                     # self.mask_prompt_ori = torch.sigmoid(mask_prompt_ori)
@@ -470,9 +431,6 @@ class SAM(nn.Module):
             plt.colorbar()
             plt.savefig(img_name[:-4]+'_5overlap.png')
 
-        # print(img_name)
-        # print(torch.unique(pseudo_gt))
-        # self.gt_mask = pseudo_gt
         return pseudo_gt_local, pseudo_gt_global
         # return self.gt_mask
 
@@ -538,46 +496,6 @@ class SAM(nn.Module):
         # iou_loss = iou_loss_clu+iou_loss_vor#+iou_loss_sam
 
         return bce_loss_sam, offset_loss, iou_loss_sam, offset_gt
-
-    def backward_G_ssl2(self, epoch):
-        """Calculate GAN and L1 loss for the generator"""
-        # print(self.gt_mask, np.unique(self.gt_mask.detach().cpu().numpy()))
-
-        # binary_gt = gt.clone()
-        # ignored_map = (binary_gt.clone() != -1) * 1 #2, 224, 224
-        # binary_gt[binary_gt != 0] = 1.
-        # gt[gt<0] = 0 # 2, 224, 224
-
-
-
-        # print(torch.sum(ignored_map))
-
-
-        # instance_gt = self.gt_mask.clone()
-        # instance_gt[instance_gt<0] = 0
-
-
-        bce_loss_clu = self.criterionBCE(self.pred_mask, self.clu.unsqueeze(1).float())
-        bce_loss_clu = (bce_loss_clu * (self.clu != 2).unsqueeze(1)).mean()
-        bce_loss_vor = self.criterionBCE(self.pred_mask, self.vor.unsqueeze(1).float())
-        bce_loss_vor = (bce_loss_vor * (self.vor != 2).unsqueeze(1)).mean()
-        bce_loss = bce_loss_clu+bce_loss_vor#+bce_loss_sam
-
-        if epoch>3:
-        # train offset mask
-            pseudo_instance, ig = make_pseudo_offset(self.pred_mask, self.vor)
-            offset_loss, offset_gt = self.criterionOFFSET(self.masks_hq, pseudo_instance)
-        else:
-            offset_loss = 0
-            offset_gt = torch.zeros_like(self.masks_hq)
-
-
-
-        iou_loss_clu = _iou_loss(self.pred_mask, self.clu.unsqueeze(1), ignored_map=(self.clu!=2))
-        iou_loss_vor = _iou_loss(self.pred_mask, self.vor.unsqueeze(1), ignored_map=(self.vor!=2))
-        iou_loss = iou_loss_clu+iou_loss_vor#+iou_loss_sam
-
-        return bce_loss, offset_loss, iou_loss, offset_gt
 
     def backward_G_local(self, gt):
         # entropy = -torch.sum(torch.sigmoid(self.mask_prompt_ori) * torch.log(torch.sigmoid(self.mask_prompt_ori) + 1e-10), dim=0)
