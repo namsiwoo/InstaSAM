@@ -108,7 +108,7 @@ def main(args):
 
     sam_model.make_HQ_model(model_type=args.model_type, num_token=args.num_hq_token)
     if args.resume != 0:
-        sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'model', str(args.resume)+'_model.pth'))
+        sam_model = load_checkpoint(sam_model, os.path.join(args.result, 'model', str(args.resume)+'_model.pth'))
     sam_model = sam_model.cuda()
 
 
