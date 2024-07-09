@@ -110,7 +110,7 @@ if __name__ == '__main__':
             if args.label == True:
                 label = label[:, :, args.cn_type]
                 if args.label_vis ==True:
-                    label = mk_colored(label)
+                    label = mk_colored(label)*255
                     label = label.astype(np.uint8)
                     img_name = str(idx)+'_vis.png'
                 else:
