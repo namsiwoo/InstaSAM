@@ -1,4 +1,4 @@
-import os
+import os, argparse
 import numpy as np
 from PIL import Image
 import skimage.io as io
@@ -61,47 +61,53 @@ def create_rgb_image(input_data, channel_colors):
     # create a blank array for red channel
     return rgb_data
 
-### Load the test split
-
-npz_dir = '/media/NAS/nas_70/open_dataset/DeepCell'
-train_dict = np.load(os.path.join(npz_dir, 'tissuenet_v1.1_train.npz'))
-val_dict = np.load(os.path.join(npz_dir, 'tissuenet_v1.1_val.npz'))
-test_dict = np.load(os.path.join(npz_dir, 'tissuenet_v1.1_test.npz'))
-### Get the image data from the npz
-
-train_X, train_y = test_dict['X'], test_dict['y']
-val_X, val_y = test_dict['X'], test_dict['y']
-test_X, test_y = test_dict['X'], test_dict['y']
-
-### Create overlays of image data and labels
-train_X = create_rgb_image(train_X, ['green', 'blue'])
-val_X = create_rgb_image(val_X, ['green', 'blue'])
-test_X = create_rgb_image(test_X, ['green', 'blue'])
-
-# train_x = np.zeros((train_X.shape[0], train_X.shape[1], train_X.shape[2]))
-# train_
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
+    parser.add_argument('--train', action='store_true')
+    parser.add_argument('--val', action='store_true')
+    parser.add_argument('--test', action='store_true')
+    parser.add_argument('--img', action='store_true')
+    parser.add_argument('--label', action='store_true')
+    parser.add_argument('--label_vis', action='store_true')
+    parser.add_argument('--num_img', default=5, type=int)
+    parser.add_argument('--cn_type', default=0, type=int)
+    args = parser.parse_args()
 
 
+    ### Load the test split
+    npz_dir = '/media/NAS/nas_70/open_dataset/DeepCell'
 
-# os.makedirs(os.path.join(npz_dir, 'images', 'train'))
-# os.makedirs(os.path.join(npz_dir, 'labels_instance', 'train'))
-for i in range(len(val_X)): #train_X.shape[0]
-    img = val_X[i]
-    img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
-    img.save(os.path.join(npz_dir, 'images', 'val', str(i)+'.png'))
+    dict_list = []
+    if args.train == True:
+        train_dict = np.load(os.path.join(npz_dir, 'tissuenet_v1.1_train.npz'))
+        train_X, train_y = train_dict['X'], train_dict['y']
+        train_X = create_rgb_image(train_X, ['green', 'blue'])
+        dict_list.append((train_X, train_y, 'train'))
 
-for i in range(len(test_X)): #train_X.shape[0]
-    img = test_X[i]
-    img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
-    img.save(os.path.join(npz_dir, 'images', 'test', str(i)+'.png'))
-
-
-
+    if args.val == True:
+        val_dict = np.load(os.path.join(npz_dir, 'tissuenet_v1.1_val.npz'))
+        val_X, val_y = val_dict['X'], val_dict['y']
+        val_X = create_rgb_image(val_X, ['green', 'blue'])
+        dict_list.append((val_X, val_y, 'val'))
 
 
-print(train_X.shape, train_y.shape)
-print(np.unique(train_X)[0], np.unique(train_X)[-1])
-print(np.unique(train_y))
-print(val_X.shape, val_y.shape)
-print(test_X.shape, test_y.shape)
+    if args.test == True:
+        test_dict = np.load(os.path.join(npz_dir, 'tissuenet_v1.1_test.npz'))
+        test_X, test_y = test_dict['X'], test_dict['y']
+        test_X = create_rgb_image(test_X, ['green', 'blue'])
+        dict_list.append((test_X, test_y, 'test'))
 
+    for i in range(len(dict_list)):
+        X, y, split = dict_list[i]
+        for idx in range(args.num_img):
+            img, label = X[i], y[i]
+            img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
+            img.save(os.path.join(npz_dir, 'images', split, str(i) + '.png'))
+
+            label[i, :, :, args.cn_type]
+            if args.label_vis ==True:
+                label[label>0] = 255
+                label = label.astype(np.uint8)
+            else:
+                label = label.astype(np.uint16)
+            label.save(os.path.join(npz_dir, 'labels_instance', split, str(i) + '.png'))
