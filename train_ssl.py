@@ -414,7 +414,7 @@ def test(args, device):
 
     # sam_checkpoint = torch.load(os.path.join(args.model, 'Aji_best_model.pth'))
     # sam_model.load_state_dict(sam_checkpoint, strict=False)
-    sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'model', 'Aji_best_model.pth'))
+    sam_model = load_checkpoint(sam_model, os.path.join(args.result, 'model', 'Aji_best_model.pth'))
     # sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Dice_best_model.pth'))
 
     if args.data_type == 'crop':
