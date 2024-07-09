@@ -22,8 +22,8 @@ val_x = np.zeros((val_X.shape[0], val_X.shape[1], val_X.shape[2], 1))
 test_x = np.zeros((test_X.shape[0], test_X.shape[1], test_X.shape[2], 1))
 
 train_X = np.concatenate((train_X, train_x), axis=-1)
-os.makedirs(os.path.join(npz_dir, 'images', 'train'))
-os.makedirs(os.path.join(npz_dir, 'labels_instance', 'train'))
+# os.makedirs(os.path.join(npz_dir, 'images', 'train'))
+# os.makedirs(os.path.join(npz_dir, 'labels_instance', 'train'))
 for i in range(train_X.shape[0], 5):
     img = train_X[i]
     Image.fromarray(img.astype(np.uint8))
@@ -31,12 +31,12 @@ for i in range(train_X.shape[0], 5):
 
 
 val_X = np.concatenate((val_X, val_x), axis=-1)
-os.makedirs(os.path.join(npz_dir, 'images', 'val'))
-os.makedirs(os.path.join(npz_dir, 'labels_instance', 'val'))
+# os.makedirs(os.path.join(npz_dir, 'images', 'val'))
+# os.makedirs(os.path.join(npz_dir, 'labels_instance', 'val'))
 
 test_X = np.concatenate((test_X, test_x), axis=-1)
-os.makedirs(os.path.join(npz_dir, 'images', 'test'))
-os.makedirs(os.path.join(npz_dir, 'labels_instance', 'test'))
+# os.makedirs(os.path.join(npz_dir, 'images', 'test'))
+# os.makedirs(os.path.join(npz_dir, 'labels_instance', 'test'))
 
 
 print(train_X.shape, train_y.shape)
