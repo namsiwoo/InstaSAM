@@ -85,12 +85,16 @@ test_X = create_rgb_image(test_X, ['green', 'blue'])
 
 # os.makedirs(os.path.join(npz_dir, 'images', 'train'))
 # os.makedirs(os.path.join(npz_dir, 'labels_instance', 'train'))
-for i in range(5): #train_X.shape[0]
-    img = train_X[i]
+for i in range(val_X): #train_X.shape[0]
+    img = val_X[i]
     img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
-    img.save(os.path.join(npz_dir, 'images', 'train', str(i)+'.png'))
+    img.save(os.path.join(npz_dir, 'images', 'val', str(i)+'.png'))
 
-    print(i, np.unique(train_y[i]), np.min(train_X[i]), np.max(train_X[i]))
+for i in range(test_X): #train_X.shape[0]
+    img = test_X[i]
+    img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
+    img.save(os.path.join(npz_dir, 'images', 'test', str(i)+'.png'))
+
 
 
 
