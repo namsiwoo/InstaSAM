@@ -48,11 +48,11 @@ def create_rgb_image(input_data, channel_colors):
             # if there are non-zero pixels in current channel, we rescale
             if len(non_zero_vals) > 0:
 
-                # percentiles = np.percentile(non_zero_vals, [5, 95])
-                # rescaled_intensity = rescale_intensity(current_img,
-                #                                        in_range=(percentiles[0], percentiles[1]),
-                #                                        out_range='float32')
-                rescaled_intensity = rescale_intensity(current_img, out_range=(0, 255))
+                percentiles = np.percentile(non_zero_vals, [5, 95])
+                rescaled_intensity = rescale_intensity(current_img,
+                                                       in_range=(percentiles[0], percentiles[1]),
+                                                       out_range=(0, 255))
+                # rescaled_intensity = rescale_intensity(current_img, out_range=(0, 255))
 
                 # get rgb index of current channel
                 color_idx = np.where(np.isin(valid_channels, channel_colors[channel]))
@@ -74,9 +74,14 @@ val_X, val_y = test_dict['X'], test_dict['y']
 test_X, test_y = test_dict['X'], test_dict['y']
 
 ### Create overlays of image data and labels
-train_x = create_rgb_image(train_X, ['green', 'blue'])
+train_X = create_rgb_image(train_X, ['green', 'blue'])
 val_X = create_rgb_image(val_X, ['green', 'blue'])
 test_X = create_rgb_image(test_X, ['green', 'blue'])
+
+# train_x = np.zeros((train_X.shape[0], train_X.shape[1], train_X.shape[2]))
+# train_
+
+
 
 # os.makedirs(os.path.join(npz_dir, 'images', 'train'))
 # os.makedirs(os.path.join(npz_dir, 'labels_instance', 'train'))
