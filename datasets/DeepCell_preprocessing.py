@@ -104,10 +104,11 @@ if __name__ == '__main__':
             img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
             img.save(os.path.join(npz_dir, 'images', split, str(i) + '.png'))
 
-            label[i, :, :, args.cn_type]
-            if args.label_vis ==True:
-                label[label>0] = 255
-                label = label.astype(np.uint8)
-            else:
-                label = label.astype(np.uint16)
-            label.save(os.path.join(npz_dir, 'labels_instance', split, str(i) + '.png'))
+            if args.label == True:
+                label[:, :, args.cn_type]
+                if args.label_vis ==True:
+                    label[label>0] = 255
+                    label = label.astype(np.uint8)
+                else:
+                    label = label.astype(np.uint16)
+                label.save(os.path.join(npz_dir, 'labels_instance', split, str(i) + '.png'))
