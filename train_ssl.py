@@ -374,12 +374,12 @@ def main(args):
 
                 if max_Dice < mean_dice:
                     print('save {} epoch!!--Dice: {}'.format(str(epoch), mean_dice))
-                    save_checkpoint(os.path.join(args.model, 'model', 'Dice_best_model.pth'), sam_model, epoch)
+                    save_checkpoint(os.path.join(args.result, 'model', 'Dice_best_model.pth'), sam_model, epoch)
                     max_Dice = mean_dice
 
                 if max_Aji < mean_aji:
                     print('save {} epoch!!--Aji: {}'.format(str(epoch), mean_aji))
-                    save_checkpoint(os.path.join(args.model, 'model', 'Aji_best_model.pth'), sam_model, epoch)
+                    save_checkpoint(os.path.join(args.result, 'model', 'Aji_best_model.pth'), sam_model, epoch)
                     max_Aji = mean_aji
 
                 print(epoch, ': Average- Dice\tIOU\tAJI: '
