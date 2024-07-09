@@ -13,7 +13,7 @@ import skimage.morphology, skimage.measure
 
 
 class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
-    def __init__(self, args, split, use_mask=False, data=False):
+    def __init__(self, args, split, use_mask=False, data='nuclei'):
         self.args = args
         self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
         self.split = split
@@ -123,7 +123,11 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         img = self.create_rgb_image(img, ['green', 'blue'])
         img = Image.fromarray(img[0].astype(np.uint8)).convert('RGB')
 
-        box_label = skimage.morphology.label(self.samples_y[index])
+        if self.data == 'nuclei':
+            box_label = skimage.morphology.label(self.samples_y[index, :, :, 1])
+        else:
+            box_label = skimage.morphology.label(self.samples_y[index, :, :, 0])
+
         box_label = Image.fromarray(box_label.astype(np.uint16))
 
         sample = [img, box_label]
