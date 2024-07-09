@@ -126,9 +126,13 @@ def main(args):
     if args.data_type == 'crop':
         train_dataset = Crop_dataset(args, 'train', use_mask=args.sup, data=args.data)
         val_dataset = Crop_dataset(args, 'val', use_mask=args.sup, data=args.data)
-    elif args.data_type == 'npy':
-        train_dataset = DeepCell_dataset(args, 'train', use_mask=args.sup, data=args.data)
-        val_dataset = DeepCell_dataset(args, 'val', use_mask=args.sup, data=args.data)
+    elif args.data_type == 'npy_c':
+        train_dataset = DeepCell_dataset(args, 'train', use_mask=args.sup, data='cell')
+        val_dataset = DeepCell_dataset(args, 'val', use_mask=args.sup, data='cell')
+    elif args.data_type == 'npy_n':
+        train_dataset = DeepCell_dataset(args, 'train', use_mask=args.sup, data='nuclei')
+        val_dataset = DeepCell_dataset(args, 'val', use_mask=args.sup, data='nuclei')
+
     else:
         train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
         val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
@@ -422,8 +426,10 @@ def test(args, device):
 
     if args.data_type == 'crop':
         test_dataseet = Crop_dataset(args, 'test', use_mask=args.sup, data=args.data)
-    elif args.data_type == 'npy':
-        test_dataseet = DeepCell_dataset(args, 'test', use_mask=args.sup, data=args.data)
+    elif args.data_type == 'npy_c':
+        test_dataseet = DeepCell_dataset(args, 'test', use_mask=args.sup, data='cell')
+    elif args.data_type == 'npy_n':
+        test_dataseet = DeepCell_dataset(args, 'test', use_mask=args.sup, data='nuclei')
     else:
         test_dataseet = MoNuSeg_weak_dataset(args, 'test', ssl=True)
 
