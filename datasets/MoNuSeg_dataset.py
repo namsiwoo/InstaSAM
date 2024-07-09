@@ -61,7 +61,7 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         samples_X, samples_y = samples['X'], samples['y']
         return samples_X, samples_y
 
-    def create_rgb_image(input_data, channel_colors):
+    def create_rgb_image(self, input_data, channel_colors):
         from skimage.exposure import rescale_intensity
         """Takes a stack of 1- or 2-channel data and converts it to an RGB image
 
@@ -109,7 +109,7 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                     percentiles = np.percentile(non_zero_vals, [5, 95])
                     rescaled_intensity = rescale_intensity(current_img,
                                                            in_range=(0, percentiles[1]),
-                                                           out_range='float32')
+                                                           out_range=(0, 255))
 
                     # get rgb index of current channel
                     color_idx = np.where(np.isin(valid_channels, channel_colors[channel]))
@@ -118,62 +118,17 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         # create a blank array for red channel
         return rgb_data
     def __getitem__(self, index):
-        img_name = str(index)+'.png'
+        img_name = str(index)
+        img = np.expand_dims(self.samples_X[index], 0)
+        img = self.create_rgb_image(img, ['green', 'blue'])
+        img = Image.fromarray(img[0].astype(np.uint8)).convert('RGB')
 
-        if self.split == 'train':
-            # 1) read image
-            img = Image.open(os.path.join(self.root_dir, 'images', self.split, img_name)).convert('RGB')
+        box_label = skimage.morphology.label(self.samples_y[index])
+        box_label = Image.fromarray(box_label.astype(np.uint16))
 
+        sample = [img, box_label]
 
-
-            if self.use_mask == True:
-                if self.data == 'pannuke':
-                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
-                elif self.data == 'cellpose':
-                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-8]+'_masks.png')))
-                else:
-                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4] + '_label.png')))
-
-                box_label = skimage.morphology.label(box_label)
-                box_label = Image.fromarray(box_label.astype(np.uint16))
-
-                sample = [img, box_label]#, cluster_label, voronoi_label]  # , new_mask
-            else:
-                if self.data == 'pannuke':
-                    point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
-                else:
-                    point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-8] + '_labels_point.png')).convert('L')
-                point = binary_dilation(np.array(point), iterations=2)
-                point = Image.fromarray(point)
-
-
-                # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-8]+'_masks.png')))
-                #
-                # box_label = skimage.morphology.label(box_label)
-                # box_label = Image.fromarray(box_label.astype(np.uint16))
-
-                sample = [img, point]
-            sample = self.transform(sample)
-
-        else:
-            if self.data == 'pannuke' or 'cellpose':
-                new_dir = self.root_dir
-
-            else:
-                root_dir = self.root_dir.split('/')
-                new_dir = ''
-                for dir in root_dir[:-2]:
-                    new_dir += dir + '/'
-
-            img = Image.open(os.path.join(new_dir, 'images', self.split, img_name)).convert('RGB')
-            # mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name)) #pannuke
-            # mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name[:-4] + '_label.png'))
-            mask = Image.open(os.path.join(new_dir, 'labels_instance', self.split, img_name[:-8] + '_masks.png')) #cellpose
-
-            sample = [img, mask]
-            sample = self.transform(sample)
-
-        return sample, str(img_name[:-4])
+        return sample, str(img_name)
 
     def __len__(self):
         return self.num_samples
