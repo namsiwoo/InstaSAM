@@ -3,6 +3,8 @@ import numpy as np
 from PIL import Image
 import skimage.io as io
 from skimage.exposure import rescale_intensity
+from utils.utils import mk_colored
+
 def create_rgb_image(input_data, channel_colors):
     """Takes a stack of 1- or 2-channel data and converts it to an RGB image
 
@@ -61,6 +63,7 @@ def create_rgb_image(input_data, channel_colors):
     # create a blank array for red channel
     return rgb_data
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
     parser.add_argument('--train', action='store_true')
@@ -107,9 +110,11 @@ if __name__ == '__main__':
             if args.label == True:
                 label[:, :, args.cn_type]
                 if args.label_vis ==True:
-                    label[label>0] = 255
+                    label = mk_colored(label)
                     label = label.astype(np.uint8)
+                    img_name = str(idx)+'_vis.png'
                 else:
                     label = label.astype(np.uint16)
-                label = Image.fromarray(label).convert('L')
-                label.save(os.path.join(npz_dir, 'labels_instance', split, str(idx) + '.png'))
+                    img_name = str(idx)+'.png'
+                label = Image.fromarray(label).convert('RGB')
+                label.save(os.path.join(npz_dir, 'labels_instance', split, img_name))
