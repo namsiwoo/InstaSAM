@@ -51,7 +51,8 @@ def create_rgb_image(input_data, channel_colors):
                 percentiles = np.percentile(non_zero_vals, [5, 95])
                 rescaled_intensity = rescale_intensity(current_img,
                                                        in_range=(percentiles[0], percentiles[1]),
-                                                       out_range=(0, 255))
+                                                       out_range='float32')
+                rescaled_intensity = rescale_intensity(rescaled_intensity, out_range=(0, 255))
 
                 # get rgb index of current channel
                 color_idx = np.where(np.isin(valid_channels, channel_colors[channel]))
@@ -84,7 +85,8 @@ for i in range(5): #train_X.shape[0]
     img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
     img.save(os.path.join(npz_dir, 'images', 'train', str(i)+'.png'))
 
-    print(i, np.unique(train_y[i]))
+    print(i, np.unique(train_y[i]), np.min(train_X[i]), np.max(train_X[i]))
+
 
 
 
