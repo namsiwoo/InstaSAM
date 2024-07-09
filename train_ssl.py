@@ -427,7 +427,8 @@ def test(args, device):
     os.makedirs(os.path.join(args.result, 'img','test'), exist_ok=True)
     sam_model.eval()
     mean_dice, mean_iou, mean_aji = 0, 0, 0
-    mean_dq, mean_sq, mean_pq, mean_ap = 0, 0, 0, 0
+    mean_dq, mean_sq, mean_pq = 0, 0, 0
+    mean_ap1, mean_ap2, mean_ap3 = 0, 0, 0
     # if torch.distributed.get_rank() == 0:
 
     with torch.no_grad():
@@ -471,9 +472,10 @@ def test(args, device):
             mean_dq += pq_list[0] / (len(test_dataloader))  # *len(local_rank))
             mean_sq += pq_list[1] / (len(test_dataloader))  # len(local_rank))
             mean_pq += pq_list[2] / (len(test_dataloader))
-            print(ap)
 
-            mean_ap += ap / (len(test_dataloader))
+            mean_ap1 += ap[0] / (len(test_dataloader))
+            mean_ap2 += ap[1] / (len(test_dataloader))
+            mean_ap3 += ap[2] / (len(test_dataloader))
 
             # print(len(val_dataloader), mean_dice, mean_aji)
 
@@ -504,14 +506,19 @@ def test(args, device):
 
     print('test result: Average- Dice\tIOU\tAJI: '
                  '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
-    print('test result: Average- DQ\tSQ\tPQ\tAP: '
-                 '\t\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq, mean_ap))
+    print('test result: Average- DQ\tSQ\tPQ: '
+                 '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
+    print('test result: Average- AP1\tAP2\tAP3: '
+                 '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
+
 
     f = open(os.path.join(args.result,'img', 'test', "result.txt"), 'w')
     f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
             '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
-    f.write('***test result_mask*** Average- DQ\tSQ\tPQ\tAP: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}\t{:4.f}'.format(mean_dq, mean_sq, mean_pq, mean_ap))
+    f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
+            '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
+    f.write('***test result_mask*** Average- AP1\tAP2\tAP3: '
+            '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
     f.close()
     #     # if min_loss > val_losses:
     #     #     print('save {} epoch!!--loss: {}'.format(str(epoch), val_losses))
