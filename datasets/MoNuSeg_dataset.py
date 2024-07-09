@@ -131,6 +131,7 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         box_label = Image.fromarray(box_label.astype(np.uint16))
 
         sample = [img, box_label]
+        sample = self.transform(sample)
 
         return sample, str(img_name)
 
