@@ -501,6 +501,11 @@ def test(args, device):
 
 
 
+    print('test result: Average- Dice\tIOU\tAJI: '
+                 '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
+    print('test result: Average- DQ\tSQ\tPQ\tAP: '
+                 '\t\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq, mean_ap))
+
     f = open(os.path.join(args.result,'img', 'test', "result.txt"), 'w')
     f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
             '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
@@ -512,10 +517,7 @@ def test(args, device):
     #     #     save_checkpoint(os.path.join(args.model, 'loss_best_model.pth'), model, epoch)
     #     #     min_loss = val_losses
 
-    print('test result: Average- Dice\tIOU\tAJI: '
-                 '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
-    print('test result: Average- DQ\tSQ\tPQ\tAP: '
-                 '\t\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq, mean_ap))
+
 
 
 if __name__ == '__main__':
