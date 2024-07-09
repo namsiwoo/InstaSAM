@@ -471,6 +471,7 @@ def test(args, device):
             mean_dq += pq_list[0] / (len(test_dataloader))  # *len(local_rank))
             mean_sq += pq_list[1] / (len(test_dataloader))  # len(local_rank))
             mean_pq += pq_list[2] / (len(test_dataloader))
+            print(ap)
 
             mean_ap += ap / (len(test_dataloader))
 
