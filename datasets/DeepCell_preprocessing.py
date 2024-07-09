@@ -111,4 +111,5 @@ if __name__ == '__main__':
                     label = label.astype(np.uint8)
                 else:
                     label = label.astype(np.uint16)
+                label = Image.fromarray(label)
                 label.save(os.path.join(npz_dir, 'labels_instance', split, str(i) + '.png'))
