@@ -90,7 +90,7 @@ for i in range(len(val_X)): #train_X.shape[0]
     img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
     img.save(os.path.join(npz_dir, 'images', 'val', str(i)+'.png'))
 
-for i in range((test_X)): #train_X.shape[0]
+for i in range(len(test_X)): #train_X.shape[0]
     img = test_X[i]
     img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
     img.save(os.path.join(npz_dir, 'images', 'test', str(i)+'.png'))
