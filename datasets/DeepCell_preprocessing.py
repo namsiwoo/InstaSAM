@@ -102,7 +102,7 @@ if __name__ == '__main__':
         for idx in range(args.num_img):
             img, label = X[i], y[i]
             img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
-            img.save(os.path.join(npz_dir, 'images', split, str(i) + '.png'))
+            img.save(os.path.join(npz_dir, 'images', split, str(idx) + '.png'))
 
             if args.label == True:
                 label[:, :, args.cn_type]
@@ -111,5 +111,5 @@ if __name__ == '__main__':
                     label = label.astype(np.uint8)
                 else:
                     label = label.astype(np.uint16)
-                label = Image.fromarray(label)
-                label.save(os.path.join(npz_dir, 'labels_instance', split, str(i) + '.png'))
+                label = Image.fromarray(label).convert('L')
+                label.save(os.path.join(npz_dir, 'labels_instance', split, str(idx) + '.png'))
