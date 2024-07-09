@@ -116,5 +116,10 @@ if __name__ == '__main__':
                 else:
                     label = label.astype(np.uint16)
                     img_name = str(idx)+'.png'
+                if args.cn_type == 0:
+                    patch_folder = 'labels_instance_cell'
+                else:
+                    patch_folder = 'labels_instance_nuclei'
+
                 label = Image.fromarray(label).convert('RGB')
-                label.save(os.path.join(npz_dir, 'labels_instance', split, img_name))
+                label.save(os.path.join(npz_dir, patch_folder, split, img_name))
