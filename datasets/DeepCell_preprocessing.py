@@ -81,7 +81,7 @@ test_X = create_rgb_image(test_X, ['green', 'blue'])
 # os.makedirs(os.path.join(npz_dir, 'labels_instance', 'train'))
 for i in range(5): #train_X.shape[0]
     img = train_X[i]
-    img = Image.fromarray(img.astype(np.uint8))
+    img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
     img.save(os.path.join(npz_dir, 'images', 'train', str(i)+'.png'))
 
     print(i, np.unique(train_y[i]))
