@@ -299,6 +299,7 @@ class SAM(nn.Module):
                         else:
                             mask_prompt_adapter = torch.stack([mask_prompt_adapter_part.squeeze(1), mask_prompt_adapter], dim=0)
 
+                        print(mask_prompt_adapter.shape, mask_prompt_adapter_part.shape)
 
 
 
