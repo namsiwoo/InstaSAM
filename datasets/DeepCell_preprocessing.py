@@ -139,7 +139,6 @@ if __name__ == '__main__':
 
                         label = Image.fromarray(label)
                     patch_folder = 'labels_instance_cell'
-
                     label.save(os.path.join(npz_dir, patch_folder, split, img_name))
                 if args.nuclei == True:
                     label = label_ori[:, :, 1]
