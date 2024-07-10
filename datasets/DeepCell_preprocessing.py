@@ -130,8 +130,9 @@ if __name__ == '__main__':
                         if args.point == True:
                             point = np.zeros_like(label)
                             for idx in np.unique(label)[1:]:
-                                y, x = np.where(label==idx)
-                                point[round(y), round(x)] = 255
+                                coor = np.where(label==idx)
+                                y, x = coor
+                                point[round(np.mean(y)), round(np.mean(x))] = 255
                             point = Image.fromarray(point.astype(np.uint8))
                             point.save(os.path.join(npz_dir, 'point', split, img_name))
                         img_name = str(idx)+'.png'
