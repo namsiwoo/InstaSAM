@@ -68,7 +68,6 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance_nuclei', self.split, img_name)))
             else:
                 box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance_cell', self.split, img_name)))
-            print(box_label.shape)
             box_label = skimage.morphology.label(box_label)
             box_label = Image.fromarray(box_label.astype(np.uint16))
             sample = [img, box_label]
