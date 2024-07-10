@@ -275,7 +275,7 @@ class SAM(nn.Module):
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
                 if torch.sum(points[b]) > 20:
-                    gt_local, gt_global = torch.zeros(b, 1, 224, 224).to(self.device), torch.zeros(b, 1, 224, 224).to(self.device)
+                    gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
                     point_coord, point_label = make_point_prompt(points[b], only_fg=False)
                     for num_p in range(0, torch.unique(points[b])[-1], 20):
                         if num_p == range(0, torch.sum(points[b]), 20)[-1]:
@@ -325,9 +325,6 @@ class SAM(nn.Module):
             # entropy = -torch.sum(self.mask_prompt_ori * torch.log(self.mask_prompt_ori + 1e-10), dim=0)
             # ignored_map = entropy[0]<0.3
             # pseudo_gt[b, ignored_map!=1] = -1
-
-            print(pseudo_gt_local.shape, gt_local.shape)
-            print(pseudo_gt_global.shape, gt_global.shape)
 
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
