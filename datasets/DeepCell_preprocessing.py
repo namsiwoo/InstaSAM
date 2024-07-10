@@ -104,6 +104,7 @@ if __name__ == '__main__':
 
     for i in range(len(dict_list)):
         X, y, split = dict_list[i]
+        print(split, 'ing....')
         if args.num_img == -1:
             num_img = len(X)
         else:
