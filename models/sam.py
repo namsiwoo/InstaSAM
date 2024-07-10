@@ -273,7 +273,7 @@ class SAM(nn.Module):
         # print('make pseudo gt', self.mask_decoder.local_token.weight)
         pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h
         pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h
-        print(pseudo_gt_local.shape, pseudo_gt_global.shape, '-----')
+        print(points.shape, pseudo_gt_local.shape, pseudo_gt_global.shape, '-----')
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
