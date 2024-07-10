@@ -166,6 +166,7 @@ def main(args):
             else:
                 # label = batch[0][1].squeeze(1)
                 point = batch[0][1]
+                print(point.shape)
                 import matplotlib.pyplot as plt
                 plt.imshow(point.numpy())
                 plt.savefig('aa.png')
