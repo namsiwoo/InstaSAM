@@ -279,11 +279,11 @@ class SAM(nn.Module):
                     point_coord, point_label = make_point_prompt(points[b], only_fg=False)
                     for num_p in range(0, torch.sum(points[b]), 20):
                         if num_p == range(0, torch.sum(points[b]), 20)[-1]:
-                            print(point_coord.shape, point_label.shape, point_coord[num_p: ].shape, point_label[num_p: ].shape)
+                            print('last', point_coord.shape, point_label.shape, point_coord[num_p: ].shape, point_label[num_p: ].shape)
                             gt_local_part, gt_global_part = self.make_pseudo_instance_map(b, point_coord[num_p: ], point_label[num_p: ], x_ori[b].unsqueeze(0))
 
                         else:
-                            print(point_coord.shape, point_label.shape, point_coord[num_p: ].shape, point_label[num_p: ].shape)
+                            print(num_p, point_coord.shape, point_label.shape, point_coord[num_p: ].shape, point_label[num_p: ].shape)
                             gt_local_part, gt_global_part = self.make_pseudo_instance_map(b, point_coord[num_p: num_p+20], point_label[num_p: num_p+20], x_ori[b].unsqueeze(0))
 
                         gt_local_part = gt_local_part + num_p
