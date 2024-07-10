@@ -526,7 +526,7 @@ class SAM(nn.Module):
             # train_map = torch.stack(train_map)
 
             bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], pseudo_maks)*train_map).mean()
-            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), pseudo_maks.unsqueeze(1), ignored_map=train_map)
+            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b], pseudo_maks, ignored_map=train_map)
 
         return bce_loss_local, iou_loss_local
 
@@ -584,7 +584,6 @@ class SAM(nn.Module):
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
         else:
             local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch) # local_gt, global_gt =
-            del self.input
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)#global_gt  # calculate graidents for G
             bce_loss_local, iou_loss_local = self.backward_G_local(local_gt)
 
