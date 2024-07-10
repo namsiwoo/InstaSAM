@@ -270,12 +270,12 @@ class SAM(nn.Module):
         # Make pseudo label using prompts
 
         # print('make pseudo gt', self.mask_decoder.local_token.weight)
-        pseudo_gt_local = torch.zeros_like(points).to(self.device)  # b, 1, w, h
-        pseudo_gt_global = torch.zeros_like(points).to(self.device)  # b, 1, w, h
+        pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h
+        pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
                 if torch.sum(points[b]) > 20:
-                    gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
+                    gt_local, gt_global = torch.zeros(224, 224).to(self.device), torch.zeros(224, 224).to(self.device)
                     point_coord, point_label = make_point_prompt(points[b], only_fg=False)
                     for num_p in range(0, torch.unique(points[b])[-1], 20):
                         if num_p == range(0, torch.sum(points[b]), 20)[-1]:
@@ -378,7 +378,7 @@ class SAM(nn.Module):
             plt.imshow(overlap[0].detach().cpu().numpy())
             plt.colorbar()
             plt.savefig(img_name[:-4]+'_5overlap.png')
-        print(pseudo_gt_local.shape, pseudo_gt_global.shape)
+        print(pseudo_gt_local.shape, pseudo_gt_global)
         return pseudo_gt_local, pseudo_gt_global
         # return self.gt_mask
 
