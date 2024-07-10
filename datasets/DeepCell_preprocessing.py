@@ -126,7 +126,7 @@ if __name__ == '__main__':
                         img_name = str(idx)+'_vis.png'
                     else:
                         label = label.astype(np.uint16)
-                        label = Image.fromarray(label)
+                        img_name = str(idx)+'.png'
                         if args.point == True:
                             point = np.zeros_like(label)
                             for idx in np.unique(label)[1:]:
@@ -134,8 +134,9 @@ if __name__ == '__main__':
                                 y, x = coor
                                 point[round(np.mean(y)), round(np.mean(x))] = 255
                             point = Image.fromarray(point.astype(np.uint8))
-                            point.save(os.path.join(npz_dir, 'point', split, img_name))
-                        img_name = str(idx)+'.png'
+                            point.save(os.path.join(npz_dir, 'labels_point_cell', split, img_name))
+
+                        label = Image.fromarray(label)
                     patch_folder = 'labels_instance_cell'
 
                     label.save(os.path.join(npz_dir, patch_folder, split, img_name))
@@ -148,7 +149,16 @@ if __name__ == '__main__':
                         img_name = str(idx)+'_vis.png'
                     else:
                         label = label.astype(np.uint16)
-                        label = Image.fromarray(label)
                         img_name = str(idx)+'.png'
+                        if args.point == True:
+                            point = np.zeros_like(label)
+                            for idx in np.unique(label)[1:]:
+                                coor = np.where(label==idx)
+                                y, x = coor
+                                point[round(np.mean(y)), round(np.mean(x))] = 255
+                            point = Image.fromarray(point.astype(np.uint8))
+                            point.save(os.path.join(npz_dir, 'labels_point_nuclei', split, img_name))
+
+                        label = Image.fromarray(label)
                     patch_folder = 'labels_instance_nuclei'
                     label.save(os.path.join(npz_dir, patch_folder, split, img_name))
