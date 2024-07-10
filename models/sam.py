@@ -378,7 +378,6 @@ class SAM(nn.Module):
             plt.imshow(overlap[0].detach().cpu().numpy())
             plt.colorbar()
             plt.savefig(img_name[:-4]+'_5overlap.png')
-        print(pseudo_gt_local.shape, pseudo_gt_global)
         return pseudo_gt_local, pseudo_gt_global
         # return self.gt_mask
 
@@ -520,10 +519,8 @@ class SAM(nn.Module):
                 #     # print('rel')
                 #     train_map.append(reliable_map)
             # train_map = torch.stack(train_map)
-
-            print(pseudo_maks.shape, train_map.shape)
             bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], pseudo_maks)*train_map).mean()
-            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b], pseudo_maks, ignored_map=train_map)
+            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b], pseudo_maks, ignored_map=train_map.unsqueeze(0))
 
         return bce_loss_local, iou_loss_local
 
