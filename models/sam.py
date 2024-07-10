@@ -270,8 +270,8 @@ class SAM(nn.Module):
         # Make pseudo label using prompts
 
         # print('make pseudo gt', self.mask_decoder.local_token.weight)
-        pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h
-        pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h
+        pseudo_gt_local = torch.zeros_like(points).to(self.device)  # b, 1, w, h
+        pseudo_gt_global = torch.zeros_like(points).to(self.device)  # b, 1, w, h
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
                 if torch.sum(points[b]) > 20:
