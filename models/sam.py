@@ -272,61 +272,38 @@ class SAM(nn.Module):
         # print('make pseudo gt', self.mask_decoder.local_token.weight)
         pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h
         pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h
-        self.mask_prompt_adapter = []
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
-                # Make mask prompt using point labels
-                point_coord, point_label = make_point_prompt(points[b], only_fg=False)
+                if torch.sum(points[b]) > 20:
+                    gt_local, gt_global = torch.zeros(b, 1, 224, 224)
+                    point_coord, point_label = make_point_prompt(points[b], only_fg=False)
+                    for num_p in range(0, torch.sum(points[b]), 20):
+                        if num_p == range(0, torch.sum(points[b]), 20)[-1]:
+                            gt_local_part, gt_global_part = self.make_pseudo_instance_map(b, point_coord[num_p: ], point_label[num_p: ], x_ori[b].unsqueeze(0))
 
-                sparse_embeddings, dense_embeddings = self.prompt_encoder(
-                    points=(point_coord.to(self.device), point_label.to(self.device)),
-                    boxes=None,
-                    masks=None,
-                )
+                        else:
+                            gt_local_part, gt_global_part = self.make_pseudo_instance_map(b, point_coord[num_p: num_p+20], point_label[num_p: num_p+20], x_ori[b].unsqueeze(0))
 
-                with torch.no_grad():
-                    mask_prompt, iou_preds = self.mask_decoder(
-                        image_embeddings=x_ori[b].unsqueeze(0),  # self.features[b].unsqueeze(0)
-                        image_pe=self.prompt_encoder.get_dense_pe(),
-                        sparse_prompt_embeddings=sparse_embeddings,
-                        dense_prompt_embeddings=dense_embeddings,
-                        multimask_output=False,
-                        mask_token_only=True,
-                        local_path=True,
-                        interm_embeddings=None,
-                    )
+                        gt_local_part = gt_local_part + num_p
+                        gt_local_part[gt_local_part == num_p] = 0
 
-                    mask_prompt_ori = self.postprocess_masks(mask_prompt, self.inp_size,(224, 224))  # b, 1 224, 224
-                    # mask_prompt_ori = self.postprocess_masks(mask_prompt, self.inp_size,(300, 300))  # b, 1 224, 224
-                    # self.mask_prompt_ori = torch.sigmoid(mask_prompt_ori)
+                        gt_global_part = gt_global_part + num_p
+                        gt_global_part[gt_global_part == num_p] = 0
+
+                        gt_local = gt_local + gt_local_part
+                        gt_global = gt_global + gt_global_part
+
+
+
+
+                else:
+                    # Make mask prompt using point labels
+                    gt_local, gt_global = self.make_pseudo_instance_map(b, point_coord, point_label, x_ori[b].unsqueeze(0))
+
 
             else:
-                sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.device)
-                dense_embeddings = self.no_mask_embed.weight.reshape(1, -1, 1, 1).expand(
-                    bs, -1, self.image_embedding_size, self.image_embedding_size
-                )
-
                 mask_prompt_ori = torch.zeros(b, 1, 224, 224).to(self.device)
-                # self.mask_prompt_adapter, self.mask_prompt_ori = torch.zeros(
-                #     (len(points), 1, 224, 224))  # b, 1 224, 224
-
-
-
-
-            mask_prompt, iou_preds = self.mask_decoder(
-                image_embeddings=self.features[b].unsqueeze(0), #self.features[b].unsqueeze(0)
-                image_pe=self.prompt_encoder.get_dense_pe(),
-                sparse_prompt_embeddings=sparse_embeddings,
-                dense_prompt_embeddings=dense_embeddings,
-                multimask_output=False,
-                mask_token_only=True,
-                local_path=True,
-                interm_embeddings=None,)
-
-            self.mask_prompt_adapter.append(self.postprocess_masks(mask_prompt, self.inp_size,(224, 224)))
-            # self.mask_prompt_adapter.append(self.postprocess_masks(mask_prompt, self.inp_size,(300, 300)))
-
-
+                gt_global = self.make_pseudo_instance_map(b, point_coord, point_label)
 
             # bg = torch.zeros(1, 1, 224, 224).to(self.device) + 0.3
             # bg = (torch.argmax(torch.cat([bg, self.mask_prompt_ori], dim=0), dim=0) < 1 ) * 2
@@ -349,8 +326,8 @@ class SAM(nn.Module):
             # ignored_map = entropy[0]<0.3
             # pseudo_gt[b, ignored_map!=1] = -1
 
-            pseudo_gt_local[b] = make_pseudo_gt(mask_prompt_ori)
-            pseudo_gt_global[b] = make_pseudo_gt(self.mask_prompt_adapter[b])
+            pseudo_gt_local[b] = gt_local
+            pseudo_gt_global[b] = gt_global
 
 
             # pseudo_gt[b] = bg
@@ -361,7 +338,7 @@ class SAM(nn.Module):
             # pseudo_gt[b, ex[0]>1] = -1
 
         try:
-            del mask_prompt, iou_preds, points, point_coord, point_label, sparse_embeddings, dense_embeddings, x_ori, mask_prompt_ori, self.features#ignored_map
+            del points, point_coord, point_label, sparse_embeddings, dense_embeddings, x_ori, mask_prompt_ori, self.features#ignored_map
         except:
             # print('can not delete mask prompt')
             pass
@@ -433,6 +410,52 @@ class SAM(nn.Module):
 
         return pseudo_gt_local, pseudo_gt_global
         # return self.gt_mask
+
+    def make_pseudo_instance_map(self, batch, point_coord, point_label, ori_feature=None):
+        sparse_embeddings, dense_embeddings = self.prompt_encoder(
+            points=(point_coord.to(self.device), point_label.to(self.device)),
+            boxes=None,
+            masks=None,
+        )
+
+        mask_prompt, iou_preds = self.mask_decoder(
+            image_embeddings=self.features[batch].unsqueeze(0),  # self.features[b].unsqueeze(0)
+            image_pe=self.prompt_encoder.get_dense_pe(),
+            sparse_prompt_embeddings=sparse_embeddings,
+            dense_prompt_embeddings=dense_embeddings,
+            multimask_output=False,
+            mask_token_only=True,
+            local_path=True,
+            interm_embeddings=None, )
+        self.mask_prompt_adapter = (self.postprocess_masks(mask_prompt, self.inp_size, (224, 224)))
+        pseudo_gt_global = make_pseudo_gt(self.mask_prompt_adapter)
+
+        if ori_feature == None:
+            with torch.no_grad():
+                mask_prompt, iou_preds = self.mask_decoder(
+                    image_embeddings=ori_feature,  # self.features[b].unsqueeze(0)
+                    image_pe=self.prompt_encoder.get_dense_pe(),
+                    sparse_prompt_embeddings=sparse_embeddings,
+                    dense_prompt_embeddings=dense_embeddings,
+                    multimask_output=False,
+                    mask_token_only=True,
+                    local_path=True,
+                    interm_embeddings=None,
+                )
+                mask_prompt_ori = self.postprocess_masks(mask_prompt, self.inp_size, (224, 224))  # b, 1 224, 224
+                pseudo_gt_local = make_pseudo_gt(mask_prompt_ori)
+
+            return pseudo_gt_local, pseudo_gt_global
+        else:
+            return pseudo_gt_global
+
+
+
+
+
+
+
+
 
     def backward_G_ssl(self, gt):
         """Calculate GAN and L1 loss for the generator"""
