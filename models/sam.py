@@ -294,15 +294,10 @@ class SAM(nn.Module):
 
                         gt_local = gt_local + gt_local_part
                         gt_global = gt_global + gt_global_part
-                        print(num_p)
                         if num_p == 0:
                             mask_prompt_adapter = mask_prompt_adapter_part.squeeze(1)
                         else:
-                            mask_prompt_adapter = torch.stack([mask_prompt_adapter_part.squeeze(1), mask_prompt_adapter], dim=0)
-
-                        print(mask_prompt_adapter.shape, mask_prompt_adapter_part.shape)
-
-
+                            mask_prompt_adapter = torch.cat([mask_prompt_adapter_part.squeeze(1), mask_prompt_adapter], dim=0)
 
                 else:
                     # Make mask prompt using point labels
