@@ -131,6 +131,7 @@ def _iou_loss(pred, target, ignored_map=None):
         inter = (pred * target).sum(dim=(2, 3))
         union = (pred + target).sum(dim=(2, 3)) - inter
     else:
+        print(pred.shape, target.shape, ignored_map.shape)
         inter = ((pred * target) * ignored_map).sum(dim=(2, 3))
         union = ((pred + target) * ignored_map).sum(dim=(2, 3)) - inter
     iou = 1 - (inter / (union + 1e-7))
@@ -519,6 +520,8 @@ class SAM(nn.Module):
                 #     # print('rel')
                 #     train_map.append(reliable_map)
             # train_map = torch.stack(train_map)
+
+            print(pseudo_maks.shape, train_map.shape)
             bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], pseudo_maks)*train_map).mean()
             iou_loss_local += _iou_loss(self.mask_prompt_adapter[b], pseudo_maks, ignored_map=train_map.unsqueeze(0))
 
