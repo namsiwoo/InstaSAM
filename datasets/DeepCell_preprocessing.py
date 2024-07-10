@@ -110,13 +110,13 @@ if __name__ == '__main__':
             num_img = args.num_img
 
         for idx in range(num_img):
-            img, label = X[idx], y[idx]
+            img, label_ori = X[idx], y[idx]
             img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
             img.save(os.path.join(npz_dir, 'images', split, str(idx) + '.png'))
 
             if args.label == True:
                 if args.cell == True:
-                    label = label[:, :, 0]
+                    label = label_ori[:, :, 0]
                     if args.label_vis ==True:
                         label = mk_colored(label)*255
                         label = label.astype(np.uint8)
@@ -128,7 +128,7 @@ if __name__ == '__main__':
                     label = Image.fromarray(label).convert('RGB')
                     label.save(os.path.join(npz_dir, patch_folder, split, img_name))
                 if args.nuclei == True:
-                    label = label[:, :, 1]
+                    label = label_ori[:, :, 1]
                     if args.label_vis ==True:
                         label = mk_colored(label)*255
                         label = label.astype(np.uint8)
