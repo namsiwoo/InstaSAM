@@ -271,13 +271,14 @@ class SAM(nn.Module):
         # Make pseudo label using prompts
 
         # print('make pseudo gt', self.mask_decoder.local_token.weight)
-        pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h
-        pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h
+        pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h
+        pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h
+        print(pseudo_gt_local.shape, pseudo_gt_global.shape, '-----')
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
+                point_coord, point_label = make_point_prompt(points[b], only_fg=False)
                 if torch.sum(points[b]) > 20:
-                    gt_local, gt_global = torch.zeros(224, 224).to(self.device), torch.zeros(224, 224).to(self.device)
-                    point_coord, point_label = make_point_prompt(points[b], only_fg=False)
+                    gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
                     for num_p in range(0, torch.unique(points[b])[-1], 20):
                         if num_p == range(0, torch.sum(points[b]), 20)[-1]:
                             gt_local_part, gt_global_part = self.make_pseudo_instance_map(b, point_coord[num_p: ], point_label[num_p: ], x_ori[b].unsqueeze(0))
@@ -303,7 +304,8 @@ class SAM(nn.Module):
 
 
             else:
-                gt_local = torch.zeros(224, 224).to(self.device)
+                gt_local = torch.zeros(1, 224, 224).to(self.device)
+                point_coord, point_label = make_point_prompt(points[b], only_fg=False)
                 gt_global = self.make_pseudo_instance_map(b, point_coord, point_label)
 
             pseudo_gt_local[b] = gt_local
@@ -521,9 +523,9 @@ class SAM(nn.Module):
                 #     train_map.append(reliable_map)
             # train_map = torch.stack(train_map)
 
-            print(pseudo_maks.shape, train_map.shape)
+            print(pseudo_maks.shape, train_map.shape, 'pse, trian_map')
             bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], pseudo_maks)*train_map).mean()
-            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b], pseudo_maks, ignored_map=train_map.unsqueeze(0))
+            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b], pseudo_maks, ignored_map=train_map)
 
         return bce_loss_local, iou_loss_local
 
