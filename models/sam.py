@@ -294,6 +294,7 @@ class SAM(nn.Module):
 
                         gt_local = gt_local + gt_local_part
                         gt_global = gt_global + gt_global_part
+                        print(num_p)
                         if num_p == 0:
                             mask_prompt_adapter = mask_prompt_adapter_part.squeeze(1)
                         else:
