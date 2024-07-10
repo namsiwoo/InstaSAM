@@ -297,7 +297,7 @@ class SAM(nn.Module):
                         if num_p == 0:
                             mask_prompt_adapter = mask_prompt_adapter_part.squeeze(1)
                         else:
-                            mask_prompt_adapter = torch.stack((mask_prompt_adapter_part.squeeze(1), mask_prompt_adapter), dim=0)
+                            mask_prompt_adapter = torch.stack([mask_prompt_adapter_part.squeeze(1), mask_prompt_adapter], dim=0)
 
 
 
