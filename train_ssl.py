@@ -136,7 +136,7 @@ def main(args):
         train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
         val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
     val_dataloader = DataLoader(val_dataset)
 
     max_Dice, max_Aji = 0, 0
@@ -179,7 +179,7 @@ def main(args):
 
             loss = sam_model.loss_G
 
-            train_loss += loss / len(train_dataloader)
+            train_loss += loss.item() / len(train_dataloader)
 
             if (iter + 1) % args.print_fq == 0:
                 print('{}/{} epoch, {}/{} batch, train loss: {}, bce: {}, iou: {}, offset: {} // local bce: {} iou: {}'.format(epoch,
