@@ -126,7 +126,7 @@ if __name__ == '__main__':
                         label = label.astype(np.uint16)
                         img_name = str(idx)+'.png'
                     patch_folder = 'labels_instance_cell'
-                    label = Image.fromarray(label).convert('RGB')
+                    label = Image.fromarray(label)
                     label.save(os.path.join(npz_dir, patch_folder, split, img_name))
                 if args.nuclei == True:
                     label = label_ori[:, :, 1]
@@ -138,5 +138,5 @@ if __name__ == '__main__':
                         label = label.astype(np.uint16)
                         img_name = str(idx)+'.png'
                     patch_folder = 'labels_instance_nuclei'
-                    label = Image.fromarray(label).convert('RGB')
+                    label = Image.fromarray(label)
                     label.save(os.path.join(npz_dir, patch_folder, split, img_name))
