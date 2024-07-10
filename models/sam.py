@@ -273,6 +273,7 @@ class SAM(nn.Module):
         # print('make pseudo gt', self.mask_decoder.local_token.weight)
         pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h (points.shape, b, 1, w, h)
         pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h
+        self.mask_prompt_adapter = []
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
@@ -280,10 +281,10 @@ class SAM(nn.Module):
                     gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
                     for num_p in range(0, torch.unique(points[b])[-1], 20):
                         if num_p == range(0, torch.sum(points[b]), 20)[-1]:
-                            gt_local_part, gt_global_part = self.make_pseudo_instance_map(b, point_coord[num_p: ], point_label[num_p: ], x_ori[b].unsqueeze(0))
+                            gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, point_coord[num_p: ], point_label[num_p: ], x_ori[b].unsqueeze(0))
 
                         else:
-                            gt_local_part, gt_global_part = self.make_pseudo_instance_map(b, point_coord[num_p: num_p+20], point_label[num_p: num_p+20], x_ori[b].unsqueeze(0))
+                            gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, point_coord[num_p: num_p+20], point_label[num_p: num_p+20], x_ori[b].unsqueeze(0))
 
                         gt_local_part = gt_local_part + num_p
                         gt_local_part[gt_local_part == num_p] = 0
@@ -293,20 +294,24 @@ class SAM(nn.Module):
 
                         gt_local = gt_local + gt_local_part
                         gt_global = gt_global + gt_global_part
+                        if num_p == 0:
+                            mask_prompt_adapter = mask_prompt_adapter_part
+                        else:
+                            mask_prompt_adapter = torch.stack((mask_prompt_adapter_part, mask_prompt_adapter), dim=0)
 
 
 
 
                 else:
                     # Make mask prompt using point labels
-                    gt_local, gt_global = self.make_pseudo_instance_map(b, point_coord, point_label, x_ori[b].unsqueeze(0))
+                    gt_local, gt_global, mask_prompt_adapter = self.make_pseudo_instance_map(b, point_coord, point_label, x_ori[b].unsqueeze(0))
 
 
             else:
                 gt_local = torch.zeros(1, 224, 224).to(self.device)
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
-                gt_global = self.make_pseudo_instance_map(b, point_coord, point_label)
-
+                gt_global, mask_prompt_adapter = self.make_pseudo_instance_map(b, point_coord, point_label)
+            self.mask_prompt_adapter.append(mask_prompt_adapter)
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
 
@@ -399,8 +404,8 @@ class SAM(nn.Module):
             mask_token_only=True,
             local_path=True,
             interm_embeddings=None, )
-        self.mask_prompt_adapter = (self.postprocess_masks(mask_prompt, self.inp_size, (224, 224)))
-        pseudo_gt_global = make_pseudo_gt(self.mask_prompt_adapter)
+        mask_prompt_adapter = (self.postprocess_masks(mask_prompt, self.inp_size, (224, 224)))
+        pseudo_gt_global = make_pseudo_gt(mask_prompt_adapter)
 
         if ori_feature != None:
             with torch.no_grad():
@@ -416,9 +421,9 @@ class SAM(nn.Module):
                 )
                 mask_prompt_ori = self.postprocess_masks(mask_prompt, self.inp_size, (224, 224))  # b, 1 224, 224
                 pseudo_gt_local = make_pseudo_gt(mask_prompt_ori)
-            return pseudo_gt_local, pseudo_gt_global
+            return pseudo_gt_local, pseudo_gt_global, mask_prompt_adapter
         else:
-            return pseudo_gt_global
+            return pseudo_gt_global, mask_prompt_adapter
 
 
 
