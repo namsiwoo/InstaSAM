@@ -271,9 +271,8 @@ class SAM(nn.Module):
         # Make pseudo label using prompts
 
         # print('make pseudo gt', self.mask_decoder.local_token.weight)
-        pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h (points.shape, b, 1, w, h)
-        pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, 1, w, h
-        print(points.shape, pseudo_gt_local.shape, pseudo_gt_global.shape)
+        pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h (points.shape, b, 1, w, h)
+        pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
@@ -381,7 +380,6 @@ class SAM(nn.Module):
             plt.imshow(overlap[0].detach().cpu().numpy())
             plt.colorbar()
             plt.savefig(img_name[:-4]+'_5overlap.png')
-        print(pseudo_gt_local.shape, pseudo_gt_global.shape, '-------')
         return pseudo_gt_local, pseudo_gt_global
         # return self.gt_mask
 
@@ -524,9 +522,8 @@ class SAM(nn.Module):
                 #     train_map.append(reliable_map)
             # train_map = torch.stack(train_map)
 
-            print(pseudo_maks.shape, train_map.shape, 'pse, trian_map')
             bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], pseudo_maks)*train_map).mean()
-            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b], pseudo_maks, ignored_map=train_map)
+            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), pseudo_maks.unsqueeze(1), ignored_map=train_map)
 
         return bce_loss_local, iou_loss_local
 
