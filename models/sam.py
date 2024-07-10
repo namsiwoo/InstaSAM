@@ -302,43 +302,14 @@ class SAM(nn.Module):
 
 
             else:
-                gt_local = torch.zeros(b, 1, 224, 224).to(self.device)
+                gt_local = torch.zeros(1, 224, 224).to(self.device)
                 gt_global = self.make_pseudo_instance_map(b, point_coord, point_label)
-
-            # bg = torch.zeros(1, 1, 224, 224).to(self.device) + 0.3
-            # bg = (torch.argmax(torch.cat([bg, self.mask_prompt_ori], dim=0), dim=0) < 1 ) * 2
-            #
-            # ignored = torch.zeros(1, 1, 224, 224).to(self.device) + 0.7
-            # ignored = (torch.argmax(torch.cat([ignored, self.mask_prompt_ori], dim=0), dim=0) < 1 ) * 1
-            #
-            # pseudo_gt[b] = torch.argmax(torch.cat([ignored, bg, self.mask_prompt_ori.squeeze(1)], dim=0), dim=0) -1
-            #
-            # # bg = torch.zeros(1, 1, 224, 224).to(self.device) + 0.5
-            # # pseudo_gt[b] = torch.argmax(torch.cat([bg, self.mask_prompt_ori], dim=0), dim=0)
-            #
-            # fg = (self.mask_prompt_ori > 0.5).float()
-            # overlap = torch.sum(fg, dim=0)
-            # for i in range(len(fg)):
-            #     if torch.sum((fg[i] * overlap) > 1) > 0:
-            #         pseudo_gt[pseudo_gt==i+1] = -1
-            #
-            # entropy = -torch.sum(self.mask_prompt_ori * torch.log(self.mask_prompt_ori + 1e-10), dim=0)
-            # ignored_map = entropy[0]<0.3
-            # pseudo_gt[b, ignored_map!=1] = -1
 
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
 
-
-            # pseudo_gt[b] = bg
-
-            # fg = self.mask_prompt_ori>0.7
-            # ex = torch.sum(fg, dim=0)
-            # fg[:, ex > 1] = 0
-            # pseudo_gt[b, ex[0]>1] = -1
-
         try:
-            del points, point_coord, point_label, sparse_embeddings, dense_embeddings, x_ori, mask_prompt_ori, self.features#ignored_map
+            del points, point_coord, point_label, sparse_embeddings, dense_embeddings, x_ori, self.features#ignored_map
         except:
             # print('can not delete mask prompt')
             pass
@@ -550,7 +521,7 @@ class SAM(nn.Module):
                 #     train_map.append(reliable_map)
             # train_map = torch.stack(train_map)
 
-
+            print(pseudo_maks.shape, train_map.shape)
             bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], pseudo_maks)*train_map).mean()
             iou_loss_local += _iou_loss(self.mask_prompt_adapter[b], pseudo_maks, ignored_map=train_map)
 
