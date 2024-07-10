@@ -104,7 +104,7 @@ if __name__ == '__main__':
         dict_list.append((test_X, test_y, 'test'))
 
     for i in range(len(dict_list)):
-        X, y, split = dict_list[i]
+        X, y_label, split = dict_list[i]
         print(split, 'ing....')
         if args.num_img == 0:
             num_img = len(X)
@@ -112,8 +112,7 @@ if __name__ == '__main__':
             num_img = args.num_img
 
         for idx in range(num_img):
-            img, label_ori = X[idx], y[idx]
-            print(y.shape, label_ori.shape)
+            img, label_ori = X[idx], y_label[idx]
             if args.img == True:
                 img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
                 img.save(os.path.join(npz_dir, 'images', split, str(idx) + '.png'))
