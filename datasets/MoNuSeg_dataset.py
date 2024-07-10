@@ -56,7 +56,7 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         print('{} dataset {} loaded'.format(self.split, self.num_samples))
 
 
-    def read_samples_npy(self, root_dir, split, few_shot=False):
+    def read_samples(self, root_dir, split, few_shot=False):
         samples = os.listdir(os.path.join(root_dir, 'images', split))
         return samples
     def __getitem__(self, index):
