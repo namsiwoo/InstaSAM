@@ -302,7 +302,7 @@ class SAM(nn.Module):
 
 
             else:
-                mask_prompt_ori = torch.zeros(b, 1, 224, 224).to(self.device)
+                gt_local = torch.zeros(b, 1, 224, 224).to(self.device)
                 gt_global = self.make_pseudo_instance_map(b, point_coord, point_label)
 
             # bg = torch.zeros(1, 1, 224, 224).to(self.device) + 0.3
@@ -430,7 +430,7 @@ class SAM(nn.Module):
         self.mask_prompt_adapter = (self.postprocess_masks(mask_prompt, self.inp_size, (224, 224)))
         pseudo_gt_global = make_pseudo_gt(self.mask_prompt_adapter)
 
-        if ori_feature == None:
+        if ori_feature != None:
             with torch.no_grad():
                 mask_prompt, iou_preds = self.mask_decoder(
                     image_embeddings=ori_feature,  # self.features[b].unsqueeze(0)
