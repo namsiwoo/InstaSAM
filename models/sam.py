@@ -295,9 +295,9 @@ class SAM(nn.Module):
                         gt_local = gt_local + gt_local_part
                         gt_global = gt_global + gt_global_part
                         if num_p == 0:
-                            mask_prompt_adapter = mask_prompt_adapter_part.unsqueeze(1)
+                            mask_prompt_adapter = mask_prompt_adapter_part.squeeze(1)
                         else:
-                            mask_prompt_adapter = torch.stack((mask_prompt_adapter_part.unsqueeze(1), mask_prompt_adapter), dim=0)
+                            mask_prompt_adapter = torch.stack((mask_prompt_adapter_part.squeeze(1), mask_prompt_adapter), dim=0)
 
 
 
