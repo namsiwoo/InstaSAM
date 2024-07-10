@@ -73,7 +73,9 @@ if __name__ == '__main__':
     parser.add_argument('--label', action='store_true')
     parser.add_argument('--label_vis', action='store_true')
     parser.add_argument('--num_img', default=5, type=int)
-    parser.add_argument('--cn_type', default=0, type=int)
+    parser.add_argument('--cell', action='store_true', type=int)
+    parser.add_argument('--nuclei', action='store_true', type=int)
+
     args = parser.parse_args()
 
 
@@ -102,24 +104,38 @@ if __name__ == '__main__':
 
     for i in range(len(dict_list)):
         X, y, split = dict_list[i]
-        for idx in range(args.num_img):
+        if args.num_img == -1:
+            num_img = len(X)
+        else:
+            num_img = args.num_img
+
+        for idx in range(num_img):
             img, label = X[idx], y[idx]
             img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
             img.save(os.path.join(npz_dir, 'images', split, str(idx) + '.png'))
 
             if args.label == True:
-                label = label[:, :, args.cn_type]
-                if args.label_vis ==True:
-                    label = mk_colored(label)*255
-                    label = label.astype(np.uint8)
-                    img_name = str(idx)+'_vis.png'
-                else:
-                    label = label.astype(np.uint16)
-                    img_name = str(idx)+'.png'
-                if args.cn_type == 0:
+                if args.cell == True:
+                    label = label[:, :, 0]
+                    if args.label_vis ==True:
+                        label = mk_colored(label)*255
+                        label = label.astype(np.uint8)
+                        img_name = str(idx)+'_vis.png'
+                    else:
+                        label = label.astype(np.uint16)
+                        img_name = str(idx)+'.png'
                     patch_folder = 'labels_instance_cell'
-                else:
+                    label = Image.fromarray(label).convert('RGB')
+                    label.save(os.path.join(npz_dir, patch_folder, split, img_name))
+                if args.nuclei == True:
+                    label = label[:, :, 1]
+                    if args.label_vis ==True:
+                        label = mk_colored(label)*255
+                        label = label.astype(np.uint8)
+                        img_name = str(idx)+'_vis.png'
+                    else:
+                        label = label.astype(np.uint16)
+                        img_name = str(idx)+'.png'
                     patch_folder = 'labels_instance_nuclei'
-
-                label = Image.fromarray(label).convert('RGB')
-                label.save(os.path.join(npz_dir, patch_folder, split, img_name))
+                    label = Image.fromarray(label).convert('RGB')
+                    label.save(os.path.join(npz_dir, patch_folder, split, img_name))
