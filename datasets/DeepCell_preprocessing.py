@@ -73,8 +73,8 @@ if __name__ == '__main__':
     parser.add_argument('--label', action='store_true')
     parser.add_argument('--label_vis', action='store_true')
     parser.add_argument('--num_img', default=5, type=int)
-    parser.add_argument('--cell', action='store_true', type=int)
-    parser.add_argument('--nuclei', action='store_true', type=int)
+    parser.add_argument('--cell', action='store_true')
+    parser.add_argument('--nuclei', action='store_true')
 
     args = parser.parse_args()
 
