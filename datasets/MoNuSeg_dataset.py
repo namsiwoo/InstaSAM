@@ -52,7 +52,7 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         self.samples = self.read_samples(self.root_dir, self.split, few_shot=args.fs)
 
         # set num samples
-        self.num_samples = len(self.samples_X)
+        self.num_samples = len(self.samples)
         print('{} dataset {} loaded'.format(self.split, self.num_samples))
 
 
