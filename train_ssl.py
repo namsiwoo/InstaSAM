@@ -132,11 +132,9 @@ def main(args):
     elif args.data_type == 'npy_n':
         train_dataset = DeepCell_dataset(args, 'train', use_mask=args.sup, data='nuclei')
         val_dataset = DeepCell_dataset(args, 'val', use_mask=args.sup, data='nuclei')
-
     else:
         train_dataset = MoNuSeg_weak_dataset(args, 'train', ssl=True)
         val_dataset = MoNuSeg_weak_dataset(args, 'val', ssl=True)
-
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True)
     val_dataloader = DataLoader(val_dataset)

@@ -275,7 +275,7 @@ class SAM(nn.Module):
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
                 if torch.sum(points[b]) > 20:
-                    gt_local, gt_global = torch.zeros(b, 1, 224, 224)
+                    gt_local, gt_global = torch.zeros(b, 1, 224, 224), torch.zeros(b, 1, 224, 224)
                     point_coord, point_label = make_point_prompt(points[b], only_fg=False)
                     for num_p in range(0, torch.sum(points[b]), 20):
                         if num_p == range(0, torch.sum(points[b]), 20)[-1]:
