@@ -166,12 +166,10 @@ def main(args):
             else:
                 # label = batch[0][1].squeeze(1)
                 point = batch[0][1]
-                print(point.shape, 'before')
                 if point.dim() == 4:
-                    point = point.unsqueeze(1)
-                print(point.shape, 'after')
+                    point = point.squeeze(1)
                 import matplotlib.pyplot as plt
-                plt.imshow(point.numpy())
+                plt.imshow(point.numpy()[0])
                 plt.savefig('aa.png')
                 sam_model.set_input(img)
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
