@@ -444,9 +444,10 @@ class SAM(nn.Module):
                 )
                 mask_prompt_ori = self.postprocess_masks(mask_prompt, self.inp_size, (224, 224))  # b, 1 224, 224
                 pseudo_gt_local = make_pseudo_gt(mask_prompt_ori)
-
+            print('return 2')
             return pseudo_gt_local, pseudo_gt_global
         else:
+            print('return 1')
             return pseudo_gt_global
 
 
