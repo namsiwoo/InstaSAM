@@ -283,7 +283,8 @@ class SAM(nn.Module):
                             gt_local_part, gt_global_part = self.make_pseudo_instance_map(b, point_coord[num_p: ], point_label[num_p: ], x_ori[b].unsqueeze(0))
 
                         else:
-                            print(num_p, point_coord.shape, point_label.shape, point_coord[num_p: ].shape, point_label[num_p: ].shape)
+                            print(num_p, point_coord.shape, point_label.shape, point_coord[num_p: num_p+20].shape, point_label[num_p: num_p+20].shape)
+                            print(range(0, torch.sum(points[b]), 20))
                             gt_local_part, gt_global_part = self.make_pseudo_instance_map(b, point_coord[num_p: num_p+20], point_label[num_p: num_p+20], x_ori[b].unsqueeze(0))
 
                         gt_local_part = gt_local_part + num_p
