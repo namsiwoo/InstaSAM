@@ -303,7 +303,7 @@ class SAM(nn.Module):
 
 
             else:
-                gt_local = torch.zeros(1, 224, 224).to(self.device)
+                gt_local = torch.zeros(224, 224).to(self.device)
                 gt_global = self.make_pseudo_instance_map(b, point_coord, point_label)
 
             pseudo_gt_local[b] = gt_local
