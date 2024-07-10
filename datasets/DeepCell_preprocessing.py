@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
         for idx in range(num_img):
             img, label_ori = X[idx], y[idx]
-            print(label_ori.shape)
+            print(y.shape, label_ori.shape)
             if args.img == True:
                 img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
                 img.save(os.path.join(npz_dir, 'images', split, str(idx) + '.png'))
