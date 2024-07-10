@@ -166,9 +166,10 @@ def main(args):
             else:
                 # label = batch[0][1].squeeze(1)
                 point = batch[0][1]
+                print(point.shape, 'before')
                 if point.dim() == 4:
                     point = point.unsqueeze(1)
-                print(point.shape)
+                print(point.shape, 'after')
                 import matplotlib.pyplot as plt
                 plt.imshow(point.numpy())
                 plt.savefig('aa.png')
