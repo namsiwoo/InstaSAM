@@ -378,7 +378,7 @@ class SAM(nn.Module):
             plt.imshow(overlap[0].detach().cpu().numpy())
             plt.colorbar()
             plt.savefig(img_name[:-4]+'_5overlap.png')
-
+        print(pseudo_gt_local.shape, pseudo_gt_global.shape)
         return pseudo_gt_local, pseudo_gt_global
         # return self.gt_mask
 
