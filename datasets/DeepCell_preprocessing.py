@@ -130,8 +130,8 @@ if __name__ == '__main__':
                         img_name = str(idx)+'.png'
                         if args.point == True:
                             point = np.zeros_like(label)
-                            for idx in np.unique(label)[1:]:
-                                coor = np.where(label==idx)
+                            for ins in np.unique(label)[1:]:
+                                coor = np.where(label==ins)
                                 y, x = coor
                                 point[round(np.mean(y)), round(np.mean(x))] = 255
                             point = Image.fromarray(point.astype(np.uint8))
@@ -153,8 +153,8 @@ if __name__ == '__main__':
                         img_name = str(idx)+'.png'
                         if args.point == True:
                             point = np.zeros_like(label)
-                            for idx in np.unique(label)[1:]:
-                                coor = np.where(label==idx)
+                            for ins in np.unique(label)[1:]:
+                                coor = np.where(label==ins)
                                 y, x = coor
                                 point[round(np.mean(y)), round(np.mean(x))] = 255
                             point = Image.fromarray(point.astype(np.uint8))

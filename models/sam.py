@@ -232,6 +232,7 @@ class SAM(nn.Module):
 
     def set_input(self, input, gt_mask=None, clu=None, vor=None):
         self.input = input.to(self.device)
+        self.input = F.interpolate(self.input, (self.inp_size, self.inp_size), mode='bilinear', align_corners=True)
         if gt_mask is not None:
             self.gt_mask = gt_mask.to(self.device)
         if clu is not None:
