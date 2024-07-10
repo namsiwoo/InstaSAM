@@ -326,6 +326,9 @@ class SAM(nn.Module):
             # ignored_map = entropy[0]<0.3
             # pseudo_gt[b, ignored_map!=1] = -1
 
+            print(pseudo_gt_local.shape, gt_local.shape)
+            print(pseudo_gt_global.shape, gt_global.shape)
+
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
 
