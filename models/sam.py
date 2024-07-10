@@ -277,6 +277,7 @@ class SAM(nn.Module):
                 if torch.sum(points[b]) > 20:
                     gt_local, gt_global = torch.zeros(b, 1, 224, 224).to(self.device), torch.zeros(b, 1, 224, 224).to(self.device)
                     point_coord, point_label = make_point_prompt(points[b], only_fg=False)
+                    print(torch.unique(points[b]))
                     for num_p in range(0, torch.sum(points[b]), 20):
                         if num_p == range(0, torch.sum(points[b]), 20)[-1]:
                             print('last', point_coord.shape, point_label.shape, point_coord[num_p: ].shape, point_label[num_p: ].shape)
