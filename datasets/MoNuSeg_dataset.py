@@ -63,15 +63,23 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         img_name = self.samples[index % len(self.samples)]
         img = Image.open(os.path.join(self.root_dir, 'images', self.split, img_name)).convert('RGB')
 
-        if self.data == 'nuclei':
-            box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance_nuclei', self.split, img_name))).convert('L')
+        if self.use_mask == True:
+            if self.data == 'nuclei':
+                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance_nuclei', self.split, img_name)))
+            else:
+                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance_cell', self.split, img_name)))
+
+            box_label = skimage.morphology.label(box_label)
+            box_label = Image.fromarray(box_label.astype(np.uint16))
+            sample = [img, box_label]
         else:
-            box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance_cell', self.split, img_name))).convert('L')
-
-        box_label = skimage.morphology.label(box_label)
-        box_label = Image.fromarray(box_label.astype(np.uint16))
-
-        sample = [img, box_label]
+            if self.data == 'nuclei':
+                point = Image.open(os.path.join(self.root_dir, 'labels_point_nuclei', self.split, img_name)).convert('L')
+            else:
+                point = Image.open(os.path.join(self.root_dir, 'labels_point_cell', self.split, img_name)).convert('L')
+            point = binary_dilation(np.array(point), iterations=2)
+            point = Image.fromarray(point)
+            sample = [img, point]
         sample = self.transform(sample)
 
         return sample, str(img_name)

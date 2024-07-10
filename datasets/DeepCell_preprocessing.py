@@ -75,6 +75,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_img', default=5, type=int)
     parser.add_argument('--cell', action='store_true')
     parser.add_argument('--nuclei', action='store_true')
+    parser.add_argument('--point', action='store_true')
 
     args = parser.parse_args()
 
@@ -121,22 +122,32 @@ if __name__ == '__main__':
                     if args.label_vis ==True:
                         label = mk_colored(label)*255
                         label = label.astype(np.uint8)
+                        label = Image.fromarray(label).convert('RGB')
                         img_name = str(idx)+'_vis.png'
                     else:
                         label = label.astype(np.uint16)
+                        label = Image.fromarray(label)
+                        if args.point == True:
+                            point = np.zeros_like(label)
+                            for idx in np.unique(label)[1:]:
+                                y, x = np.where(label==idx)
+                                point[round(y), round(x)] = 255
+                            point = Image.fromarray(point.astype(np.uint8))
+                            point.save(os.path.join(npz_dir, 'point', split, img_name))
                         img_name = str(idx)+'.png'
                     patch_folder = 'labels_instance_cell'
-                    label = Image.fromarray(label)
+
                     label.save(os.path.join(npz_dir, patch_folder, split, img_name))
                 if args.nuclei == True:
                     label = label_ori[:, :, 1]
                     if args.label_vis ==True:
                         label = mk_colored(label)*255
                         label = label.astype(np.uint8)
+                        label = Image.fromarray(label).convert('RGB')
                         img_name = str(idx)+'_vis.png'
                     else:
                         label = label.astype(np.uint16)
+                        label = Image.fromarray(label)
                         img_name = str(idx)+'.png'
                     patch_folder = 'labels_instance_nuclei'
-                    label = Image.fromarray(label)
                     label.save(os.path.join(npz_dir, patch_folder, split, img_name))
