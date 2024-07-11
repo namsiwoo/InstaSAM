@@ -280,8 +280,8 @@ class SAM(nn.Module):
             if len(torch.unique(points[0])) > 1:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
                 if len(torch.unique(points[0])) > 30:
-                    mask_prompt_adapter = torch.zeros_like(points.squeeze(1)).to(self.device).long()
-                    gt_local, gt_global = (torch.zeros(1, 224, 224).to(self.device)-1).long(), (torch.zeros(1, 224, 224).to(self.device)-1).long()
+                    mask_prompt_adapter = torch.zeros_like(points.squeeze(1)).to(self.device).float()
+                    gt_local, gt_global = (torch.zeros(1, 224, 224).to(self.device)-1).float(), (torch.zeros(1, 224, 224).to(self.device)-1).float()
 
 
                     # gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
