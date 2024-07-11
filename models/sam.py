@@ -381,7 +381,7 @@ class SAM(nn.Module):
         return pseudo_gt_local, pseudo_gt_global
         # return self.gt_mask
 
-    def make_pseudo_instance_map(self, batch, point, ori_feature=None):
+    def make_pseudo_instance_map(self, batch, point=None, ori_feature=None):
         if point == None:
             sparse_embeddings = torch.empty((batch, 0, self.prompt_embed_dim), device=self.device)
             dense_embeddings = self.no_mask_embed.weight.reshape(1, -1, 1, 1).expand(
