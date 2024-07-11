@@ -350,13 +350,13 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
             for dir in root_dir[:-2]:
                 new_dir += dir + '/'
 
-            # img = Image.open(os.path.join(new_dir, 'images', img_name)).convert('RGB')
-            # mask = Image.open(os.path.join(new_dir, 'labels_instance', img_name[:-4] + '_label.png'))
+            img = Image.open(os.path.join(new_dir, 'images', img_name)).convert('RGB')
+            mask = Image.open(os.path.join(new_dir, 'labels_instance', img_name[:-4] + '_label.png'))
 
             # img = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch/images/val', img_name)).convert('RGB')
             # mask = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch/labels_instance/val', img_name))
-            img = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/MoNuSAC/MoNuSAC/images/val', img_name)).convert('RGB')
-            mask = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/MoNuSAC/MoNuSAC/labels_instance/val2', img_name))
+            # img = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/MoNuSAC/MoNuSAC/images/val', img_name)).convert('RGB')
+            # mask = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/MoNuSAC/MoNuSAC/labels_instance/val2', img_name))
 
 
             sample = [img, mask]
