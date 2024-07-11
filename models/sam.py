@@ -600,6 +600,7 @@ class SAM(nn.Module):
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
+        del self.loss_G
 
         if point_prompt == None:
             return self.pred_mask, self.masks_hq, bce_loss, offset_loss, iou_loss, offset_gt
