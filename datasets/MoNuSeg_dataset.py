@@ -264,7 +264,7 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
         # set num samples
         self.num_samples = len(self.samples)
 
-        # print('{} dataset {} loaded'.format(self.split, self.num_samples))
+        print('{} dataset {} loaded'.format(self.split, self.num_samples))
 
     def read_samples(self, root_dir, split):
         if split == 'train':
