@@ -328,8 +328,8 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
                 #     except:
                 #         point = Image.open(os.path.join('/media/NAS/nas_32/siwoo/TNBC/TNBC/via instance learning data_for_train/TNBC', 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
 
-                point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
-                # point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
+                # point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
+                point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
                 point = binary_dilation(np.array(point), iterations=2)
                 point = Image.fromarray(point)
 
