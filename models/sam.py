@@ -603,9 +603,9 @@ class SAM(nn.Module):
         self.optimizer.step()  # udpate G's weights
 
         if point_prompt == None:
-            return self.pred_mask, self.masks_hq, bce_loss.itme(), offset_loss.itme(), iou_loss.itme(), offset_gt
+            return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt
         else:
-            return self.pred_mask, self.masks_hq, bce_loss.itme(), offset_loss.itme(), iou_loss.itme(), offset_gt, bce_loss_local, iou_loss_local
+            return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local
 
 
     def infer(self, input, point_prompt=None):
