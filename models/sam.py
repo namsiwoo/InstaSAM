@@ -281,10 +281,10 @@ class SAM(nn.Module):
                     gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
                     for num_p in range(0, torch.unique(points[b])[-1], 20):
                         if num_p == range(0, torch.sum(points[b]), 20)[-1]:
-                            gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, point_coord[num_p: ], point_label[num_p: ], x_ori[b].unsqueeze(0))
+                            gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, (point_coord[num_p: ], point_label[num_p: ]), x_ori[b].unsqueeze(0))
 
                         else:
-                            gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, point_coord[num_p: num_p+20], point_label[num_p: num_p+20], x_ori[b].unsqueeze(0))
+                            gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, (point_coord[num_p: num_p+20], point_label[num_p: num_p+20]), x_ori[b].unsqueeze(0))
 
                         gt_local_part = gt_local_part + num_p
                         gt_local_part[gt_local_part == num_p] = 0
@@ -301,13 +301,12 @@ class SAM(nn.Module):
 
                 else:
                     # Make mask prompt using point labels
-                    gt_local, gt_global, mask_prompt_adapter = self.make_pseudo_instance_map(b, point_coord, point_label, x_ori[b].unsqueeze(0))
+                    gt_local, gt_global, mask_prompt_adapter = self.make_pseudo_instance_map(b, (point_coord, point_label), x_ori[b].unsqueeze(0))
 
 
             else:
                 gt_local = torch.zeros(1, 224, 224).to(self.device)
-                point_coord, point_label = make_point_prompt(points[b], only_fg=False)
-                gt_global, mask_prompt_adapter = self.make_pseudo_instance_map(b, point_coord, point_label)
+                gt_global, mask_prompt_adapter = self.make_pseudo_instance_map(b)
             self.mask_prompt_adapter.append(mask_prompt_adapter)
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
@@ -382,12 +381,20 @@ class SAM(nn.Module):
         return pseudo_gt_local, pseudo_gt_global
         # return self.gt_mask
 
-    def make_pseudo_instance_map(self, batch, point_coord, point_label, ori_feature=None):
-        sparse_embeddings, dense_embeddings = self.prompt_encoder(
-            points=(point_coord.to(self.device), point_label.to(self.device)),
-            boxes=None,
-            masks=None,
-        )
+    def make_pseudo_instance_map(self, batch, point, ori_feature=None):
+        if point == None:
+            sparse_embeddings = torch.empty((batch, 0, self.prompt_embed_dim), device=self.device)
+            dense_embeddings = self.no_mask_embed.weight.reshape(1, -1, 1, 1).expand(
+                batch, -1, self.image_embedding_size, self.image_embedding_size
+            )
+
+        else:
+            point_coord, point_label = point
+            sparse_embeddings, dense_embeddings = self.prompt_encoder(
+                points=(point_coord.to(self.device), point_label.to(self.device)),
+                boxes=None,
+                masks=None,
+            )
 
         mask_prompt, iou_preds = self.mask_decoder(
             image_embeddings=self.features[batch].unsqueeze(0),  # self.features[b].unsqueeze(0)
