@@ -175,9 +175,9 @@ def main(args):
             # bce_local_loss, iou_local_loss = backwards_local
             lr_scheduler.step()
 
-            loss = sam_model.loss_G
+            loss = sam_model.loss_G.item()
 
-            train_loss += loss.item() / len(train_dataloader)
+            train_loss += loss / len(train_dataloader)
 
             if (iter + 1) % args.print_fq == 0:
                 print('{}/{} epoch, {}/{} batch, train loss: {}, bce: {}, iou: {}, offset: {} // local bce: {} iou: {}'.format(epoch,
