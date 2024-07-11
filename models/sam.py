@@ -277,7 +277,7 @@ class SAM(nn.Module):
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
-                if torch.sum(points[b]) > 20:
+                if torch.sum(points[b]) > 10000000000:
                     gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
                     for num_p in range(0, torch.unique(points[b])[-1], 20):
                         if num_p == range(0, torch.sum(points[b]), 20)[-1]:
@@ -312,11 +312,8 @@ class SAM(nn.Module):
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
 
-        try:
-            del points, point_coord, point_label, x_ori, self.features#ignored_map
-        except:
-            # print('can not delete mask prompt')
-            pass
+        del mask_prompt_adapter, points, point_coord, point_label, x_ori, self.features#ignored_map
+
 
         if epoch>500:
             from utils.utils import accuracy_object_level, AJI_fast, save_checkpoint, load_checkpoint, mk_colored
@@ -493,7 +490,7 @@ class SAM(nn.Module):
         # iou_loss_clu = _iou_loss(self.pred_mask, self.clu.unsqueeze(1), ignored_map=(self.clu!=2))
         # iou_loss_vor = _iou_loss(self.pred_mask, self.vor.unsqueeze(1), ignored_map=(self.vor!=2))
         # iou_loss = iou_loss_clu+iou_loss_vor#+iou_loss_sam
-
+        del binary_gt, ignored_map
         return bce_loss_sam, offset_loss, iou_loss_sam, offset_gt
 
     def backward_G_local(self, gt):
@@ -529,7 +526,7 @@ class SAM(nn.Module):
 
             bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], pseudo_maks)*train_map).mean()
             iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), pseudo_maks.unsqueeze(0), ignored_map=train_map)
-
+        del pseudo_maks
         return bce_loss_local, iou_loss_local
 
     def forward(self):  # , point_prompt=None
