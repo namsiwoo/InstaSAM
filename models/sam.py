@@ -588,19 +588,19 @@ class SAM(nn.Module):
 
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)#global_gt  # calculate graidents for G
             bce_loss_local, iou_loss_local = self.backward_G_local(local_gt)
+            self.loss_G = bce_loss + iou_loss + 5*offset_loss# + bce_loss_local + iou_loss_local
             print("after loss", torch.cuda.memory_allocated() / 1024 / 1024, '******')
 
 
             # bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl2(img_name)#global_gt  # calculate graidents for G
             # bce_loss_local, iou_loss_local = 0, 0
-            self.loss_G = bce_loss + iou_loss + 5*offset_loss# + bce_loss_local + iou_loss_local
+
 
             del self.mask_prompt_adapter
 
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
-        del self.loss_G
 
         if point_prompt == None:
             return self.pred_mask, self.masks_hq, bce_loss, offset_loss, iou_loss, offset_gt
