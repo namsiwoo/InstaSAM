@@ -244,7 +244,7 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
                 'random_affine': 0.3,
                 'random_rotation': 90,
                 'random_crop': 224,
-                'label_encoding': [0, 1, r], #new_label: 3 else 2
+                'label_encoding': [0, 1], #new_label: 3 else 2
                 'to_tensor': 1, # number of img
                 'normalize': np.array([self.mean, self.std])
             })
@@ -303,10 +303,10 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
                 sample = [img, box_label]  # , new_mask
                 sample = self.transform(sample)
             else:
-                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
+                # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
                 # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
-                box_label = skimage.morphology.label(box_label)
-                box_label = Image.fromarray(box_label.astype(np.uint16))
+                # box_label = skimage.morphology.label(box_label)
+                # box_label = Image.fromarray(box_label.astype(np.uint16))
 
                 # box_label = Image.open(os.path.join('/media/NAS/nas_187/siwoo/2023/SAM_pseudo_label/Box_annotation', img_name))
                 # box_label = Image.open(os.path.join('/media/NAS/nas_187/siwoo/2023/SAM_pseudo_label/Box_annotation_CPM', img_name))
@@ -338,7 +338,7 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
                 # cluster_label = Image.open(os.path.join(self.root_dir, 'labels_geo_cluster', self.split, img_name[:-4]+'_label_geo_cluster.png')).convert('RGB')
                 # voronoi_label = Image.open(os.path.join(self.root_dir, 'labels_geo_voronoi', self.split, img_name[:-4] + '_label_geo_vor.png')).convert('RGB')
 
-                sample = [img, box_label, point]#, cluster_label, voronoi_label]  # , new_mask
+                sample = [img, point]#, cluster_label, voronoi_label]  # , new_mask
                 sample = self.transform(sample)
 
 
