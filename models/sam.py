@@ -131,7 +131,6 @@ def _iou_loss(pred, target, ignored_map=None):
         inter = (pred * target).sum(dim=(2, 3))
         union = (pred + target).sum(dim=(2, 3)) - inter
     else:
-        print(pred.shape, target.shape, ignored_map.shape)
         inter = ((pred * target) * ignored_map).sum(dim=(2, 3))
         union = ((pred + target) * ignored_map).sum(dim=(2, 3)) - inter
     iou = 1 - (inter / (union + 1e-7))
@@ -314,7 +313,7 @@ class SAM(nn.Module):
             pseudo_gt_global[b] = gt_global
 
         try:
-            del points, point_coord, point_label, sparse_embeddings, dense_embeddings, x_ori, self.features#ignored_map
+            del points, point_coord, point_label, x_ori, self.features#ignored_map
         except:
             # print('can not delete mask prompt')
             pass
@@ -419,8 +418,11 @@ class SAM(nn.Module):
                 )
                 mask_prompt_ori = self.postprocess_masks(mask_prompt, self.inp_size, (224, 224))  # b, 1 224, 224
                 pseudo_gt_local = make_pseudo_gt(mask_prompt_ori)
+
+            del sparse_embeddings, dense_embeddings, ori_feature, iou_preds, mask_prompt
             return pseudo_gt_local, pseudo_gt_global, mask_prompt_adapter
         else:
+            del sparse_embeddings, dense_embeddings, iou_preds, mask_prompt
             return pseudo_gt_global, mask_prompt_adapter
 
 
