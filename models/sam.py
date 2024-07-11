@@ -279,31 +279,31 @@ class SAM(nn.Module):
         for b in range(len(points)):
             if len(torch.unique(points[0])) > 1:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
-                if torch.sum(points[b]) > 300:
-                    # mask_prompt_adapter = torch.zeros_like(points.squeeze(1)).to(self.device)
-                    # gt_local, gt_global = (torch.zeros(1, 224, 224).to(self.device)-1).long(), (torch.zeros(1, 224, 224).to(self.device)-1).long()
+                if len(torch.unique(points[0])) > 200:
+                    mask_prompt_adapter = torch.zeros_like(points.squeeze(1)).to(self.device).long()
+                    gt_local, gt_global = (torch.zeros(1, 224, 224).to(self.device)-1).long(), (torch.zeros(1, 224, 224).to(self.device)-1).long()
 
 
-                    gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
-                    for num_p in range(0, torch.unique(points[b])[-1], 20):
-                        if num_p == range(0, torch.sum(points[b]), 20)[-1]:
-                            gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, (point_coord[num_p: ], point_label[num_p: ]), x_ori[b].unsqueeze(0))
-
-                        else:
-                            gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, (point_coord[num_p: num_p+20], point_label[num_p: num_p+20]), x_ori[b].unsqueeze(0))
-
-                        gt_local_part = gt_local_part + num_p
-                        gt_local_part[gt_local_part == num_p] = 0
-
-                        gt_global_part = gt_global_part + num_p
-                        gt_global_part[gt_global_part == num_p] = 0
-
-                        gt_local = gt_local + gt_local_part
-                        gt_global = gt_global + gt_global_part
-                        if num_p == 0:
-                            mask_prompt_adapter = mask_prompt_adapter_part.squeeze(1)
-                        else:
-                            mask_prompt_adapter = torch.cat([mask_prompt_adapter_part.squeeze(1), mask_prompt_adapter], dim=0)
+                    # gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
+                    # for num_p in range(0, torch.unique(points[b])[-1], 20):
+                    #     if num_p == range(0, torch.sum(points[b]), 20)[-1]:
+                    #         gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, (point_coord[num_p: ], point_label[num_p: ]), x_ori[b].unsqueeze(0))
+                    #
+                    #     else:
+                    #         gt_local_part, gt_global_part, mask_prompt_adapter_part = self.make_pseudo_instance_map(b, (point_coord[num_p: num_p+20], point_label[num_p: num_p+20]), x_ori[b].unsqueeze(0))
+                    #
+                    #     gt_local_part = gt_local_part + num_p
+                    #     gt_local_part[gt_local_part == num_p] = 0
+                    #
+                    #     gt_global_part = gt_global_part + num_p
+                    #     gt_global_part[gt_global_part == num_p] = 0
+                    #
+                    #     gt_local = gt_local + gt_local_part
+                    #     gt_global = gt_global + gt_global_part
+                    #     if num_p == 0:
+                    #         mask_prompt_adapter = mask_prompt_adapter_part.squeeze(1)
+                    #     else:
+                    #         mask_prompt_adapter = torch.cat([mask_prompt_adapter_part.squeeze(1), mask_prompt_adapter], dim=0)
 
                 else:
                     # Make mask prompt using point labels
