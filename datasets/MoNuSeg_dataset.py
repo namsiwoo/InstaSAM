@@ -132,7 +132,7 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
 
     def read_samples(self, root_dir, split, few_shot=False):
         if self.data == 'pannuke' or 'cellpose':
-            samples = os.listdir(os.path.join(root_dir, 'images/real_train_val', split))
+            samples = os.listdir(os.path.join(root_dir, 'images', split))
         else:
             if split == 'train':
                 if few_shot==False:
