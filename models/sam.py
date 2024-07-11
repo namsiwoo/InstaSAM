@@ -242,7 +242,7 @@ class SAM(nn.Module):
         bs = len(self.input)
 
         self.features, self.interm_embeddings, x_ori = self.image_encoder(self.input, mk_p_label=True)
-        del self.input
+        # del self.input
 
         # Embed prompts
         sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.device)
@@ -383,9 +383,10 @@ class SAM(nn.Module):
 
     def make_pseudo_instance_map(self, batch, point=None, ori_feature=None):
         if point == None:
-            sparse_embeddings = torch.empty((batch, 0, self.prompt_embed_dim), device=self.device)
+            bs = len(self.input)
+            sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.device)
             dense_embeddings = self.no_mask_embed.weight.reshape(1, -1, 1, 1).expand(
-                batch, -1, self.image_embedding_size, self.image_embedding_size
+                bs, -1, self.image_embedding_size, self.image_embedding_size
             )
 
         else:
