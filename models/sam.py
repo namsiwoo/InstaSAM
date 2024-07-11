@@ -590,7 +590,7 @@ class SAM(nn.Module):
             self.forward() #point_prompt
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
         else:
-            print("before forward", torch.cuda.memory_allocated() / 1024 / 1024, '******', self.mask_prompt_adapter.shape)
+            print("before forward", torch.cuda.memory_allocated() / 1024 / 1024, '******', self.mask_prompt_adapter[0].shape)
             local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch) # local_gt, global_gt =
             print("after forward", torch.cuda.memory_allocated() / 1024 / 1024, '******')
 
