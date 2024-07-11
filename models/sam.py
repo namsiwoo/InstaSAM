@@ -310,7 +310,7 @@ class SAM(nn.Module):
             self.mask_prompt_adapter.append(mask_prompt_adapter)
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
-
+        print(self.mask_prompt_adapter[0].shape)
         del mask_prompt_adapter, points, x_ori, self.features#ignored_map
 
 
@@ -590,9 +590,9 @@ class SAM(nn.Module):
             self.forward() #point_prompt
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
         else:
-            print("before forward", torch.cuda.memory_allocated() / 1024 / 1024, '******')
+            print("before forward", torch.cuda.memory_allocated() / 1024 / 1024, '******', end='')
             local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch) # local_gt, global_gt =
-            print("after forward", torch.cuda.memory_allocated() / 1024 / 1024, '******', self.mask_prompt_adapter[0].shape)
+            print("after forward", torch.cuda.memory_allocated() / 1024 / 1024, '******')
 
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)#global_gt  # calculate graidents for G
             bce_loss_local, iou_loss_local = self.backward_G_local(local_gt)
