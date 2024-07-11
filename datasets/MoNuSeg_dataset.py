@@ -267,22 +267,22 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
         # print('{} dataset {} loaded'.format(self.split, self.num_samples))
 
     def read_samples(self, root_dir, split):
-        # if split == 'train':
-        #     samples = os.listdir(os.path.join(root_dir, 'images', split))
-        #     # samples = os.listdir(os.path.join('/media/NAS/nas_70/open_dataset/MoNuSeg/MoNuSeg/via instance learning data_for_train/MoNuSeg', 'images', 'train_few_shot'))
-        #     # samples = os.listdir(os.path.join('/media/NAS/nas_32/siwoo/CPM/train'))
-        #
-        # else:
-        #     root_dir = self.root_dir.split('/')
-        #     new_dir = ''
-        #     for dir in root_dir[:-2]:
-        #         new_dir += dir + '/'
-        #     with open(os.path.join(new_dir, 'train_val_test.json')) as f:
-        #         split_dict = json.load(f)
-        #     filename_list = split_dict[split]
-        #     samples = [os.path.join(f) for f in filename_list]
+        if split == 'train':
+            samples = os.listdir(os.path.join(root_dir, 'images', split))
+            # samples = os.listdir(os.path.join('/media/NAS/nas_70/open_dataset/MoNuSeg/MoNuSeg/via instance learning data_for_train/MoNuSeg', 'images', 'train_few_shot'))
+            # samples = os.listdir(os.path.join('/media/NAS/nas_32/siwoo/CPM/train'))
 
-        samples = os.listdir(os.path.join(root_dir, 'images', split))
+        else:
+            root_dir = self.root_dir.split('/')
+            new_dir = ''
+            for dir in root_dir[:-2]:
+                new_dir += dir + '/'
+            with open(os.path.join(new_dir, 'train_val_test.json')) as f:
+                split_dict = json.load(f)
+            filename_list = split_dict[split]
+            samples = [os.path.join(f) for f in filename_list]
+
+        # samples = os.listdir(os.path.join(root_dir, 'images', split))
         return samples
 
     def __getitem__(self, index):
