@@ -216,7 +216,7 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
 class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
     def __init__(self, args, split, ssl=False):
         self.args = args
-        self.root_dir = os.path.expanduser(self.args.data)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
+        self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
         self.split = split
         self.ssl = ssl
         if self.ssl == False:
