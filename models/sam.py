@@ -274,6 +274,7 @@ class SAM(nn.Module):
         pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h (points.shape, b, 1, w, h)
         pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h
         self.mask_prompt_adapter = []
+        print(len(torch.unique(points[0])))
         for b in range(len(points)):
             if torch.sum(points[b]) > 0:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
@@ -310,7 +311,7 @@ class SAM(nn.Module):
             self.mask_prompt_adapter.append(mask_prompt_adapter)
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
-        print(self.mask_prompt_adapter[0].shape)
+
         del mask_prompt_adapter, points, x_ori, self.features#ignored_map
 
 
