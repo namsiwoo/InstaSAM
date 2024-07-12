@@ -159,13 +159,6 @@ def main(args):
                 label = batch[0][1].squeeze(1)
                 # point = batch[0][2]
                 sam_model.set_input(img, label)
-                import matplotlib.pyplot as plt
-                plt.imshow(label.numpy()[0])
-                plt.colorbar()
-                plt.savefig('/media/NAS/nas_187/siwoo/2024/revision/DeepCell_cell/'+str(iter)+'.png')
-
-                plt.clf()
-                print(len(torch.unique(label)))
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
                 bce_local_loss, iou_local_loss = 0, 0
             else:
