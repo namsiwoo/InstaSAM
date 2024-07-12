@@ -20,8 +20,10 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         self.use_mask = use_mask
         self.data=data
 
-        self.mean = np.array([123.675, 116.28, 103.53])
-        self.std = np.array([58.395, 57.12, 57.375])
+        # self.mean = np.array([123.675, 116.28, 103.53])
+        # self.std = np.array([58.395, 57.12, 57.375])
+        self.mean = np.array([1, 1, 1])
+        self.std = np.array([1, 1, 1])
 
         if self.args.sup == True:
             from datasets.get_transforms_ori import get_transforms
@@ -69,7 +71,6 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
             else:
                 box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance_cell', self.split, img_name)))
             box_label = skimage.morphology.label(box_label)
-            print(np.array(img).shape, box_label.shape, len(np.unique(box_label)), '---')
             box_label = Image.fromarray(box_label.astype(np.uint16))
             sample = [img, box_label]
         else:
