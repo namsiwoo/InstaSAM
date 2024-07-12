@@ -160,7 +160,7 @@ def main(args):
                 # point = batch[0][2]
                 sam_model.set_input(img, label)
                 import matplotlib.pyplot as plt
-                plt.imshow(label.numpy()[0][0])
+                plt.imshow(label.numpy()[0])
                 plt.savefig('/media/NAS/nas_187/siwoo/2024/revision/DeepCell_cell/'+str(iter)+'.png')
                 print(label.shape)
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
