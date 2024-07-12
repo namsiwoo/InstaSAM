@@ -162,6 +162,7 @@ def main(args):
                 import matplotlib.pyplot as plt
                 plt.imshow(label.numpy()[0])
                 plt.savefig('/media/NAS/nas_187/siwoo/2024/revision/DeepCell_cell/'+str(iter)+'.png')
+                plt.colorbar()
                 print(label.shape)
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
                 bce_local_loss, iou_local_loss = 0, 0
