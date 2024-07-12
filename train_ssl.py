@@ -195,108 +195,108 @@ def main(args):
                                                                                                         iou_loss,
                                                                                                         offset_loss, bce_local_loss, iou_local_loss))
 
-                # if args.plt == True:
-                #     import matplotlib.pyplot as plt
-                #
-                #     def norm(img):
-                #         return (img - np.min(img)) / (np.max(img) - np.min(img))
-                #
-                #     plt.clf()
-                #     img1 = norm(batch[0][0].detach().cpu().numpy()[0].transpose(1, 2, 0))
-                #     if args.num_hq_token == 1:
-                #         plt.subplot(1, 5, 1)
-                #         plt.imshow(img1)
-                #         plt.subplot(1, 5, 2)
-                #         plt.imshow(low_res_masks.detach().cpu().numpy()[0, 0])
-                #
-                #         from scipy.ndimage.morphology import binary_dilation
-                #         point = binary_dilation(point.detach().cpu().numpy()[0, 0], iterations=2)
-                #         plt.subplot(1, 5, 3)
-                #         plt.imshow(point)
-                #
-                #         plt.subplot(1, 5, 4)
-                #         plt.imshow(offset_gt.detach().cpu().numpy()[0])
-                #         plt.colorbar()
-                #         plt.subplot(1, 5, 5)
-                #         plt.imshow(hq_mask.detach().cpu().numpy()[0, 1])
-                #     else:
-                #         plt.subplot(2, 4, 1)
-                #         plt.imshow(img1)
-                #         plt.subplot(2, 4, 2)
-                #         # plt.imshow(label.detach().cpu().numpy()[0])
-                #         plt.imshow(low_res_masks.detach().cpu().numpy()[0, 0])
-                #
-                #         if args.num_hq_token >= 3:
-                #             plt.subplot(2, 4, 3)
-                #             # plt.imshow(low_res_masks.detach().cpu().numpy()[0,0])
-                #             plt.imshow(hq_mask.detach().cpu().numpy()[0, -1])
-                #             plt.colorbar()
-                #
-                #             plt.subplot(2, 4, 4)
-                #             plt.imshow(offset_gt.detach().cpu().numpy()[0][-1])
-                #             plt.colorbar()
-                #
-                #         plt.subplot(2, 4, 3)
-                #         plt.imshow(offset_gt.detach().cpu().numpy()[0][0]>1)
-                #         plt.colorbar()
-                #
-                #         plt.subplot(2, 4, 4)
-                #         plt.imshow(offset_gt.detach().cpu().numpy()[0][0]<-1)
-                #         plt.colorbar()
-                #
-                #         plt.subplot(2, 4, 5)
-                #         plt.imshow(hq_mask.detach().cpu().numpy()[0, 0])
-                #         plt.colorbar()
-                #
-                #         plt.subplot(2, 4, 6)
-                #         plt.imshow(hq_mask.detach().cpu().numpy()[0, 1])
-                #         plt.colorbar()
-                #
-                #         plt.subplot(2, 4, 7)
-                #         plt.imshow(offset_gt.detach().cpu().numpy()[0][0])
-                #         plt.colorbar()
-                #
-                #         plt.subplot(2, 4, 8)
-                #         plt.imshow(offset_gt.detach().cpu().numpy()[0][1])
-                #         plt.colorbar()
-                #
-                #
-                #
-                #         # def colorize(ch, vmin=None, vmax=None):
-                #         #     """Will clamp value value outside the provided range to vmax and vmin."""
-                #         #     cmap = plt.get_cmap("jet")
-                #         #     ch = np.squeeze(ch.astype("float32"))
-                #         #     vmin = vmin if vmin is not None else ch.min()
-                #         #     vmax = vmax if vmax is not None else ch.max()
-                #         #     ch[ch > vmax] = vmax  # clamp value
-                #         #     ch[ch < vmin] = vmin
-                #         #     ch = (ch - vmin) / (vmax - vmin + 1.0e-16)
-                #         #     # take RGB from RGBA heat map
-                #         #     ch_cmap = (cmap(ch)[..., :3] * 255).astype("uint8")
-                #         #     return ch_cmap
-                #         #
-                #         # aaa = torch.sigmoid(low_res_masks).detach().cpu().numpy()[0, 0]
-                #         # aaa = (aaa-np.min(aaa))/(np.max(aaa)-np.min(aaa))
-                #         # aaa = Image.fromarray((aaa*255).astype(np.uint8))
-                #         # aaa.save(os.path.join(args.result, str(epoch), img_name+ '_binary.png'))
-                #         #
-                #         # aaa = hq_mask.detach().cpu().numpy()[0, 1]
-                #         # aaa = colorize(aaa)
-                #         # aaa = Image.fromarray(aaa)
-                #         # aaa.save(os.path.join(args.result, str(epoch), img_name+ '_h.png'))
-                #         #
-                #         # aaa = hq_mask.detach().cpu().numpy()[0, 0]
-                #         # aaa = colorize(aaa)
-                #         # aaa = Image.fromarray(aaa)
-                #         # aaa.save(os.path.join(args.result, str(epoch), img_name+ '_v.png'))
-                #         #
-                #         # binary_map, instance_map, marker = make_instance_hv(torch.sigmoid(low_res_masks)[0][0].detach().cpu().numpy(),
-                #         #                                                     hq_mask[0].detach().cpu().numpy())
-                #         # instance_map = mk_colored(instance_map) * 255
-                #         # instance_map = Image.fromarray((instance_map).astype(np.uint8))
-                #         # instance_map.save(os.path.join(args.result, str(epoch), img_name+ '_inst.png'))
-                #
-                #     # plt.savefig(os.path.join(args.result, str(epoch), str(iter) + 'ex.png'))
+                if args.plt == True:
+                    import matplotlib.pyplot as plt
+
+                    def norm(img):
+                        return (img - np.min(img)) / (np.max(img) - np.min(img))
+
+                    plt.clf()
+                    img1 = norm(batch[0][0].detach().cpu().numpy()[0].transpose(1, 2, 0))
+                    if args.num_hq_token == 1:
+                        plt.subplot(1, 5, 1)
+                        plt.imshow(img1)
+                        plt.subplot(1, 5, 2)
+                        plt.imshow(low_res_masks.detach().cpu().numpy()[0, 0])
+
+                        from scipy.ndimage.morphology import binary_dilation
+                        point = binary_dilation(point.detach().cpu().numpy()[0, 0], iterations=2)
+                        plt.subplot(1, 5, 3)
+                        plt.imshow(point)
+
+                        plt.subplot(1, 5, 4)
+                        plt.imshow(offset_gt.detach().cpu().numpy()[0])
+                        plt.colorbar()
+                        plt.subplot(1, 5, 5)
+                        plt.imshow(hq_mask.detach().cpu().numpy()[0, 1])
+                    else:
+                        plt.subplot(2, 4, 1)
+                        plt.imshow(img1)
+                        plt.subplot(2, 4, 2)
+                        # plt.imshow(label.detach().cpu().numpy()[0])
+                        plt.imshow(low_res_masks.detach().cpu().numpy()[0, 0])
+
+                        if args.num_hq_token >= 3:
+                            plt.subplot(2, 4, 3)
+                            # plt.imshow(low_res_masks.detach().cpu().numpy()[0,0])
+                            plt.imshow(hq_mask.detach().cpu().numpy()[0, -1])
+                            plt.colorbar()
+
+                            plt.subplot(2, 4, 4)
+                            plt.imshow(offset_gt.detach().cpu().numpy()[0][-1])
+                            plt.colorbar()
+
+                        plt.subplot(2, 4, 3)
+                        plt.imshow(offset_gt.detach().cpu().numpy()[0][0]>1)
+                        plt.colorbar()
+
+                        plt.subplot(2, 4, 4)
+                        plt.imshow(offset_gt.detach().cpu().numpy()[0][0]<-1)
+                        plt.colorbar()
+
+                        plt.subplot(2, 4, 5)
+                        plt.imshow(hq_mask.detach().cpu().numpy()[0, 0])
+                        plt.colorbar()
+
+                        plt.subplot(2, 4, 6)
+                        plt.imshow(hq_mask.detach().cpu().numpy()[0, 1])
+                        plt.colorbar()
+
+                        plt.subplot(2, 4, 7)
+                        plt.imshow(offset_gt.detach().cpu().numpy()[0][0])
+                        plt.colorbar()
+
+                        plt.subplot(2, 4, 8)
+                        plt.imshow(offset_gt.detach().cpu().numpy()[0][1])
+                        plt.colorbar()
+
+
+
+                        # def colorize(ch, vmin=None, vmax=None):
+                        #     """Will clamp value value outside the provided range to vmax and vmin."""
+                        #     cmap = plt.get_cmap("jet")
+                        #     ch = np.squeeze(ch.astype("float32"))
+                        #     vmin = vmin if vmin is not None else ch.min()
+                        #     vmax = vmax if vmax is not None else ch.max()
+                        #     ch[ch > vmax] = vmax  # clamp value
+                        #     ch[ch < vmin] = vmin
+                        #     ch = (ch - vmin) / (vmax - vmin + 1.0e-16)
+                        #     # take RGB from RGBA heat map
+                        #     ch_cmap = (cmap(ch)[..., :3] * 255).astype("uint8")
+                        #     return ch_cmap
+                        #
+                        # aaa = torch.sigmoid(low_res_masks).detach().cpu().numpy()[0, 0]
+                        # aaa = (aaa-np.min(aaa))/(np.max(aaa)-np.min(aaa))
+                        # aaa = Image.fromarray((aaa*255).astype(np.uint8))
+                        # aaa.save(os.path.join(args.result, str(epoch), img_name+ '_binary.png'))
+                        #
+                        # aaa = hq_mask.detach().cpu().numpy()[0, 1]
+                        # aaa = colorize(aaa)
+                        # aaa = Image.fromarray(aaa)
+                        # aaa.save(os.path.join(args.result, str(epoch), img_name+ '_h.png'))
+                        #
+                        # aaa = hq_mask.detach().cpu().numpy()[0, 0]
+                        # aaa = colorize(aaa)
+                        # aaa = Image.fromarray(aaa)
+                        # aaa.save(os.path.join(args.result, str(epoch), img_name+ '_v.png'))
+                        #
+                        # binary_map, instance_map, marker = make_instance_hv(torch.sigmoid(low_res_masks)[0][0].detach().cpu().numpy(),
+                        #                                                     hq_mask[0].detach().cpu().numpy())
+                        # instance_map = mk_colored(instance_map) * 255
+                        # instance_map = Image.fromarray((instance_map).astype(np.uint8))
+                        # instance_map.save(os.path.join(args.result, str(epoch), img_name+ '_inst.png'))
+
+                    plt.savefig(os.path.join(args.result, 'img', str(epoch), str(iter) + 'ex.png'))
 
             gc.collect()
             torch.cuda.empty_cache()
