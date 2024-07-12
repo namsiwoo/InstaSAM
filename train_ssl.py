@@ -296,8 +296,8 @@ def main(args):
         total_train_loss.append(train_loss)
         print('{} epoch, mean train loss: {}'.format(epoch, total_train_loss[-1]))
 
-        if epoch % 5 == 0:
-            save_checkpoint(os.path.join(args.result, 'model', str(epoch) + '_model.pth'), sam_model, epoch)
+        # if epoch % 5 == 0:
+        #     save_checkpoint(os.path.join(args.result, 'model', str(epoch) + '_model.pth'), sam_model, epoch)
 
         if epoch >= args.start_val:
             sam_model.eval()
