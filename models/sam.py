@@ -283,7 +283,6 @@ class SAM(nn.Module):
                     mask_prompt_adapter = torch.zeros_like(points.squeeze(1)).to(self.device).float()
                     gt_local, gt_global = (torch.zeros(1, 224, 224).to(self.device)-1).float(), (torch.zeros(1, 224, 224).to(self.device)-1).float()
 
-
                     # gt_local, gt_global = torch.zeros(1, 224, 224).to(self.device), torch.zeros(1, 224, 224).to(self.device)
                     # for num_p in range(0, torch.unique(points[b])[-1], 20):
                     #     if num_p == range(0, torch.sum(points[b]), 20)[-1]:
@@ -610,7 +609,7 @@ class SAM(nn.Module):
             # bce_loss_local, iou_loss_local = 0, 0
 
 
-            del self.mask_prompt_adapter, self.input
+            del self.input
 
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
