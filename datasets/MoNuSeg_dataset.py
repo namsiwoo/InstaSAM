@@ -59,7 +59,7 @@ class Galaxy_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
 
 
     def read_samples(self, root_dir, split, few_shot=False):
-        samples = os.listdir(os.path.join(root_dir, 'images', split))
+        samples = os.listdir(os.path.join(root_dir, split, 'images'))
         return samples
     def __getitem__(self, index):
         img_name = self.samples[index % len(self.samples)]
