@@ -82,7 +82,7 @@ class Galaxy_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 point = Image.fromarray(point)
                 sample = [img, point]
         else:
-            mask = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
+            mask = np.array(Image.open(os.path.join(self.root_dir, 'masks', self.split, img_name)))
             sample = [img, mask]
         sample = self.transform(sample)
 
