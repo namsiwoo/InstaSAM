@@ -171,7 +171,7 @@ class ToTensor(object):
                 # yikes, this transpose takes 80% of the loading time/CPU
                 pic = pic.transpose(0, 1).transpose(0, 2).contiguous()
                 if isinstance(pic, torch.ByteTensor):
-                    pics.append(pic.float().div(255))
+                    pics.append(pic.float())
                 else:
                     pics.append(pic)
 
