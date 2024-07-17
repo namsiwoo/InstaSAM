@@ -500,7 +500,8 @@ class LabelEncoding(object):
         self.num_labels = num_labels  # end
 
     def __call__(self, imgs):
-        return tuple(imgs)
+        out_img = list(imgs)
+        return tuple(out_img)
         # assert self.num_labels + self.num_points < len(imgs)
         # if self.num_labels == 0:  # there is no label to encode
         #     return tuple(imgs)
