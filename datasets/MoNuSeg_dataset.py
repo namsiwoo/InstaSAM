@@ -326,7 +326,7 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
         # create image augmentation
         if self.split == 'train':
             self.transform = get_transforms({
-                # 'random_resize': [0.8, 1.25],
+                'random_resize': [0.8, 1.25],
                 'horizontal_flip': True,
                 'random_affine': 0.3,
                 'random_rotation': 90,

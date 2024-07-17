@@ -234,6 +234,10 @@ class SAM(nn.Module):
         self.input = F.interpolate(self.input, (self.inp_size, self.inp_size), mode='bilinear', align_corners=True)
         if gt_mask is not None:
             self.gt_mask = gt_mask.to(self.device)
+            plt.imshow(self.gt_mask.detach().cpu().numpy()[0].transpose(1, 2, 0))
+            plt.colorbar()
+            plt.savefig('/media/NAS/nas_187/siwoo/2024/revision/MO_test_sup/ex.png')
+            plt.clf()
         if clu is not None:
             self.clu = clu.to(self.device)
             self.vor = vor.to(self.device)

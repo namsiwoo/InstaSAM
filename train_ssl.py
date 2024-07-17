@@ -232,13 +232,13 @@ def main(args):
                             plt.imshow(offset_gt.detach().cpu().numpy()[0][-1])
                             plt.colorbar()
 
-                        plt.subplot(2, 4, 3)
-                        plt.imshow(offset_gt.detach().cpu().numpy()[0][0]>1)
-                        plt.colorbar()
-
-                        plt.subplot(2, 4, 4)
-                        plt.imshow(offset_gt.detach().cpu().numpy()[0][0]<-1)
-                        plt.colorbar()
+                        # plt.subplot(2, 4, 3)
+                        # plt.imshow(offset_gt.detach().cpu().numpy()[0][0]>1)
+                        # plt.colorbar()
+                        #
+                        # plt.subplot(2, 4, 4)
+                        # plt.imshow(offset_gt.detach().cpu().numpy()[0][0]<-1)
+                        # plt.colorbar()
 
                         plt.subplot(2, 4, 5)
                         plt.imshow(hq_mask.detach().cpu().numpy()[0, 0])
@@ -248,11 +248,11 @@ def main(args):
                         plt.imshow(hq_mask.detach().cpu().numpy()[0, 1])
                         plt.colorbar()
 
-                        plt.subplot(2, 4, 7)
+                        plt.subplot(1, 4, 3)
                         plt.imshow(offset_gt.detach().cpu().numpy()[0][0])
                         plt.colorbar()
 
-                        plt.subplot(2, 4, 8)
+                        plt.subplot(1, 4, 4)
                         plt.imshow(offset_gt.detach().cpu().numpy()[0][1])
                         plt.colorbar()
 
