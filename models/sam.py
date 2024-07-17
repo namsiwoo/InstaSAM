@@ -235,7 +235,7 @@ class SAM(nn.Module):
         if gt_mask is not None:
             self.gt_mask = gt_mask.to(self.device)
             print(self.gt_mask.shape)
-            plt.imshow(self.gt_mask.detach().cpu().numpy()[0].transpose(1, 2, 0))
+            plt.imshow(self.gt_mask.detach().cpu().numpy()[0])
             plt.colorbar()
             plt.savefig('/media/NAS/nas_187/siwoo/2024/revision/MO_test_sup/ex.png')
             plt.clf()
