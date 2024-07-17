@@ -301,13 +301,13 @@ class Crop_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         return self.num_samples
 
 class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
-    def __init__(self, args, split, ssl=False):
+    def __init__(self, args, split, sup=False):
         self.args = args
         self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
         self.split = split
-        self.ssl = ssl
-        if self.ssl == False:
-            from datasets.get_transforms import get_transforms
+        self.sup = sup
+        if self.sup == True:
+            from datasets.get_transforms_ori import get_transforms
         else:
             from datasets.get_transforms_ssl import get_transforms
 
@@ -379,7 +379,7 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
             # 1) read image
             img = Image.open(os.path.join(self.root_dir, 'images', self.split, img_name)).convert('RGB')
 
-            if self.ssl == False:
+            if self.sup == True:
 
                 box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
                 # box_label = np.array(Image.open(os.path.join('/media/NAS/nas_187/siwoo/train', 'labels_instance', self.split, img_name[:-4]+'_label.png')))
