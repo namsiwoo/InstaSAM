@@ -82,8 +82,10 @@ class Galaxy_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 point = Image.fromarray(point)
                 sample = [img, point]
         else:
-            mask = np.load(os.path.join(self.root_dir, self.split, 'masks', img_name))
-            sample = [img, mask]
+            box_label = np.load(os.path.join(self.root_dir, self.split, 'masks', img_name))
+            box_label = skimage.morphology.label(box_label)
+            box_label = Image.fromarray(box_label.astype(np.uint16))
+            sample = [img, box_label]
         sample = self.transform(sample)
 
         return sample, str(img_name)
