@@ -68,19 +68,18 @@ class Galaxy_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         img = Image.fromarray(img.astype(np.uint8))
 
         if self.split == 'train':
-            if self.use_mask == True:
-                box_label = np.load(os.path.join(self.root_dir, self.split, 'masks', img_name))
-                box_label = skimage.morphology.label(box_label)
-                box_label = Image.fromarray(box_label.astype(np.uint16))
-                sample = [img, box_label]
-            else:
-                if self.data == 'nuclei':
-                    point = Image.open(os.path.join(self.root_dir, 'labels_point_nuclei', self.split, img_name)).convert('L')
-                else:
-                    point = Image.open(os.path.join(self.root_dir, 'labels_point_cell', self.split, img_name)).convert('L')
-                point = binary_dilation(np.array(point), iterations=2)
-                point = Image.fromarray(point)
-                sample = [img, point]
+            box_label = np.load(os.path.join(self.root_dir, self.split, 'masks', img_name))
+            box_label = skimage.morphology.label(box_label)
+            box_label = Image.fromarray(box_label.astype(np.uint16))
+            sample = [img, box_label]
+            # else:
+            #     if self.data == 'nuclei':
+            #         point = Image.open(os.path.join(self.root_dir, 'labels_point_nuclei', self.split, img_name)).convert('L')
+            #     else:
+            #         point = Image.open(os.path.join(self.root_dir, 'labels_point_cell', self.split, img_name)).convert('L')
+            #     point = binary_dilation(np.array(point), iterations=2)
+            #     point = Image.fromarray(point)
+            #     sample = [img, point]
         else:
             box_label = np.load(os.path.join(self.root_dir, self.split, 'masks', img_name))
             box_label = skimage.morphology.label(box_label)
