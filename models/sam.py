@@ -279,7 +279,7 @@ class SAM(nn.Module):
         for b in range(len(points)):
             if len(torch.unique(points[0])) > 1:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
-                if len(torch.unique(points[0])) > 150:
+                if len(torch.unique(points[0])) > 1500:
                     mask_prompt_adapter = torch.zeros_like(points.squeeze(1)).to(self.device).float()
                     gt_local, gt_global = (torch.zeros(1, 224, 224).to(self.device)-1).float(), (torch.zeros(1, 224, 224).to(self.device)-1).float()
 
