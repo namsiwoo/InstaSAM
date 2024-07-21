@@ -430,7 +430,7 @@ def test(args, device):
     elif args.data_type == 'npy_n':
         test_dataseet = DeepCell_dataset(args, 'test', use_mask=args.sup, data='nuclei')
     elif args.data_type == 'gal':
-        test_dataseet = Galaxy_dataset(args, 'test', use_mask=args.sup, data='nuclei')
+        test_dataseet = Galaxy_dataset(args, 'test_real', use_mask=args.sup, data='nuclei')
     else:
         test_dataseet = MoNuSeg_weak_dataset(args, 'test', ssl=True)
 
