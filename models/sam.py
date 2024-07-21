@@ -601,7 +601,7 @@ class SAM(nn.Module):
 
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)#global_gt  # calculate graidents for G
             bce_loss_local, iou_loss_local = self.backward_G_local(local_gt)
-            self.loss_G = bce_loss + iou_loss + 5*offset_loss + bce_loss_local + iou_loss_local
+            self.loss_G = bce_loss + iou_loss + 2*offset_loss + bce_loss_local + iou_loss_local
             # print("after loss", torch.cuda.memory_allocated() / 1024 / 1024, '******')
 
 
