@@ -13,7 +13,7 @@ from utils.utils import accuracy_object_level, AJI_fast, average_precision, save
 from utils.vis_flow import flow_to_color
 from utils.hv_process import make_instance_hv, make_instance_sonnet, make_instance_marker
 
-def split_forward(sam_model, input, mask, sam_input_size, device, num_hq_token):
+def split_forward(sam_model, input, sam_input_size, device, num_hq_token):
     size = 224
     overlap = 80
 
@@ -312,7 +312,7 @@ def main(args):
                     mask = pack[0][1]
                     img_name = pack[1][0]
 
-                    output, output_offset = split_forward(sam_model, input, mask, args.img_size, device, args.num_hq_token)
+                    output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token)
                     binary_mask = torch.sigmoid(output).detach().cpu().numpy()
 
                     if args.num_hq_token == 2:
@@ -450,7 +450,7 @@ def test(args, device):
 
             img_name = pack[1][0]
 
-            output, output_offset = split_forward(sam_model, input, mask, args.img_size, device, args.num_hq_token)
+            output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token)
             binary_mask = torch.sigmoid(output).detach().cpu().numpy()
 
             if args.num_hq_token == 2:
@@ -469,31 +469,25 @@ def test(args, device):
                 binary_map, instance_map, marker = make_instance_sonnet(binary_mask[0][0],
                                                                         output_offset[0].detach().cpu().numpy())
 
-            if len(np.unique(binary_map)) == 1:
-                dice, iou, aji = 0, 0, 0
-            else:
-                dice, iou = accuracy_object_level(instance_map, mask[0][0].detach().cpu().numpy())
-                aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map, img_name)
-                pq_list, _ = get_fast_pq(mask[0][0].detach().cpu().numpy(), instance_map) #[dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
-                ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), instance_map)
-
-            mean_dice += dice / (len(test_dataloader))  # *len(local_rank))
-            mean_iou += iou / (len(test_dataloader))  # len(local_rank))
-            mean_aji += aji / (len(test_dataloader))
-
-            mean_dq += pq_list[0] / (len(test_dataloader))  # *len(local_rank))
-            mean_sq += pq_list[1] / (len(test_dataloader))  # len(local_rank))
-            mean_pq += pq_list[2] / (len(test_dataloader))
-
-            mean_ap1 += ap[0] / (len(test_dataloader))
-            mean_ap2 += ap[1] / (len(test_dataloader))
-            mean_ap3 += ap[2] / (len(test_dataloader))
-
-            # print(len(val_dataloader), mean_dice, mean_aji)
-
-            # dist.reduce(mean_dice, dst=0, op=dist.ReduceOp.SUM)
-            # dist.reduce(mean_iou, dst=0, op=dist.ReduceOp.SUM)
-            # dist.reduce(mean_aji, dst=0, op=dist.ReduceOp.SUM)
+            # if len(np.unique(binary_map)) == 1:
+            #     dice, iou, aji = 0, 0, 0
+            # else:
+            #     dice, iou = accuracy_object_level(instance_map, mask[0][0].detach().cpu().numpy())
+            #     aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map, img_name)
+            #     pq_list, _ = get_fast_pq(mask[0][0].detach().cpu().numpy(), instance_map) #[dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
+            #     ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), instance_map)
+            #
+            # mean_dice += dice / (len(test_dataloader))  # *len(local_rank))
+            # mean_iou += iou / (len(test_dataloader))  # len(local_rank))
+            # mean_aji += aji / (len(test_dataloader))
+            #
+            # mean_dq += pq_list[0] / (len(test_dataloader))  # *len(local_rank))
+            # mean_sq += pq_list[1] / (len(test_dataloader))  # len(local_rank))
+            # mean_pq += pq_list[2] / (len(test_dataloader))
+            #
+            # mean_ap1 += ap[0] / (len(test_dataloader))
+            # mean_ap2 += ap[1] / (len(test_dataloader))
+            # mean_ap3 += ap[2] / (len(test_dataloader))
 
             instance_map = mk_colored(instance_map) * 255
             instance_map = Image.fromarray((instance_map).astype(np.uint8))
@@ -510,28 +504,28 @@ def test(args, device):
             pred_flow_vis = Image.fromarray(pred_flow_vis.astype(np.uint8))
             pred_flow_vis.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_flow_vis.png'))
 
-            mask = mk_colored(mask[0][0].detach().cpu().numpy()) * 255
-            mask = Image.fromarray((mask).astype(np.uint8))
-            mask.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_mask.png'))
+            # mask = mk_colored(mask[0][0].detach().cpu().numpy()) * 255
+            # mask = Image.fromarray((mask).astype(np.uint8))
+            # mask.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_mask.png'))
 
 
 
-    print('test result: Average- Dice\tIOU\tAJI: '
-                 '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
-    print('test result: Average- DQ\tSQ\tPQ: '
-                 '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
-    print('test result: Average- AP1\tAP2\tAP3: '
-                 '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
-
-
-    f = open(os.path.join(args.result,'img', 'test', "result.txt"), 'w')
-    f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
-    f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
-    f.write('***test result_mask*** Average- AP1\tAP2\tAP3: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
-    f.close()
+    # print('test result: Average- Dice\tIOU\tAJI: '
+    #              '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
+    # print('test result: Average- DQ\tSQ\tPQ: '
+    #              '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
+    # print('test result: Average- AP1\tAP2\tAP3: '
+    #              '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
+    #
+    #
+    # f = open(os.path.join(args.result,'img', 'test', "result.txt"), 'w')
+    # f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
+    #         '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
+    # f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
+    #         '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
+    # f.write('***test result_mask*** Average- AP1\tAP2\tAP3: '
+    #         '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
+    # f.close()
     #     # if min_loss > val_losses:
     #     #     print('save {} epoch!!--loss: {}'.format(str(epoch), val_losses))
     #     #     save_checkpoint(os.path.join(args.model, 'loss_best_model.pth'), model, epoch)
