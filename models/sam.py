@@ -316,7 +316,7 @@ class SAM(nn.Module):
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
 
-        del mask_prompt_adapter, points, x_ori, self.features#ignored_map
+        del mask_prompt_adapter, points, x_ori#ignored_map
 
 
         if epoch>500:
