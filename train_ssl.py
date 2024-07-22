@@ -167,6 +167,7 @@ def main(args):
             else:
                 # label = batch[0][1].squeeze(1)
                 point = batch[0][1]
+                print(point.shape)
                 sam_model.set_input(img)
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
                     point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), epoch)  # point, epoch, batch[1][0]
@@ -252,7 +253,6 @@ def main(args):
                         plt.imshow(point.numpy()[0][0])
                         # plt.imshow(offset_gt.detach().cpu().numpy()[0][0])
                         plt.colorbar()
-                        print(torch.unique(point))
 
                         plt.subplot(1, 4, 4)
                         plt.imshow(offset_gt.detach().cpu().numpy()[0][1])
