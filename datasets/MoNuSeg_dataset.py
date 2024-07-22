@@ -419,9 +419,14 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
                 #         point = Image.open(os.path.join('/media/NAS/nas_32/siwoo/TNBC/TNBC/via instance learning data_for_train/TNBC', 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
 
                 # point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
-                point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
-                point = binary_dilation(np.array(point), iterations=2)
-                point = Image.fromarray(point)
+
+                # point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
+                # point = binary_dilation(np.array(point), iterations=2)
+                # point = Image.fromarray(point)
+
+                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
+                box_label = skimage.morphology.label(box_label)
+                point = Image.fromarray(box_label.astype(np.uint16))
 
                 # cluster_label = Image.open(os.path.join(self.root_dir, 'labels_cluster', self.split, img_name[:-4]+'_label_cluster.png')).convert('RGB')
                 # voronoi_label = Image.open(os.path.join(self.root_dir, 'labels_voronoi', self.split, img_name[:-4] + '_label_vor.png')).convert('RGB')
