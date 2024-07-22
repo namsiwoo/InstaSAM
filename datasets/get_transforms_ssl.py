@@ -516,8 +516,8 @@ class LabelEncoding(object):
 
             # add point labels
             point = np.zeros_like(label, dtype=np.uint16)
-            # label = skimage.morphology.label(label > 0)
-            label = skimage.morphology.label(label)
+            label = skimage.morphology.label(label > 0)
+            # label = skimage.morphology.label(label)
             label_regions = skimage.measure.regionprops(label)
             for i, region in enumerate(label_regions):
                 # point_coords.append([round(region.centroid[0]), round(region.centroid[1])])

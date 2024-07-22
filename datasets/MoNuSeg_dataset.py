@@ -68,10 +68,16 @@ class Galaxy_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         img = Image.fromarray(img.astype(np.uint8))
 
         if self.split == 'train':
-            box_label = np.load(os.path.join(self.root_dir, self.split, 'masks', img_name))
-            box_label = skimage.morphology.label(box_label)
-            box_label = Image.fromarray(box_label.astype(np.uint16))
-            sample = [img, box_label]
+            if self.sup == True:
+                box_label = np.load(os.path.join(self.root_dir, self.split, 'masks', img_name))
+                box_label = skimage.morphology.label(box_label)
+                box_label = Image.fromarray(box_label.astype(np.uint16))
+                sample = [img, box_label]
+            else:
+                point = np.load(os.path.join(self.root_dir, self.split, 'points', img_name))
+                point = binary_dilation(np.array(point), iterations=2)
+                point = Image.fromarray(point)
+                sample = [img, point]
             # else:
             #     if self.data == 'nuclei':
             #         point = Image.open(os.path.join(self.root_dir, 'labels_point_nuclei', self.split, img_name)).convert('L')
@@ -576,3 +582,20 @@ class MoNuSeg_dataset_coarse_label(torch.utils.data.Dataset):
 
     def __len__(self):
         return self.num_samples
+
+if __name__ == '__main__':
+    path = '/media/NAS/nas_187/datasets/galaxy_dataset_UNIST/train/masks'
+    name = os.listdir(path)
+    for n in name:
+        mask = np.load(os.path.join(path, n))
+        point = np.zeros(mask)
+        label_regions = skimage.measure.regionprops(mask)
+        for i, region in enumerate(label_regions):
+            # point_coords.append([round(region.centroid[0]), round(region.centroid[1])])
+            point[round(region.centroid[0]), round(region.centroid[1])] = 255
+        np.save(os.path.join(path, n[:-4] + '.npy'), point)
+
+
+
+
+

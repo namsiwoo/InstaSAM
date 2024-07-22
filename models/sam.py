@@ -320,12 +320,12 @@ class SAM(nn.Module):
         del mask_prompt_adapter, points, x_ori#ignored_map
 
 
-        if epoch>-1:
+        if epoch>500:
             from utils.utils import accuracy_object_level, AJI_fast, save_checkpoint, load_checkpoint, mk_colored
             from PIL import Image
 
             # pseudo_gt2[0] = self.gt_mask
-            print(len(torch.unique(points[0])))
+
             aaa = mk_colored(pseudo_gt_local[0].detach().cpu().numpy()) *255
             aaa[pseudo_gt_local[0].detach().cpu().numpy()==0,:] = 0
             aaa[pseudo_gt_local[0].detach().cpu().numpy()==-1,:] = 255
