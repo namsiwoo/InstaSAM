@@ -165,7 +165,11 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 point = Image.fromarray(point)
                 sample = [img, point]
         else:
-            mask = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
+            if self.data == 'nuclei':
+                mask = np.array(Image.open(os.path.join(self.root_dir, 'labels_point_nuclei', self.split, img_name)))
+            else:
+                mask = np.array(Image.open(os.path.join(self.root_dir, 'labels_point_cell', self.split, img_name)))
+
             sample = [img, mask]
         sample = self.transform(sample)
 
