@@ -588,7 +588,7 @@ if __name__ == '__main__':
     name = os.listdir(path)
     for n in name:
         mask = np.load(os.path.join(path, n))
-        point = np.zeros(mask)
+        point = np.zeros_like(mask)
         label_regions = skimage.measure.regionprops(mask)
         for i, region in enumerate(label_regions):
             # point_coords.append([round(region.centroid[0]), round(region.centroid[1])])
