@@ -320,7 +320,7 @@ class SAM(nn.Module):
         del mask_prompt_adapter, points, x_ori#ignored_map
 
 
-        if epoch>500:
+        if epoch>0:
             from utils.utils import accuracy_object_level, AJI_fast, save_checkpoint, load_checkpoint, mk_colored
             from PIL import Image
 
