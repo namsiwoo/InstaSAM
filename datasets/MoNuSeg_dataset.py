@@ -76,7 +76,7 @@ class Galaxy_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
             else:
                 point = np.load(os.path.join(self.root_dir, self.split, 'points', img_name))
                 point = binary_dilation(np.array(point), iterations=2)
-                point = Image.fromarray(point)
+                point = Image.fromarray(point).convert('L')
                 sample = [img, point]
             # else:
             #     if self.data == 'nuclei':
