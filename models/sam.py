@@ -338,9 +338,9 @@ class SAM(nn.Module):
             aaa = Image.fromarray(aaa.astype(np.uint8))
             aaa.save(img_name[:-4]+'_2global.png')
 
-            aaa = mk_colored(self.gt_mask[0].detach().cpu().numpy())*255
-            aaa = Image.fromarray(aaa.astype(np.uint8))
-            aaa.save(img_name[:-4]+'_3gt.png')
+            # aaa = mk_colored(self.gt_mask[0].detach().cpu().numpy())*255
+            # aaa = Image.fromarray(aaa.astype(np.uint8))
+            # aaa.save(img_name[:-4]+'_3gt.png')
 
             aaa = (torch.sigmoid(self.pred_mask[0][0]).detach().cpu().numpy())*255
             aaa = Image.fromarray(aaa.astype(np.uint8))
