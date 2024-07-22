@@ -593,7 +593,7 @@ if __name__ == '__main__':
         for i, region in enumerate(label_regions):
             # point_coords.append([round(region.centroid[0]), round(region.centroid[1])])
             point[round(region.centroid[0]), round(region.centroid[1])] = 255
-        np.save(os.path.join(path, n[:-4] + '.npy'), point)
+        np.save(os.path.join('/media/NAS/nas_187/datasets/galaxy_dataset_UNIST/train/point', n[:-4] + '.npy'), point)
 
 
 
