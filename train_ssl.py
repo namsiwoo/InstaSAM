@@ -249,8 +249,8 @@ def main(args):
                         plt.colorbar()
 
                         plt.subplot(1, 4, 3)
-                        plt.imshow(point.numpy()[0][0])
-                        # plt.imshow(offset_gt.detach().cpu().numpy()[0][0])
+                        # plt.imshow(point.numpy()[0][0])
+                        plt.imshow(offset_gt.detach().cpu().numpy()[0][0])
                         plt.colorbar()
 
                         plt.subplot(1, 4, 4)
