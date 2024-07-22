@@ -250,7 +250,9 @@ def main(args):
 
                         plt.subplot(1, 4, 3)
                         plt.imshow(point.numpy()[0][0])
+                        # plt.imshow(offset_gt.detach().cpu().numpy()[0][0])
                         plt.colorbar()
+                        print(torch.unique(point))
 
                         plt.subplot(1, 4, 4)
                         plt.imshow(offset_gt.detach().cpu().numpy()[0][1])
