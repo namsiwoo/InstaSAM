@@ -68,7 +68,7 @@ class Galaxy_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         img = Image.fromarray(img.astype(np.uint8))
 
         if self.split == 'train':
-            if self.sup == True:
+            if self.args.sup == True:
                 box_label = np.load(os.path.join(self.root_dir, self.split, 'masks', img_name))
                 box_label = skimage.morphology.label(box_label)
                 box_label = Image.fromarray(box_label.astype(np.uint16))
