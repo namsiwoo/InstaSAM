@@ -178,7 +178,7 @@ def main(args):
             # bce_local_loss, iou_local_loss = backwards_local
             lr_scheduler.step()
 
-            loss = bce_loss#sam_model.loss_G.item()
+            loss = bce_loss + iou_loss + 5*offset_loss + bce_local_loss + iou_local_loss #sam_model.loss_G.item()
 
             train_loss += loss / len(train_dataloader)
 
