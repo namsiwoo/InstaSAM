@@ -433,7 +433,7 @@ def test(args, device):
     elif args.data_type == 'gal':
         test_dataseet = Galaxy_dataset(args, 'test_real', use_mask=args.sup, data='nuclei')
     else:
-        test_dataseet = MoNuSeg_weak_dataset(args, 'test', ssl=True)
+        test_dataseet = MoNuSeg_weak_dataset(args, 'test', sup=args.sup)
 
     test_dataloader = DataLoader(test_dataseet)
 
