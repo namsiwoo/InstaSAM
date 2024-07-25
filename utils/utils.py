@@ -535,33 +535,42 @@ def AJI_fast(gt, pred_arr, name):
     # pred_arr[pred_arr>0] = 1
 
     gs, g_areas = np.unique(gt, return_counts=True)  # gs is the instance number of gt, g_areas is the corresponding area.
-    assert np.all(gs == np.arange(len(gs))), name
-    ss, s_areas = np.unique(pred_arr, return_counts=True)
-    assert np.all(ss == np.arange(len(ss))), name
-    i_idx, i_cnt = np.unique(np.concatenate([gt.reshape(1, -1), pred_arr.reshape(1, -1)]),
-                             return_counts=True, axis=1)
-    i_arr = np.zeros(shape=(len(gs), len(ss)), dtype=np.int)
+    # assert np.all(gs == np.arange(len(gs))), name
+    if np.all(gs == np.arange(len(gs))):
+        ss, s_areas = np.unique(pred_arr, return_counts=True)
+        # assert np.all(ss == np.arange(len(ss))), name
+        if np.all(ss == np.arange(len(ss))):
+            i_idx, i_cnt = np.unique(np.concatenate([gt.reshape(1, -1), pred_arr.reshape(1, -1)]),
+                                     return_counts=True, axis=1)
+            i_arr = np.zeros(shape=(len(gs), len(ss)), dtype=np.int)
 
-    i_arr[i_idx[0], i_idx[1]] += i_cnt  #
-    u_arr = g_areas.reshape(-1, 1) + s_areas.reshape(1, -1) - i_arr
-    iou_arr = 1.0 * i_arr / u_arr
+            i_arr[i_idx[0], i_idx[1]] += i_cnt  #
+            u_arr = g_areas.reshape(-1, 1) + s_areas.reshape(1, -1) - i_arr
+            iou_arr = 1.0 * i_arr / u_arr
 
-    i_arr = i_arr[1:, 1:]  # remove background class intersection with other foreground class
-    u_arr = u_arr[1:, 1:]  # remove background class union with other foreground class
-    iou_arr = iou_arr[1:, 1:]
-    # ipdb.set_trace()
-    # if len(iou_arr) == 0:
-    #     return 0
-    try:
-        j = np.argmax(iou_arr, axis=1)  # get the instance number in seg who has maximum iou with gt
-    except ValueError:
-        return 0
-    c = np.sum(i_arr[np.arange(len(gs) - 1), j])
-    u = np.sum(u_arr[np.arange(len(gs) - 1), j])
-    used = np.zeros(shape=(len(ss) - 1), dtype=np.int)
-    used[j] = 1
-    u += (np.sum(s_areas[1:] * (1 - used)))
-    return 1.0 * c / u
+            i_arr = i_arr[1:, 1:]  # remove background class intersection with other foreground class
+            u_arr = u_arr[1:, 1:]  # remove background class union with other foreground class
+            iou_arr = iou_arr[1:, 1:]
+            # ipdb.set_trace()
+            # if len(iou_arr) == 0:
+            #     return 0
+            try:
+                j = np.argmax(iou_arr, axis=1)  # get the instance number in seg who has maximum iou with gt
+            except ValueError:
+                return 0
+            c = np.sum(i_arr[np.arange(len(gs) - 1), j])
+            u = np.sum(u_arr[np.arange(len(gs) - 1), j])
+            used = np.zeros(shape=(len(ss) - 1), dtype=np.int)
+            used[j] = 1
+            u += (np.sum(s_areas[1:] * (1 - used)))
+            return 1.0 * c / u
+        else:
+            print(name)
+            return 0.0
+    else:
+        print(name)
+        return 0.0
+
 
 def get_fast_pq(true, pred, match_iou=0.5):
     """
