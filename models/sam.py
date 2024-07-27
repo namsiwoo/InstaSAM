@@ -508,7 +508,7 @@ class SAM(nn.Module):
         del binary_gt, ignored_map
         return bce_loss_sam, offset_loss, iou_loss_sam, offset_gt
 
-    def backward_G_local(self, gt):
+    def backward_G_local(self, epoch, l_gt, g_gt):
         # entropy = -torch.sum(torch.sigmoid(self.mask_prompt_ori) * torch.log(torch.sigmoid(self.mask_prompt_ori) + 1e-10), dim=0)
         # reliable_map = entropy<0.3
 
@@ -517,10 +517,13 @@ class SAM(nn.Module):
 
         for b in range(len(self.mask_prompt_adapter)):
             # train_map = []
-            train_map = (gt[b] != -1)
-            pseudo_maks = torch.zeros_like(self.mask_prompt_adapter[b])
-            for i in range(len(pseudo_maks)):
-                pseudo_maks[i] = (gt[b].unsqueeze(0) == (i+1))
+            train_map = (l_gt[b] != -1)
+            l_pseudo_maks = torch.zeros_like(self.mask_prompt_adapter[b])
+            g_pseudo_maks = torch.zeros_like(self.mask_prompt_adapter[b])
+            for i in range(len(l_pseudo_maks)):
+                l_pseudo_maks[i] = (l_gt[b].unsqueeze(0) == (i+1))
+                g_pseudo_maks[i] = (g_gt[b].unsqueeze(0) == (i+1))
+
 
                 # if torch.sum(gt==i) != 0: #torch.sum((gt==(i+1))*reliable_map) == torch.sum(gt==(i+1)) and
                 #     # print('ones')
@@ -539,9 +542,12 @@ class SAM(nn.Module):
                 #     train_map.append(reliable_map)
             # train_map = torch.stack(train_map)
 
-            bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], pseudo_maks)*train_map).mean()
-            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), pseudo_maks.unsqueeze(0), ignored_map=train_map)
-        del pseudo_maks
+            bce_loss_local += (1-((epoch+1)/100))*(self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
+            iou_loss_local += (1-((epoch+1)/100))*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+
+            bce_loss_local += ((epoch+1)/100)*(self.criterionBCE(self.mask_prompt_adapter[b], g_pseudo_maks)*train_map).mean()
+            iou_loss_local += ((epoch+1)/100)*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), g_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+        del l_pseudo_maks
         return bce_loss_local, iou_loss_local
 
     def forward(self):  # , point_prompt=None
@@ -602,7 +608,7 @@ class SAM(nn.Module):
             # print("after forward", torch.cuda.memory_allocated() / 1024 / 1024, '******')
 
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)#global_gt  # calculate graidents for G
-            bce_loss_local, iou_loss_local = self.backward_G_local(local_gt)
+            bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
             self.loss_G = bce_loss + iou_loss + 5*offset_loss + bce_loss_local + iou_loss_local
             # print("after loss", torch.cuda.memory_allocated() / 1024 / 1024, '******')
 
