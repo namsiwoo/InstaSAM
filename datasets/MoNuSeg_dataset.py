@@ -164,7 +164,7 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 plt.imshow(box_label)
                 plt.colorbar()
                 print(np.unique(np.array(box_label)))
-                plt.savefig(os.path.join(self.args.result, '0/'+str(index)+'.png'))
+                plt.savefig(os.path.join(self.args.result, 'img/0/'+str(index)+'.png'))
                 sample = [img, box_label]
             else:
                 if self.data == 'nuclei':
