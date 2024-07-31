@@ -591,6 +591,9 @@ if __name__ == '__main__':
     elif args.data == "CoNSeP":
         if args.shift == 0:
             args.data_path = '/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP/via instance learning data_for_train/CoNSeP'
+    elif args.data == "TNBC":
+        if args.shift == 0:
+            args.data_path = '/media/NAS/nas_70/open_dataset/TNBC/TNBC/via instance learning data_for_train/TNBC'
         else:
             args.data_path = '/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP_shift{:s}/via instance learning data_for_train/CoNSeP_shift{:s}'.format(args.shift)
     elif args.data == 'pannuke':
