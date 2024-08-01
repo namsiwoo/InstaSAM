@@ -15,19 +15,22 @@ def main():
     shuffle(img_name)
     train_img_name = img_name[:int(len(img_name)*0.8)]
     val_img_name = img_name[int(len(img_name)*0.8):]
+    ex_val = io.imread(label_path, train_img_name[0])
+    print(ex_val.shape)
+    print(np.unique(ex_val))
 
 
-    split_patches(img_path, train_img_name, save_dir+'train')
-    split_patches(img_path, train_img_name, save_dir+'val')
+    split_patches(img_path, train_img_name, save_dir+'train/image')
+    split_patches(img_path, train_img_name, save_dir+'val/image')
 
-    split_patches(label_path, val_img_name, save_dir+'train')
-    split_patches(label_path, val_img_name, save_dir+'val')
+    split_patches(label_path, val_img_name, save_dir+'train/label')
+    split_patches(label_path, val_img_name, save_dir+'val/label')
 
     test_img_path = os.path.join(test_path, 'x')
     test_label_path = os.path.join(test_path, 'y')
 
-    split_patches(test_img_path, val_img_name, save_dir+'test')
-    split_patches(test_label_path, val_img_name, save_dir+'test')
+    # split_patches(test_img_path, val_img_name, save_dir+'test')
+    # split_patches(test_label_path, val_img_name, save_dir+'test')
 
 def create_folder(folder):
     if not os.path.exists(folder):
