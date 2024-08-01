@@ -115,23 +115,23 @@ def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_siz
                         else:
                             n_patch = n_image[i:i + patch_size, j:j + patch_size]
                             c_patch = c_image[i:i + patch_size, j:j + patch_size]
-                        n_image.append(n_patch)
-                        c_image.append(c_patch)
+                        n_seg_imgs.append(n_patch)
+                        c_seg_imgs.append(c_patch)
 
                 for k in range(len(n_seg_imgs)):
                     if post_fix:
                         io.imsave(
-                            '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, name[:-len(post_fix) - 1], k, post_fix, ext),
+                            '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, image_name[:-len(post_fix) - 1], k, post_fix, ext),
                             n_seg_imgs[k])
                         io.imsave(
-                            '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, name[:-len(post_fix) - 1], k, post_fix, ext),
+                            '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, image_name[:-len(post_fix) - 1], k, post_fix, ext),
                             c_seg_imgs[k])
                     else:
-                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_nuclei', name, k, ext), n_seg_imgs[k])
-                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_cell', name, k, ext), c_seg_imgs[k])
+                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_nuclei', image_name, k, ext), n_seg_imgs[k])
+                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_cell', image_name, k, ext), c_seg_imgs[k])
             else:
-                io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_nuclei', name, ext), n_image)
-                io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_cell', name, ext), c_image)
+                io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_nuclei', image_name, ext), n_image)
+                io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_cell', image_name, ext), c_image)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
