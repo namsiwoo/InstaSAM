@@ -22,8 +22,8 @@ def main(train, test):
         # split_patches(img_path, train_img_name, save_dir+'train/image')
         # split_patches(label_path, val_img_name, save_dir+'val/image')
 
-        split_patches_label(label_path, train_img_name, os.listdir(label_path), save_dir+'train/label', version_test=False)
-        split_patches_label(label_path, val_img_name, os.listdir(label_path), save_dir+'val/label', version_test=False)
+        split_patches_label(label_path, train_img_name, save_dir+'train/label', version_test=False)
+        split_patches_label(label_path, val_img_name, save_dir+'val/label', version_test=False)
 
     if test == True:
         test_img_path = os.path.join(test_path, 'x')
@@ -31,7 +31,7 @@ def main(train, test):
         test_img_name = os.listdir(test_img_path)
 
         # split_patches(test_img_path, val_img_name, save_dir+'test')
-        split_patches_label(test_label_path, test_img_name, os.listdir(test_label_path), save_dir+'test/label', version_test=True)
+        split_patches_label(test_label_path, test_img_name, save_dir+'test/label', version_test=True)
 
 def create_folder(folder):
     if not os.path.exists(folder):
@@ -78,10 +78,13 @@ def split_patches(data_dir, img_name_list, save_dir, patch_size=1024, post_fix="
                 else:
                     io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir, name, k, ext), seg_imgs[k])
 
-def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_size=1024, post_fix="", ext="png", version_test='False'):
+def split_patches_label(data_dir, img_name_list, save_dir, patch_size=1024, post_fix="", ext="png", version_test='False'):
     import math
     """ split large image into small patches """
-    if create_folder(save_dir):
+    if create_folder(save_dir + '_nuclei'):
+        pass
+    if create_folder(save_dir + '_cell'):
+        pass
         print("Spliting large {:s} images into small patches...".format(post_fix))
 
         for image_name in img_name_list:
