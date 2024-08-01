@@ -85,77 +85,77 @@ def split_patches_label(data_dir, img_name_list, save_dir, patch_size=1024, post
         pass
     if create_folder(save_dir + '_cell'):
         pass
-        print("Spliting large {:s} images into small patches...".format(post_fix))
+    print("Spliting large {:s} images into small patches...".format(post_fix))
 
-        for image_name in img_name_list:
-            idx_list = glob.glob(os.path.join(data_dir, '*{:s}*'.format(image_name[:-4])))
-            index = 1
-            for idx in idx_list:
-                image_idx = io.imread(idx)
-                if index == 1:
-                    n_image = np.zeros_like(image_idx)
-                    n_point = np.zeros_like(image_idx)
-                    c_image = np.zeros_like(image_idx)
-                    c_point = np.zeros_like(image_idx)
+    for image_name in img_name_list:
+        idx_list = glob.glob(os.path.join(data_dir, '*{:s}*'.format(image_name[:-4])))
+        index = 1
+        for idx in idx_list:
+            image_idx = io.imread(idx)
+            if index == 1:
+                n_image = np.zeros_like(image_idx)
+                n_point = np.zeros_like(image_idx)
+                c_image = np.zeros_like(image_idx)
+                c_point = np.zeros_like(image_idx)
 
-                print(np.unique(image_idx), '--')
-                n_image[image_idx == 1] = index
-                c_image[image_idx > 0] = index
+            print(np.unique(image_idx), '--')
+            n_image[image_idx == 1] = index
+            c_image[image_idx > 0] = index
 
-                coor = np.where(image_idx == 1)
-                y, x = coor
-                n_point[round(np.mean(y)), round(np.mean(x))] = 255
+            coor = np.where(image_idx == 1)
+            y, x = coor
+            n_point[round(np.mean(y)), round(np.mean(x))] = 255
 
-                coor = np.where(image_idx > 0)
-                y, x = coor
-                c_point[round(np.mean(y)), round(np.mean(x))] = 255
+            coor = np.where(image_idx > 0)
+            y, x = coor
+            c_point[round(np.mean(y)), round(np.mean(x))] = 255
 
-                index +=1
-            if version_test ==  False:
-                n_seg_imgs = []
-                c_seg_imgs = []
-                n_point_imgs = []
-                c_point_imgs = []
+            index +=1
+        if version_test ==  False:
+            n_seg_imgs = []
+            c_seg_imgs = []
+            n_point_imgs = []
+            c_point_imgs = []
 
 
-                # split into 16 patches of size 250x250
-                h, w = n_image.shape[0], n_image.shape[1]
-                h_num, w_num = np.ceil(h/patch_size), np.ceil(w/patch_size)
-                h_overlap = math.ceil((h_num * patch_size - h) / (h_num-1))
-                w_overlap = math.ceil((w_num * patch_size - w) / (w_num-1))
-                for i in range(0, h - patch_size + 1, patch_size - h_overlap):
-                    for j in range(0, w - patch_size + 1, patch_size - w_overlap):
-                        if len(n_image.shape) == 3:
-                            n_patch = n_image[i:i + patch_size, j:j + patch_size, :]
-                            c_patch = c_image[i:i + patch_size, j:j + patch_size, :]
-                            n_point = n_image[i:i + patch_size, j:j + patch_size, :]
-                            c_point = c_image[i:i + patch_size, j:j + patch_size, :]
-                        else:
-                            n_patch = n_image[i:i + patch_size, j:j + patch_size]
-                            c_patch = c_image[i:i + patch_size, j:j + patch_size]
-                            n_point = n_image[i:i + patch_size, j:j + patch_size]
-                            c_point = c_image[i:i + patch_size, j:j + patch_size]
-                        n_seg_imgs.append(n_patch)
-                        c_seg_imgs.append(c_patch)
-                        n_point_imgs.append(n_point)
-                        c_point_imgs.append(c_point)
-
-                for k in range(len(n_seg_imgs)):
-                    if post_fix:
-                        io.imsave(
-                            '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, image_name[:-len(post_fix) - 1], k, post_fix, ext),
-                            n_seg_imgs[k])
-                        io.imsave(
-                            '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, image_name[:-len(post_fix) - 1], k, post_fix, ext),
-                            c_seg_imgs[k])
+            # split into 16 patches of size 250x250
+            h, w = n_image.shape[0], n_image.shape[1]
+            h_num, w_num = np.ceil(h/patch_size), np.ceil(w/patch_size)
+            h_overlap = math.ceil((h_num * patch_size - h) / (h_num-1))
+            w_overlap = math.ceil((w_num * patch_size - w) / (w_num-1))
+            for i in range(0, h - patch_size + 1, patch_size - h_overlap):
+                for j in range(0, w - patch_size + 1, patch_size - w_overlap):
+                    if len(n_image.shape) == 3:
+                        n_patch = n_image[i:i + patch_size, j:j + patch_size, :]
+                        c_patch = c_image[i:i + patch_size, j:j + patch_size, :]
+                        n_point = n_image[i:i + patch_size, j:j + patch_size, :]
+                        c_point = c_image[i:i + patch_size, j:j + patch_size, :]
                     else:
-                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_nuclei', image_name, k, ext), n_seg_imgs[k])
-                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_cell', image_name, k, ext), c_seg_imgs[k])
-                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_point_nuclei', image_name, k, ext), n_point_imgs[k])
-                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_point_cell', image_name, k, ext), c_point_imgs[k])
-            else:
-                io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_nuclei', image_name, ext), n_image)
-                io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_cell', image_name, ext), c_image)
+                        n_patch = n_image[i:i + patch_size, j:j + patch_size]
+                        c_patch = c_image[i:i + patch_size, j:j + patch_size]
+                        n_point = n_image[i:i + patch_size, j:j + patch_size]
+                        c_point = c_image[i:i + patch_size, j:j + patch_size]
+                    n_seg_imgs.append(n_patch)
+                    c_seg_imgs.append(c_patch)
+                    n_point_imgs.append(n_point)
+                    c_point_imgs.append(c_point)
+
+            for k in range(len(n_seg_imgs)):
+                if post_fix:
+                    io.imsave(
+                        '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, image_name[:-len(post_fix) - 1], k, post_fix, ext),
+                        n_seg_imgs[k])
+                    io.imsave(
+                        '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, image_name[:-len(post_fix) - 1], k, post_fix, ext),
+                        c_seg_imgs[k])
+                else:
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_nuclei', image_name, k, ext), n_seg_imgs[k])
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_cell', image_name, k, ext), c_seg_imgs[k])
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_point_nuclei', image_name, k, ext), n_point_imgs[k])
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_point_cell', image_name, k, ext), c_point_imgs[k])
+        else:
+            io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_nuclei', image_name, ext), n_image)
+            io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_cell', image_name, ext), c_image)
 
 
 if __name__ == '__main__':
