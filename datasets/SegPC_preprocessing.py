@@ -17,6 +17,7 @@ def main(train, test):
         shuffle(img_name)
         train_img_name = img_name[:int(len(img_name)*0.8)]
         val_img_name = img_name[int(len(img_name)*0.8):]
+        print(train_img_name)
 
 
         # split_patches(img_path, train_img_name, save_dir+'train/image')
@@ -85,7 +86,6 @@ def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_siz
         print("Spliting large {:s} images into small patches...".format(post_fix))
 
         for image_name in img_name_list:
-
             idx = 0
             while True:
                 image_name_idx = os.path.join(data_dir, image_name[:-4]+'_'+str(idx)+'.bmp')
