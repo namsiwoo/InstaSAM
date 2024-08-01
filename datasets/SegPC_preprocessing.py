@@ -84,13 +84,8 @@ def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_siz
     if create_folder(save_dir):
         print("Spliting large {:s} images into small patches...".format(post_fix))
 
-        image_list = img_name_list
-        for image_name in image_list:
-            if image_name.startswith("."):
-                continue
-            name = image_name.split('.')[0]
-            if post_fix and name[-len(post_fix):] != post_fix:
-                continue
+        for image_name in img_name_list:
+
             idx = 0
             while True:
                 image_name_idx = os.path.join(data_dir, image_name[:-4]+'_'+str(idx)+'.bmp')
