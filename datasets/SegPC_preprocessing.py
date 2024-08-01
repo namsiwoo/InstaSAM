@@ -86,7 +86,7 @@ def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_siz
 
         for image_name in img_name_list:
             print('$$$$', image_name)
-            idx = 0
+            idx = 1
             while True:
                 image_name_idx = os.path.join(data_dir, image_name[:-4]+'_'+str(idx)+'.bmp')
                 print(image_name_idx)
