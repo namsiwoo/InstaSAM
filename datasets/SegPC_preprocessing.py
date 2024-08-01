@@ -88,22 +88,34 @@ def split_patches_label(data_dir, img_name_list, save_dir, patch_size=1024, post
         print("Spliting large {:s} images into small patches...".format(post_fix))
 
         for image_name in img_name_list:
-            print('$$$$', image_name)
             idx_list = glob.glob(os.path.join(data_dir, '*{:s}*'.format(image_name[:-4])))
-            print(idx_list)
             index = 1
             for idx in idx_list:
                 image_idx = io.imread(idx)
                 if index == 1:
                     n_image = np.zeros_like(image_idx)
+                    n_point = np.zeros_like(image_idx)
                     c_image = np.zeros_like(image_idx)
+                    c_point = np.zeros_like(image_idx)
 
                 n_image[image_idx == 1] = index
                 c_image[image_idx > 0] = index
+
+                coor = np.where(image_idx == 1)
+                y, x = coor
+                n_point[round(np.mean(y)), round(np.mean(x))] = 255
+
+                coor = np.where(image_idx > 0)
+                y, x = coor
+                c_point[round(np.mean(y)), round(np.mean(x))] = 255
+
                 index +=1
             if version_test ==  False:
                 n_seg_imgs = []
                 c_seg_imgs = []
+                n_point_imgs = []
+                c_point_imgs = []
+
 
                 # split into 16 patches of size 250x250
                 h, w = n_image.shape[0], n_image.shape[1]
@@ -115,11 +127,17 @@ def split_patches_label(data_dir, img_name_list, save_dir, patch_size=1024, post
                         if len(n_image.shape) == 3:
                             n_patch = n_image[i:i + patch_size, j:j + patch_size, :]
                             c_patch = c_image[i:i + patch_size, j:j + patch_size, :]
+                            n_point = n_image[i:i + patch_size, j:j + patch_size, :]
+                            c_point = c_image[i:i + patch_size, j:j + patch_size, :]
                         else:
                             n_patch = n_image[i:i + patch_size, j:j + patch_size]
                             c_patch = c_image[i:i + patch_size, j:j + patch_size]
+                            n_point = n_image[i:i + patch_size, j:j + patch_size]
+                            c_point = c_image[i:i + patch_size, j:j + patch_size]
                         n_seg_imgs.append(n_patch)
                         c_seg_imgs.append(c_patch)
+                        n_point_imgs.append(n_point)
+                        c_point_imgs.append(c_point)
 
                 for k in range(len(n_seg_imgs)):
                     if post_fix:
@@ -132,9 +150,12 @@ def split_patches_label(data_dir, img_name_list, save_dir, patch_size=1024, post
                     else:
                         io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_nuclei', image_name, k, ext), n_seg_imgs[k])
                         io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_cell', image_name, k, ext), c_seg_imgs[k])
+                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_point_nuclei', image_name, k, ext), n_point_imgs[k])
+                        io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_point_cell', image_name, k, ext), c_point_imgs[k])
             else:
                 io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_nuclei', image_name, ext), n_image)
                 io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_cell', image_name, ext), c_image)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
