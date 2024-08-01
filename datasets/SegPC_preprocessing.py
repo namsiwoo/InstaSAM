@@ -22,7 +22,7 @@ def main(train, test):
         # split_patches(img_path, train_img_name, save_dir+'train/image')
         # split_patches(label_path, val_img_name, save_dir+'val/image')
 
-        split_patches_label(img_path, train_img_name, os.listdir(label_path), save_dir+'train/label', version_test=False)
+        split_patches_label(label_path, train_img_name, os.listdir(label_path), save_dir+'train/label', version_test=False)
         split_patches_label(label_path, val_img_name, os.listdir(label_path), save_dir+'val/label', version_test=False)
 
     if test == True:
