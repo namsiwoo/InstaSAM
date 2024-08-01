@@ -1,3 +1,4 @@
+import glob
 import os, argparse
 import numpy as np
 from PIL import Image
@@ -15,16 +16,13 @@ def main():
     shuffle(img_name)
     train_img_name = img_name[:int(len(img_name)*0.8)]
     val_img_name = img_name[int(len(img_name)*0.8):]
-    ex_val = io.imread(os.path.join(label_path, train_img_name[0]))
-    print(ex_val.shape)
-    print(np.unique(ex_val))
 
 
     split_patches(img_path, train_img_name, save_dir+'train/image')
-    split_patches(img_path, train_img_name, save_dir+'val/image')
+    split_patches(label_path, val_img_name, save_dir+'val/image')
 
-    split_patches(label_path, val_img_name, save_dir+'train/label')
-    split_patches(label_path, val_img_name, save_dir+'val/label')
+    split_patches_label(img_path, train_img_name, os.listdir(label_path), save_dir+'train/label')
+    split_patches_label(label_path, val_img_name, os.listdir(label_path), save_dir+'val/label')
 
     test_img_path = os.path.join(test_path, 'x')
     test_label_path = os.path.join(test_path, 'y')
@@ -76,6 +74,66 @@ def split_patches(data_dir, img_name_list, save_dir, patch_size=1024, post_fix="
                         seg_imgs[k])
                 else:
                     io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir, name, k, ext), seg_imgs[k])
+
+def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_size=1024, post_fix="", ext="png"):
+    import math
+    """ split large image into small patches """
+    if create_folder(save_dir):
+        print("Spliting large {:s} images into small patches...".format(post_fix))
+
+        image_list = img_name_list
+        for image_name in image_list:
+            if image_name.startswith("."):
+                continue
+            name = image_name.split('.')[0]
+            if post_fix and name[-len(post_fix):] != post_fix:
+                continue
+            idx = 0
+            while True:
+                image_name_idx = os.path.join(data_dir, image_name[:-4]+'_'+str(idx)+'.bmp')
+                if image_name_idx in label_list:
+                    pass
+                else:
+                    break
+                image_idx = io.imread(image_name_idx)
+                if idx == 0:
+                    n_image = np.zeros_like(image_idx)
+                    c_image = np.zeros_like(image_idx)
+
+                n_image[image_idx == 1] = idx+1
+                c_image[image_idx > 0] = idx+1
+                idx +=1
+
+            n_seg_imgs = []
+            c_seg_imgs = []
+
+            # split into 16 patches of size 250x250
+            h, w = n_image.shape[0], n_image.shape[1]
+            h_num, w_num = np.ceil(h/patch_size), np.ceil(w/patch_size)
+            h_overlap = math.ceil((h_num * patch_size - h) / (h_num-1))
+            w_overlap = math.ceil((w_num * patch_size - w) / (w_num-1))
+            for i in range(0, h - patch_size + 1, patch_size - h_overlap):
+                for j in range(0, w - patch_size + 1, patch_size - w_overlap):
+                    if len(n_image.shape) == 3:
+                        n_patch = n_image[i:i + patch_size, j:j + patch_size, :]
+                        c_patch = c_image[i:i + patch_size, j:j + patch_size, :]
+                    else:
+                        n_patch = n_image[i:i + patch_size, j:j + patch_size]
+                        c_patch = c_image[i:i + patch_size, j:j + patch_size, :]
+                    n_image.append(n_patch)
+                    c_image.append(c_patch)
+
+            for k in range(len(n_seg_imgs)):
+                if post_fix:
+                    io.imsave(
+                        '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, name[:-len(post_fix) - 1], k, post_fix, ext),
+                        n_seg_imgs[k])
+                    io.imsave(
+                        '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, name[:-len(post_fix) - 1], k, post_fix, ext),
+                        c_seg_imgs[k])
+                else:
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_nuclei', name, k, ext), n_seg_imgs[k])
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_cell', name, k, ext), c_seg_imgs[k])
 
 if __name__ == '__main__':
     import random
