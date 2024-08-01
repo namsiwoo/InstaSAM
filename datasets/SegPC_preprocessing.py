@@ -91,7 +91,7 @@ def split_patches_label(data_dir, img_name_list, save_dir, patch_size=1024, post
         idx_list = glob.glob(os.path.join(data_dir, '*{:s}*'.format(image_name[:-4])))
         index = 1
         for idx in idx_list:
-            image_idx = io.imread(idx)
+            image_idx = io.imread(idx, as_gray=True)
             if index == 1:
                 n_image = np.zeros_like(image_idx)
                 n_point = np.zeros_like(image_idx)
