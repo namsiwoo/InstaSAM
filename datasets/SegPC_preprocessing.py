@@ -36,13 +36,13 @@ def create_folder(folder):
         return True
     else:
         return False
-def split_patches(data_dir, img_name, save_dir, patch_size=250, post_fix="", ext="png"):
+def split_patches(data_dir, img_name_list, save_dir, patch_size=1024, post_fix="", ext="png"):
     import math
     """ split large image into small patches """
     if create_folder(save_dir):
         print("Spliting large {:s} images into small patches...".format(post_fix))
 
-        image_list = os.listdir(data_dir)
+        image_list = img_name_list
         for image_name in image_list:
             if image_name.startswith("."):
                 continue
