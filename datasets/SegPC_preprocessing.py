@@ -15,7 +15,7 @@ def main():
     shuffle(img_name)
     train_img_name = img_name[:int(len(img_name)*0.8)]
     val_img_name = img_name[int(len(img_name)*0.8):]
-    ex_val = io.imread(label_path, train_img_name[0])
+    ex_val = io.imread(os.path.join(label_path, train_img_name[0]))
     print(ex_val.shape)
     print(np.unique(ex_val))
 
