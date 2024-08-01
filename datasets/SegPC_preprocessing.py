@@ -2,8 +2,6 @@ import os, argparse
 import numpy as np
 from PIL import Image
 import skimage.io as io
-from skimage.exposure import rescale_intensity
-from utils.utils import mk_colored
 from random import shuffle
 
 def main():
