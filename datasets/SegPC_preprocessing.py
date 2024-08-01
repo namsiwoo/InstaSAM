@@ -12,7 +12,7 @@ def main():
     label_path = os.path.join(path, 'y')
 
     img_name = os.listdir(img_path)
-    img_name = shuffle(img_name)
+    shuffle(img_name)
     train_img_name = img_name[:int(len(img_name)*0.8)]
     val_img_name = img_name[int(len(img_name)*0.8):]
 
