@@ -86,23 +86,18 @@ def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_siz
 
         for image_name in img_name_list:
             print('$$$$', image_name)
-            idx = 1
-            while True:
-                image_name_idx = os.path.join(data_dir, image_name[:-4]+'_'+str(idx)+'.bmp')
-                print(image_name_idx)
-                print('-- ', label_list)
-                if image_name_idx in label_list:
-                    pass
-                else:
-                    break
+            idx_list = glob.glob(os.path.join(data_dir, '*{:s}*'.format(image_name[:-4])))
+            index = 1
+            for idx in idx_list:
+                image_name_idx = os.path.join(data_dir, idx)
                 image_idx = io.imread(image_name_idx)
-                if idx == 0:
+                if index == 1:
                     n_image = np.zeros_like(image_idx)
                     c_image = np.zeros_like(image_idx)
 
-                n_image[image_idx == 1] = idx+1
-                c_image[image_idx > 0] = idx+1
-                idx +=1
+                n_image[image_idx == 1] = index
+                c_image[image_idx > 0] = index
+                index +=1
             if version_test ==  False:
                 n_seg_imgs = []
                 c_seg_imgs = []
