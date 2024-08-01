@@ -103,6 +103,7 @@ def split_patches_label(data_dir, img_name_list, save_dir, patch_size=1024, post
             c_image[image_idx > 0] = index
 
             coor = np.where(image_idx == 20)
+            print(coor)
             y, x = coor
             n_point[round(np.mean(y)), round(np.mean(x))] = 255
 
