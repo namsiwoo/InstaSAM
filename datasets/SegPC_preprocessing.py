@@ -130,10 +130,10 @@ def split_patches_label(data_dir, img_name_list, save_dir, patch_size=1024, post
                         n_point = n_image[i:i + patch_size, j:j + patch_size, :]
                         c_point = c_image[i:i + patch_size, j:j + patch_size, :]
                     else:
-                        n_patch = n_image[i:i + patch_size, j:j + patch_size]
-                        c_patch = c_image[i:i + patch_size, j:j + patch_size]
-                        n_point = n_image[i:i + patch_size, j:j + patch_size]
-                        c_point = c_image[i:i + patch_size, j:j + patch_size]
+                        n_patch = n_image[i:i + patch_size, j:j + patch_size].astype(np.uint8)
+                        c_patch = c_image[i:i + patch_size, j:j + patch_size].astype(np.uint8)
+                        n_point = n_image[i:i + patch_size, j:j + patch_size].astype(np.uint8)
+                        c_point = c_image[i:i + patch_size, j:j + patch_size].astype(np.uint8)
                     n_seg_imgs.append(n_patch)
                     c_seg_imgs.append(c_patch)
                     n_point_imgs.append(n_point)
