@@ -31,7 +31,7 @@ def main(train, test):
         test_img_name = os.listdir(test_img_path)
 
         # split_patches(test_img_path, val_img_name, save_dir+'test')
-        split_patches_label(test_label_path, test_img_name, save_dir+'test/label', version_test=True)
+        split_patches_label(test_label_path, test_img_name, os.listdir(test_label_path), save_dir+'test/label', version_test=True)
 
 def create_folder(folder):
     if not os.path.exists(folder):
