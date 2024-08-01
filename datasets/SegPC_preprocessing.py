@@ -90,9 +90,7 @@ def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_siz
             print(idx_list)
             index = 1
             for idx in idx_list:
-                image_name_idx = os.path.join(data_dir, idx)
-                image_idx = io.imread(image_name_idx)
-                print(image_idx.shape)
+                image_idx = io.imread(idx)
                 if index == 1:
                     n_image = np.zeros_like(image_idx)
                     c_image = np.zeros_like(image_idx)
@@ -116,7 +114,7 @@ def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_siz
                             c_patch = c_image[i:i + patch_size, j:j + patch_size, :]
                         else:
                             n_patch = n_image[i:i + patch_size, j:j + patch_size]
-                            c_patch = c_image[i:i + patch_size, j:j + patch_size, :]
+                            c_patch = c_image[i:i + patch_size, j:j + patch_size]
                         n_image.append(n_patch)
                         c_image.append(c_patch)
 
