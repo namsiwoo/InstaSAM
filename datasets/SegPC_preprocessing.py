@@ -87,6 +87,7 @@ def split_patches_label(data_dir, img_name_list, label_list, save_dir, patch_siz
         for image_name in img_name_list:
             print('$$$$', image_name)
             idx_list = glob.glob(os.path.join(data_dir, '*{:s}*'.format(image_name[:-4])))
+            print(idx_list)
             index = 1
             for idx in idx_list:
                 image_name_idx = os.path.join(data_dir, idx)
