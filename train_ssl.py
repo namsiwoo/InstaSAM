@@ -606,7 +606,7 @@ if __name__ == '__main__':
             args.data_path = 'not yet'
     elif args.data == "segpc":
         if args.shift == 0:
-            args.data_path = '/media/NAS/nas_70/open_dataset/TNBC/TNBC/via instance learning data_for_train/TNBC'
+            args.data_path = '/media/NAS/nas_70/open_dataset/segpc/segpc'
         else:
             args.data_path = 'not yet'
     elif args.data == 'pannuke':
