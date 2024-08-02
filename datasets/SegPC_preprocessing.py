@@ -31,7 +31,7 @@ def main(train, test):
         test_img_name = os.listdir(test_img_path)
 
         # split_patches(test_img_path, val_img_name, save_dir+'test')
-        split_patches_label(test_label_path, test_img_name, save_dir+'/label/test', version_test=True)
+        split_patches_label(test_label_path, test_img_name, save_dir, 'test', version_test=True)
 
 def create_folder(folder):
     if not os.path.exists(folder):
@@ -155,10 +155,10 @@ def split_patches_label(data_dir, img_name_list, save_dir, split, patch_size=102
                         '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, image_name[:-len(post_fix) - 1], k, post_fix, ext),
                         c_seg_imgs[k])
                 else:
-                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_nuclei', image_name[:-4], k, ext), n_seg_imgs[k], check_contrast=False)
-                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_cell', image_name[:-4], k, ext), c_seg_imgs[k], check_contrast=False)
-                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_point_nuclei', image_name[:-4], k, ext), n_point_imgs[k], check_contrast=False)
-                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'_point_cell', image_name[:-4], k, ext), c_point_imgs[k], check_contrast=False)
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'label_instance_nuclei/'+split, image_name[:-4], k, ext), n_seg_imgs[k], check_contrast=False)
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'label_instance_cell/'+split+'_cell', image_name[:-4], k, ext), c_seg_imgs[k], check_contrast=False)
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'label_point_nuclei/'+split, image_name[:-4], k, ext), n_point_imgs[k], check_contrast=False)
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'label_point_nuclei/'+split, image_name[:-4], k, ext), c_point_imgs[k], check_contrast=False)
         else:
             io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_nuclei', image_name[:-4], ext), n_image, check_contrast=False)
             io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_cell', image_name[:-4], ext), c_image, check_contrast=False)
