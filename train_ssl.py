@@ -13,8 +13,8 @@ from utils.utils import accuracy_object_level, AJI_fast, average_precision, save
 from utils.vis_flow import flow_to_color
 from utils.hv_process import make_instance_hv, make_instance_sonnet, make_instance_marker
 
-def split_forward(sam_model, input, sam_input_size, device, num_hq_token):
-    size = 224
+def split_forward(sam_model, input, sam_input_size, device, num_hq_token, size=224):
+    # size = 224
     overlap = 80
 
     b, c, h0, w0 = input.size()
@@ -312,8 +312,12 @@ def main(args):
                     input = pack[0][0]
                     mask = pack[0][1]
                     img_name = pack[1][0]
+                    if args.data == 'segpc':
+                        size = 1024
+                    else:
+                        size = 224
 
-                    output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token)
+                    output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token, size)
                     binary_mask = torch.sigmoid(output).detach().cpu().numpy()
 
                     if args.num_hq_token == 2:
@@ -448,10 +452,14 @@ def test(args, device):
         for iter, pack in enumerate(test_dataloader):
             input = pack[0][0]
             mask = pack[0][1]
+            if args.data == 'segpc':
+                size = 1024
+            else:
+                size = 224
 
             img_name = pack[1][0]
 
-            output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token)
+            output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token, size)
             binary_mask = torch.sigmoid(output).detach().cpu().numpy()
 
             if args.num_hq_token == 2:
