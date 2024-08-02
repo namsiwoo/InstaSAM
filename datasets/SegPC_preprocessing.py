@@ -93,7 +93,7 @@ def split_patches_label(data_dir, img_name_list, save_dir, split, patch_size=102
     print("Spliting large {:s} images into small patches...".format(post_fix))
 
     for image_name in img_name_list:
-        idx_list = glob.glob(os.path.join(data_dir, '*{:s}_*'.format(image_name[:-4])))
+        idx_list = glob.glob(os.path.join(data_dir, '{:s}_*'.format(image_name[:-4])))
         index = 1
         for idx in idx_list:
             # image_idx = io.imread(idx, as_gray=True)
