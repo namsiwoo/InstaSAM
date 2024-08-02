@@ -19,11 +19,11 @@ def main(train, test):
         val_img_name = img_name[int(len(img_name)*0.8):]
 
 
-        split_patches(img_path, train_img_name, save_dir+'train/image')
-        split_patches(label_path, val_img_name, save_dir+'val/image')
+        # split_patches(img_path, train_img_name, save_dir+'image/train')
+        split_patches(img_path, val_img_name, save_dir+'image/val')
 
-        split_patches_label(label_path, train_img_name, save_dir+'train/label', version_test=False)
-        split_patches_label(label_path, val_img_name, save_dir+'val/label', version_test=False)
+        split_patches_label(label_path, train_img_name, save_dir+'label/train', version_test=False)
+        split_patches_label(label_path, val_img_name, save_dir+'label/val', version_test=False)
 
     if test == True:
         test_img_path = os.path.join(test_path, 'x')
@@ -31,7 +31,7 @@ def main(train, test):
         test_img_name = os.listdir(test_img_path)
 
         # split_patches(test_img_path, val_img_name, save_dir+'test')
-        split_patches_label(test_label_path, test_img_name, save_dir+'test/label', version_test=True)
+        split_patches_label(test_label_path, test_img_name, save_dir+'/label/test', version_test=True)
 
 def create_folder(folder):
     if not os.path.exists(folder):
