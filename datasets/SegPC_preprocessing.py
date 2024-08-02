@@ -81,13 +81,13 @@ def split_patches(data_dir, img_name_list, save_dir, patch_size=1024, post_fix="
 def split_patches_label(data_dir, img_name_list, save_dir, split, patch_size=1024, post_fix="", ext="png", version_test='False'):
     import math
     """ split large image into small patches """
-    if create_folder(save_dir+'label_instance_nuclei/'+split):
+    if create_folder(save_dir+'labels_instance_nuclei/'+split):
         pass
-    if create_folder(save_dir+'label_instance_cell/'+split):
+    if create_folder(save_dir+'labels_instance_cell/'+split):
         pass
-    if create_folder(save_dir+'label_point_nuclei/'+split):
+    if create_folder(save_dir+'labels_point_nuclei/'+split):
         pass
-    if create_folder(save_dir+'label_point_cell/'+split):
+    if create_folder(save_dir+'labels_point_cell/'+split):
         pass
 
     print("Spliting large {:s} images into small patches...".format(post_fix))
@@ -155,10 +155,10 @@ def split_patches_label(data_dir, img_name_list, save_dir, split, patch_size=102
                         '{:s}/{:s}_{:d}_{:s}.{:s}'.format(save_dir, image_name[:-len(post_fix) - 1], k, post_fix, ext),
                         c_seg_imgs[k])
                 else:
-                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'label_instance_nuclei/'+split, image_name[:-4], k, ext), n_seg_imgs[k], check_contrast=False)
-                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'label_instance_cell/'+split, image_name[:-4], k, ext), c_seg_imgs[k], check_contrast=False)
-                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'label_point_nuclei/'+split, image_name[:-4], k, ext), n_point_imgs[k], check_contrast=False)
-                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'label_point_nuclei/'+split, image_name[:-4], k, ext), c_point_imgs[k], check_contrast=False)
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'labels_instance_nuclei/'+split, image_name[:-4], k, ext), n_seg_imgs[k], check_contrast=False)
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'labels_instance_cell/'+split, image_name[:-4], k, ext), c_seg_imgs[k], check_contrast=False)
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'labels_point_nuclei/'+split, image_name[:-4], k, ext), n_point_imgs[k], check_contrast=False)
+                    io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'labels_point_nuclei/'+split, image_name[:-4], k, ext), c_point_imgs[k], check_contrast=False)
         else:
             io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_nuclei', image_name[:-4], ext), n_image, check_contrast=False)
             io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_cell', image_name[:-4], ext), c_image, check_contrast=False)
