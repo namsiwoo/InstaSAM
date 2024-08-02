@@ -19,8 +19,8 @@ def main(train, test):
         val_img_name = img_name[int(len(img_name)*0.8):]
 
 
-        # split_patches(img_path, train_img_name, save_dir+'train/image')
-        # split_patches(label_path, val_img_name, save_dir+'val/image')
+        split_patches(img_path, train_img_name, save_dir+'train/image')
+        split_patches(label_path, val_img_name, save_dir+'val/image')
 
         split_patches_label(label_path, train_img_name, save_dir+'train/label', version_test=False)
         split_patches_label(label_path, val_img_name, save_dir+'val/label', version_test=False)
@@ -99,7 +99,7 @@ def split_patches_label(data_dir, img_name_list, save_dir, patch_size=1024, post
                 n_point = np.zeros_like(image_idx)
                 c_image = np.zeros_like(image_idx)
                 c_point = np.zeros_like(image_idx)
-            print(image_name, idx, np.unique(image_idx), image_idx.shape)
+            # print(image_name, idx, np.unique(image_idx), image_idx.shape)
             n_image[image_idx == np.unique(image_idx)[1]] = index
             c_image[image_idx > 0] = index
 
