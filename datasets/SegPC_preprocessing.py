@@ -160,8 +160,8 @@ def split_patches_label(data_dir, img_name_list, save_dir, split, patch_size=102
                     io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'labels_point_nuclei/'+split, image_name[:-4], k, ext), n_point_imgs[k], check_contrast=False)
                     io.imsave('{:s}/{:s}_{:d}.{:s}'.format(save_dir+'labels_point_cell/'+split, image_name[:-4], k, ext), c_point_imgs[k], check_contrast=False)
         else:
-            io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_nuclei', image_name[:-4], ext), n_image, check_contrast=False)
-            io.imsave('{:s}/{:s}.{:s}'.format(save_dir + '_cell', image_name[:-4], ext), c_image, check_contrast=False)
+            io.imsave('{:s}/{:s}.{:s}'.format(save_dir+'labels_instance_nuclei/'+split, image_name[:-4], ext), n_image, check_contrast=False)
+            io.imsave('{:s}/{:s}.{:s}'.format(save_dir+'labels_instance_cell/'+split, image_name[:-4], ext), c_image, check_contrast=False)
 
 
 if __name__ == '__main__':
