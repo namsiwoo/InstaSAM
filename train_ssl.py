@@ -53,6 +53,8 @@ def split_forward(sam_model, input, sam_input_size, device, num_hq_token, size=2
 
             with torch.no_grad():
                 pred, offset_pred = sam_model.infer(input_patch.to(device))
+                pred = F.interpolate(pred, (size, size), mode='bilinear', align_corners=True)
+                offset_pred = F.interpolate(offset_pred, (size, size), mode='bilinear', align_corners=True)
 
 
             output[:, :, ind1_s:ind1_e, ind2_s:ind2_e] = pred[:, :, ind1_s - i:ind1_e - i,
