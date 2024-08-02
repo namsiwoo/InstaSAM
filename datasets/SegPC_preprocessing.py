@@ -104,7 +104,7 @@ def split_patches_label(data_dir, img_name_list, save_dir, split, patch_size=102
                 n_point = np.zeros_like(image_idx)
                 c_image = np.zeros_like(image_idx)
                 c_point = np.zeros_like(image_idx)
-            print(image_name, idx, np.unique(image_idx), image_idx.shape)
+            # print(image_name, idx, np.unique(image_idx), image_idx.shape)
             n_image[image_idx == np.unique(image_idx)[1]] = index
             c_image[image_idx > 0] = index
 
