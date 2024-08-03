@@ -19,8 +19,8 @@ def main(train, test):
         val_img_name = img_name[int(len(img_name)*0.8):]
 
 
-        split_patches(img_path, train_img_name, save_dir+'image/train')
-        split_patches(img_path, val_img_name, save_dir+'image/val')
+        # split_patches(img_path, train_img_name, save_dir+'image/train')
+        # split_patches(img_path, val_img_name, save_dir+'image/val')
 
         split_patches_label(label_path, train_img_name, save_dir, 'train', version_test=False)
         split_patches_label(label_path, val_img_name, save_dir, 'val', version_test=False)
@@ -105,10 +105,10 @@ def split_patches_label(data_dir, img_name_list, save_dir, split, patch_size=102
                 c_image = np.zeros_like(image_idx)
                 c_point = np.zeros_like(image_idx)
             # print(image_name, idx, np.unique(image_idx), image_idx.shape)
-            n_image[image_idx == np.unique(image_idx)[1]] = index
+            n_image[image_idx == np.unique(image_idx)[2]] = index
             c_image[image_idx > 0] = index
 
-            coor = np.where(image_idx == np.unique(image_idx)[1])
+            coor = np.where(image_idx == np.unique(image_idx)[2])
             y, x = coor
             n_point[round(np.mean(y)), round(np.mean(x))] = 255
 
