@@ -162,11 +162,11 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 box_label = skimage.morphology.label(box_label)
                 box_label = Image.fromarray(box_label.astype(np.uint16))
 
-                plt.clf()
-                plt.imshow(box_label)
-                plt.colorbar()
-                print(np.unique(np.array(box_label)))
-                plt.savefig(os.path.join(self.args.result, 'img/0/'+str(index)+'.png'))
+
+                # plt.imshow(box_label)
+                # plt.colorbar()
+                # print(np.unique(np.array(box_label)))
+                # plt.savefig(os.path.join(self.args.result, 'img/0/'+str(index)+'.png'))
 
                 sample = [img, box_label]
             else:
