@@ -157,15 +157,14 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
             if self.use_mask == True:
                 if self.data == 'nuclei':
                     box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance_nuclei', self.split, img_name)))
-                    print(np.unique(box_label))
                 else:
                     box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance_cell', self.split, img_name)))
                 box_label = skimage.morphology.label(box_label)
                 box_label = Image.fromarray(box_label.astype(np.uint16))
-                # plt.imshow(box_label)
-                # plt.colorbar()
-                # print(np.unique(np.array(box_label)))
-                # plt.savefig(os.path.join(self.args.result, 'img/0/'+str(index)+'.png'))
+                plt.imshow(box_label)
+                plt.colorbar()
+                print(np.unique(np.array(box_label)))
+                plt.savefig(os.path.join(self.args.result, 'img/0/'+str(index)+'.png'))
                 sample = [img, box_label]
             else:
                 if self.data == 'nuclei':
