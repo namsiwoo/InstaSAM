@@ -280,7 +280,7 @@ class SAM(nn.Module):
             # if len(torch.unique(points[0])) > 1:
             if torch.sum(points[b]) > 0:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
-                if len(torch.unique(points[0])) > 8:
+                if len(torch.unique(points[0])) > 4:
                     mask_prompt_adapter = torch.zeros_like(points.squeeze(1)).to(self.device).float()
 
                     # gt_local, gt_global = (torch.zeros(1, 224, 224).to(self.device)-1).float(), (torch.zeros(1, 224, 224).to(self.device)-1).float()
@@ -542,13 +542,13 @@ class SAM(nn.Module):
                 #     train_map.append(reliable_map)
             # train_map = torch.stack(train_map)
 
-            # bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
-            # iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+            bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
+            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
 
-            bce_loss_local += (1-((epoch+1)/100))*(self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
-            iou_loss_local += (1-((epoch+1)/100))*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
-            bce_loss_local += ((epoch+1)/100)*(self.criterionBCE(self.mask_prompt_adapter[b], g_pseudo_maks)*train_map).mean()
-            iou_loss_local += ((epoch+1)/100)*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), g_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+            # bce_loss_local += (1-((epoch+1)/100))*(self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
+            # iou_loss_local += (1-((epoch+1)/100))*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+            # bce_loss_local += ((epoch+1)/100)*(self.criterionBCE(self.mask_prompt_adapter[b], g_pseudo_maks)*train_map).mean()
+            # iou_loss_local += ((epoch+1)/100)*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), g_pseudo_maks.unsqueeze(0), ignored_map=train_map)
         del l_pseudo_maks
         return bce_loss_local, iou_loss_local
 
