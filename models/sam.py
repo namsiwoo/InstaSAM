@@ -544,13 +544,13 @@ class SAM(nn.Module):
                 #     train_map.append(reliable_map)
             # train_map = torch.stack(train_map)
 
-            bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
-            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+            # bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
+            # iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
 
-            # bce_loss_local += (1-((epoch+1)/50))*(self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
-            # iou_loss_local += (1-((epoch+1)/50))*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
-            # bce_loss_local += ((epoch+1)/50)*(self.criterionBCE(self.mask_prompt_adapter[b], g_pseudo_maks)*train_map).mean()
-            # iou_loss_local += ((epoch+1)/50)*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), g_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+            bce_loss_local += (1-((epoch+1)/50))*(self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
+            iou_loss_local += (1-((epoch+1)/50))*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+            bce_loss_local += ((epoch+1)/50)*(self.criterionBCE(self.mask_prompt_adapter[b], g_pseudo_maks)*train_map).mean()
+            iou_loss_local += ((epoch+1)/50)*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), g_pseudo_maks.unsqueeze(0), ignored_map=train_map)
         del l_pseudo_maks
         return bce_loss_local, iou_loss_local
 
