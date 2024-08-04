@@ -531,11 +531,20 @@ def test(args, device):
 
     f = open(os.path.join(args.result,'img', 'test', "result.txt"), 'w')
     f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
+            '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dice, mean_iou, mean_aji))
     f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
+            '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dq, mean_sq, mean_pq))
     f.write('***test result_mask*** Average- AP1\tAP2\tAP3: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
+            '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_ap1, mean_ap2, mean_ap3))
+    f.close()
+
+    f = open(os.path.join(args.result, "result.txt"), 'w')
+    f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
+            '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dice, mean_iou, mean_aji))
+    f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
+            '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dq, mean_sq, mean_pq))
+    f.write('***test result_mask*** Average- AP1\tAP2\tAP3: '
+            '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_ap1, mean_ap2, mean_ap3))
     f.close()
 
 
