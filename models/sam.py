@@ -280,7 +280,7 @@ class SAM(nn.Module):
             # if len(torch.unique(points[0])) > 1:
             if torch.sum(points[b]) > 0:
                 point_coord, point_label = make_point_prompt(points[b], only_fg=False)
-                if len(torch.unique(points[0])) > 20: #cut
+                if len(torch.unique(points[0])) > 200000: #cut
                     mask_prompt_adapter = torch.zeros_like(points.squeeze(1)).to(self.device).float()
 
                     #### Worse case....
