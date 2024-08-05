@@ -460,6 +460,7 @@ def test(args, device):
                 size = 224
 
             img_name = pack[1][0]
+            print(img_name, 'is processing....')
 
             output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token, size)
             binary_mask = torch.sigmoid(output).detach().cpu().numpy()
