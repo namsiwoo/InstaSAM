@@ -565,7 +565,7 @@ def AJI_fast(gt, pred_arr, name):
             u += (np.sum(s_areas[1:] * (1 - used)))
             return 1.0 * c / u
         else:
-            print(name)
+            print(name, gs)
             return 0.0
     else:
         print(name)
