@@ -88,11 +88,14 @@ def main(args):
                         'freq_nums': 0.25, 'prompt_type': 'highpass', 'prompt_embed_dim': 256, 'tuning_stage': 1234, 'handcrafted_tune': True, 'embedding_tune': True, 'adaptor': 'adaptor', 'embed_dim': 1024,
                         'depth': 24, 'num_heads': 16, 'global_attn_indexes': [5, 11, 17, 23]}
         sam_checkpiont = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_l_0b3195.pth'
-    elif args.model_type == 'vit_b':
+    elif args.model_type == 'vit_b' or args.model_type == 'medsam':
         encoder_mode = {'name': 'sam', 'img_size': args.img_size, 'mlp_ratio': 4, 'patch_size': 16, 'qkv_bias': True, 'use_rel_pos': True, 'window_size': 14, 'out_chans': 256, 'scale_factor': 32, 'input_type': 'fft',
                         'freq_nums': 0.25, 'prompt_type': 'highpass', 'prompt_embed_dim': 256, 'tuning_stage': 1234, 'handcrafted_tune': True, 'embedding_tune': True, 'adaptor': 'adaptor', 'embed_dim': 768,
                         'depth': 12, 'num_heads': 12, 'global_attn_indexes': [2, 5, 8, 11]}
-        sam_checkpiont = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_b_01ec64.pth'
+        if args.model_type == 'vit_b':
+            sam_checkpiont = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_b_01ec64.pth'
+        else:
+            sam_checkpiont = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/medsam_vit_b.pth'
 
 
     sam_model = models.sam.SAM(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
