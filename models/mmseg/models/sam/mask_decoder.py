@@ -71,7 +71,7 @@ class MaskDecoder(nn.Module):
 
         #for HQ SAM
     def make_HQ_module(self, model_type, transformer_dim, num_token=1, HQ_transformer=None, local_transformer=None):
-        vit_dim_dict = {"vit_b": 768, "vit_l": 1024, "vit_h": 1280}
+        vit_dim_dict = {"vit_b": 768, "medsam": 768, "vit_l": 1024, "vit_h": 1280}
         vit_dim = vit_dim_dict[model_type]
         # self.HQ_transformer = HQ_transformer
         # self.HQ_transformer = copy.deepcopy(self.transformer)
