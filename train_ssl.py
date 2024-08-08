@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from datasets.MoNuSeg_dataset import Crop_dataset, DeepCell_dataset, MoNuSeg_weak_dataset, Galaxy_dataset
+from datasets.MoNuSeg_dataset import Crop_dataset, DeepCell_dataset, MoNuSeg_weak_dataset, Galaxy_dataset, gt_with_weak_dataset
 
 import models
 
@@ -141,8 +141,12 @@ def main(args):
         train_dataset = Galaxy_dataset(args, 'train', use_mask=args.sup, data='nuclei')
         val_dataset = Galaxy_dataset(args, 'val', use_mask=args.sup, data='nuclei')
     else:
-        train_dataset = MoNuSeg_weak_dataset(args, 'train', sup=args.sup)
-        val_dataset = MoNuSeg_weak_dataset(args, 'val', sup=args.sup)
+        if args.semi ==True:
+            train_dataset = gt_with_weak_dataset(args, 'train', sup=args.sup)
+            val_dataset = gt_with_weak_dataset(args, 'val', sup=args.sup)
+        else:
+            train_dataset = MoNuSeg_weak_dataset(args, 'train', sup=args.sup)
+            val_dataset = MoNuSeg_weak_dataset(args, 'val', sup=args.sup)
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
     val_dataloader = DataLoader(val_dataset)
@@ -171,9 +175,11 @@ def main(args):
                 bce_local_loss, iou_local_loss = 0, 0
             else:
                 if args.semi == True:
+                    label = batch[0][1].squeeze(1)
+                    point = batch[0][2]
                     sam_model.set_input(img, label)
-                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters()  # point, epoch, batch[1][0]
-                    bce_local_loss, iou_local_loss = 0, 0
+                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
+                        point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)
                 else:
                     # label = batch[0][1].squeeze(1)
                     point = batch[0][1]

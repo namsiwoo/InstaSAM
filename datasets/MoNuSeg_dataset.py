@@ -94,7 +94,6 @@ class gt_with_weak_dataset(torch.utils.data.Dataset):
             if self.sup == True:
 
                 box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
-                # box_label = np.array(Image.open(os.path.join('/media/NAS/nas_187/siwoo/train', 'labels_instance', self.split, img_name[:-4]+'_label.png')))
                 box_label = skimage.morphology.label(box_label)
                 box_label = Image.fromarray(box_label.astype(np.uint16))
 
@@ -102,17 +101,17 @@ class gt_with_weak_dataset(torch.utils.data.Dataset):
                 sample = [img, box_label]  # , new_mask
                 sample = self.transform(sample)
             else:
-                if self.args.semi ==True:
-                    if img_name[:-5] == '7':
-                        box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
-                        box_label = skimage.morphology.label(box_label)
-                        box_label = Image.fromarray(box_label.astype(np.uint16))
-                    else:
-                        box_label = np.zeros_like()
+                point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
+                point = binary_dilation(np.array(point), iterations=2)
+                point = Image.fromarray(point)
 
-                    point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
-                    point = binary_dilation(np.array(point), iterations=2)
-                    point = Image.fromarray(point)
+
+                if img_name[:-5] == '7':
+                    box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
+                    box_label = skimage.morphology.label(box_label)
+                    box_label = Image.fromarray(box_label.astype(np.uint16))
+                else:
+                    box_label = np.zeros_like(point)
 
                 sample = [img, box_label, point]#, cluster_label, voronoi_label]  # , new_mask
                 sample = self.transform(sample)
