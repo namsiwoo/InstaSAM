@@ -170,11 +170,16 @@ def main(args):
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
                 bce_local_loss, iou_local_loss = 0, 0
             else:
-                # label = batch[0][1].squeeze(1)
-                point = batch[0][1]
-                sam_model.set_input(img)
-                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
-                    point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), epoch)  # point, epoch, batch[1][0]
+                if args.semi == True:
+                    sam_model.set_input(img, label)
+                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters()  # point, epoch, batch[1][0]
+                    bce_local_loss, iou_local_loss = 0, 0
+                else:
+                    # label = batch[0][1].squeeze(1)
+                    point = batch[0][1]
+                    sam_model.set_input(img)
+                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
+                        point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)  # point, epoch, batch[1][0]
             # clu_label = batch[0][3].squeeze(1)
             # vor_label = batch[0][4].squeeze(1)
 
@@ -559,6 +564,7 @@ if __name__ == '__main__':
     parser.add_argument('--start_val', default=30, type=int)
     parser.add_argument('--plt', action='store_true')
     parser.add_argument('--sup', action='store_true')
+    parser.add_argument('--semi', action='store_true')
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--test', action='store_true')
 

@@ -267,10 +267,7 @@ class SAM(nn.Module):
 
         del self.interm_embeddings, sparse_embeddings, dense_embeddings #self.features,
 
-        # return self.gt_mask
         # Make pseudo label using prompts
-
-        # print('make pseudo gt', self.mask_decoder.local_token.weight)
         pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h (points.shape, b, 1, w, h)
         pseudo_gt_global = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h
         self.mask_prompt_adapter = []
@@ -321,7 +318,6 @@ class SAM(nn.Module):
             pseudo_gt_global[b] = gt_global
 
         del mask_prompt_adapter, points, x_ori#ignored_map
-
 
         if epoch>500:
             from utils.utils import accuracy_object_level, AJI_fast, save_checkpoint, load_checkpoint, mk_colored
@@ -439,110 +435,31 @@ class SAM(nn.Module):
             del sparse_embeddings, dense_embeddings, iou_preds, mask_prompt
             return pseudo_gt_global, mask_prompt_adapter
 
-
-
-
-
-
-
-
-
     def backward_G_ssl(self, gt):
-        """Calculate GAN and L1 loss for the generator"""
-        # print(self.gt_mask, np.unique(self.gt_mask.detach().cpu().numpy()))
-
         binary_gt = gt.clone().unsqueeze(1)
         binary_gt[binary_gt > 0] = 1.
         ignored_map = (binary_gt != -1) #2, 224, 224
         gt[gt<0] = 0.
 
-
-
-        # binary_gt = gt.clone()
-        # ignored_map = (binary_gt.clone() != -1) * 1 #2, 224, 224
-        # binary_gt[binary_gt != 0] = 1.
-        # gt[gt<0] = 0 # 2, 224, 224
-
-
-
-        # print(torch.sum(ignored_map))
-
-
-        # instance_gt = self.gt_mask.clone()
-        # instance_gt[instance_gt<0] = 0
-
         bce_loss_sam = (self.criterionBCE(self.pred_mask, binary_gt.float())*ignored_map).mean()
-        # bce_loss_sam = (bce_loss_sam * (self.gt_mask != -1).unsqueeze(1)).mean()
-
-        # print(torch.sum(binary_gt))
-        #
-        # plt.clf()
-        # plt.subplot(1, 3, 1)
-        # plt.imshow(self.pred_mask.detach().cpu().numpy()[0, 0])
-        # plt.subplot(1, 3, 2)
-        # plt.imshow(torch.sigmoid(self.pred_mask).detach().cpu().numpy()[0, 0])
-        # plt.subplot(1, 3, 3)
-        # plt.imshow(binary_gt.detach().cpu().numpy()[0])
-        # plt.savefig('/media/NAS/nas_187/siwoo/2023/result/global_local_weak/img/'+str(torch.sum(binary_gt).item())+'.png')
-
-
-        # bce_loss_clu = self.criterionBCE(self.pred_mask, self.clu.unsqueeze(1).float())
-        # bce_loss_clu = (bce_loss_clu * (self.clu != 2).unsqueeze(1)).mean()
-        # bce_loss_vor = self.criterionBCE(self.pred_mask, self.vor.unsqueeze(1).float())
-        # bce_loss_vor = (bce_loss_vor * (self.vor != 2).unsqueeze(1)).mean()
-        # bce_loss = bce_loss_clu+bce_loss_vor#+bce_loss_sam
-
-        # if epoch>3:
-        # train offset mask
-        # pseudo_instance, ig = make_pseudo_offset(self.pred_mask, self.vor)
-        # offset_loss, offset_gt = self.criterionOFFSET(self.masks_hq, pseudo_instance)
         offset_loss, offset_gt = self.criterionOFFSET(self.masks_hq, gt, ignored_map=ignored_map)
-        # else:
-        #     offset_loss = 0
-        #     offset_gt = torch.zeros_like(self.masks_hq)
-
 
         iou_loss_sam = _iou_loss(self.pred_mask, binary_gt, ignored_map=ignored_map)
 
-        # iou_loss_clu = _iou_loss(self.pred_mask, self.clu.unsqueeze(1), ignored_map=(self.clu!=2))
-        # iou_loss_vor = _iou_loss(self.pred_mask, self.vor.unsqueeze(1), ignored_map=(self.vor!=2))
-        # iou_loss = iou_loss_clu+iou_loss_vor#+iou_loss_sam
         del binary_gt, ignored_map
         return bce_loss_sam, offset_loss, iou_loss_sam, offset_gt
 
     def backward_G_local(self, epoch, l_gt, g_gt):
-        # entropy = -torch.sum(torch.sigmoid(self.mask_prompt_ori) * torch.log(torch.sigmoid(self.mask_prompt_ori) + 1e-10), dim=0)
-        # reliable_map = entropy<0.3
-
         bce_loss_local = 0
         iou_loss_local = 0
 
         for b in range(len(self.mask_prompt_adapter)):
-            # train_map = []
             train_map = (l_gt[b] != -1)
             l_pseudo_maks = torch.zeros_like(self.mask_prompt_adapter[b])
             g_pseudo_maks = torch.zeros_like(self.mask_prompt_adapter[b])
             for i in range(len(l_pseudo_maks)):
                 l_pseudo_maks[i] = (l_gt[b].unsqueeze(0) == (i+1))
                 g_pseudo_maks[i] = (g_gt[b].unsqueeze(0) == (i+1))
-
-
-                # if torch.sum(gt==i) != 0: #torch.sum((gt==(i+1))*reliable_map) == torch.sum(gt==(i+1)) and
-                #     # print('ones')
-                #     train_map.append(torch.ones_like(reliable_map))
-                #     # train_map.append(reliable_map)
-                #
-                #     # plt.clf()
-                #     # plt.subplot(1, 2, 1)
-                #     # plt.imshow(((gt==(i+1))*reliable_map).detach().cpu().numpy()[0])
-                #     # plt.subplot(1, 2, 2)
-                #     # plt.imshow(((gt == (i + 1))).detach().cpu().numpy()[0])
-                #     # plt.savefig('/media/NAS/nas_187/siwoo/2023/result/global_local_simple/'+str(name)+'_'+str(i)+'.png')
-                #
-                # else:
-                #     # print('rel')
-                #     train_map.append(reliable_map)
-            # train_map = torch.stack(train_map)
 
             bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
             iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
@@ -602,26 +519,28 @@ class SAM(nn.Module):
 
         return bce_loss, offset_loss, iou_loss, offset_gt
 
-    def optimize_parameters(self, point_prompt=None, img_name=None, epoch=0):
+    def optimize_parameters(self, point_prompt=None, img_name=None, semi=False, epoch=0):
         if point_prompt == None:
             self.forward() #point_prompt
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
         else:
-            # print("before forward", torch.cuda.memory_allocated() / 1024 / 1024, '******', end='')
-            local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch) # local_gt, global_gt =
-            # print("after forward", torch.cuda.memory_allocated() / 1024 / 1024, '******')
+            if semi == False:
+                local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+                bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
+                bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
+                self.loss_G = bce_loss + iou_loss + 5*offset_loss + bce_loss_local + iou_loss_local
 
-            bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)#global_gt  # calculate graidents for G
-            bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
-            self.loss_G = bce_loss + iou_loss + 5*offset_loss + bce_loss_local + iou_loss_local
-            # print("after loss", torch.cuda.memory_allocated() / 1024 / 1024, '******')
+            else:
+                _, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+                if img_name[-5] != '7':
+                    bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
+                    bce_loss_local, iou_loss_local = 0, 0
+                else:
+                    bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()
+                    bce_loss_local, iou_loss_local = self.backward_G_local(epoch, self.gt, global_gt)
+                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local
 
-
-            # bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl2(img_name)#global_gt  # calculate graidents for G
-            # bce_loss_local, iou_loss_local = 0, 0
-
-
-            del self.input
+        del self.input
 
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
