@@ -111,7 +111,7 @@ class gt_with_weak_dataset(torch.utils.data.Dataset):
                     box_label = skimage.morphology.label(box_label)
                     box_label = Image.fromarray(box_label.astype(np.uint16))
                 else:
-                    box_label = np.zeros_like(point)
+                    box_label = np.zeros_like(np.array(point))
 
                 sample = [img, box_label, point]#, cluster_label, voronoi_label]  # , new_mask
                 sample = self.transform(sample)
