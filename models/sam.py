@@ -552,7 +552,7 @@ class SAM(nn.Module):
                 self.loss_G = bce_loss + iou_loss + offset_loss + bce_loss_local + iou_loss_local
 
         del self.input
-
+        print('training...')
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
