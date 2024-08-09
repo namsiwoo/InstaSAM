@@ -543,7 +543,7 @@ class SAM(nn.Module):
                 elif epoch<10:
                     self.optimizer.zero_grad()
                     self.optimizer.step()
-                    del self.input, self.gt_mask, self.loss_G
+                    del self.input, self.gt_mask
                     return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq.clone(), 0, 0
                 else:
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()
