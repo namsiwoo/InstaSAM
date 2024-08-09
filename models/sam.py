@@ -534,7 +534,7 @@ class SAM(nn.Module):
                 _, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
                 # if img_name[-5] != '7': CoNSeP
                 # print(img_name)
-                if img_name[-7:-4] == '2_3': TNBC
+                if img_name[-7:-4] == '2_3': #TNBC
                 # if img_name[-6:-4] == '_3': #MO
                     # print('using_gt')
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
