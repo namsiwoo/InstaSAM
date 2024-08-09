@@ -541,7 +541,7 @@ class SAM(nn.Module):
                     bce_loss_local, iou_loss_local = self.backward_G_local(epoch, self.gt_mask, global_gt)
                     bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss*5, offset_loss*5, iou_loss*5, bce_loss_local*5, iou_loss_local*5
                 elif epoch<10:
-                    return self.pred_mask, self.masks_hq, 0, 0, 0, self.pred_mask.clone(), 0, 0
+                    return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq.clone(), 0, 0
                 else:
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()
                     bce_loss_local, iou_loss_local = 0, 0
