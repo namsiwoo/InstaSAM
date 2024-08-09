@@ -533,7 +533,9 @@ class SAM(nn.Module):
             else:
                 _, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
                 # if img_name[-5] != '7':
+                print(img_name)
                 if img_name[-7:-5] == '2_2':
+                    print('using_gt')
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
                     bce_loss_local, iou_loss_local = 0, 0
                 else:
