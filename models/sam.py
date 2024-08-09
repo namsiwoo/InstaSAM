@@ -538,11 +538,11 @@ class SAM(nn.Module):
                     # print('using_gt')
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
                     bce_loss_local, iou_loss_local = self.backward_G_local(epoch, self.gt_mask, global_gt)
-                    bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss*3, offset_loss*3, iou_loss*3, bce_loss_local*3, iou_loss_local*3
+                    bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss*5, offset_loss*5, iou_loss*5, bce_loss_local*5, iou_loss_local*5
                 else:
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()
                     bce_loss_local, iou_loss_local = 0, 0
-                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local
+                self.loss_G = bce_loss + iou_loss + offset_loss + bce_loss_local + iou_loss_local
 
         del self.input
 
