@@ -107,7 +107,8 @@ class gt_with_weak_dataset(torch.utils.data.Dataset):
 
 
                 # if img_name[:-5] == '7':
-                if img_name[-7:-5] == '2_3':
+                # if img_name[-7:-5] == '2_3':
+                if img_name[-6:-4] == '_3':  # MO
                     box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
                     box_label = skimage.morphology.label(box_label)
                     box_label = Image.fromarray(box_label.astype(np.uint16))
