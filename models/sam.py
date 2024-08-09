@@ -541,7 +541,7 @@ class SAM(nn.Module):
                 else:
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()
                     bce_loss_local, iou_loss_local = 0, 0
-                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local
+                self.loss_G = bce_loss*10 + iou_loss*10 + 5 * offset_loss + bce_loss_local + iou_loss_local
 
         del self.input
 
