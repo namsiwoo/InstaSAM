@@ -258,7 +258,7 @@ class SAM(nn.Module):
             multimask_output=False,
             mask_token_only=False,
             local_path=False,
-            interm_embeddings=self.interm_embeddings[0].detach(),
+            interm_embeddings=self.interm_embeddings[0], #.detach(),
         )
         self.pred_mask = self.postprocess_masks(masks, self.inp_size, (224,224))
         self.masks_hq = self.postprocess_masks(masks_hq, self.inp_size, (224,224))
@@ -462,13 +462,13 @@ class SAM(nn.Module):
                 l_pseudo_maks[i] = (l_gt[b].unsqueeze(0) == (i+1))
                 g_pseudo_maks[i] = (g_gt[b].unsqueeze(0) == (i+1))
 
-            bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
-            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+            # bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
+            # iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
 
-            # bce_loss_local += (1-((epoch+1)/50))*(self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
-            # iou_loss_local += (1-((epoch+1)/50))*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
-            # bce_loss_local += ((epoch+1)/50)*(self.criterionBCE(self.mask_prompt_adapter[b], g_pseudo_maks)*train_map2).mean()
-            # iou_loss_local += ((epoch+1)/50)*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), g_pseudo_maks.unsqueeze(0), ignored_map=train_map2)
+            bce_loss_local += (1-((epoch+1)/50))*(self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
+            iou_loss_local += (1-((epoch+1)/50))*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+            bce_loss_local += ((epoch+1)/50)*(self.criterionBCE(self.mask_prompt_adapter[b], g_pseudo_maks)*train_map2).mean()
+            iou_loss_local += ((epoch+1)/50)*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), g_pseudo_maks.unsqueeze(0), ignored_map=train_map2)
         del l_pseudo_maks, g_pseudo_maks
         return bce_loss_local, iou_loss_local
 
