@@ -97,9 +97,6 @@ def main(args):
         else:
             sam_checkpoint = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/medsam_vit_b.pth'
 
-    if args.ck_point is not None:
-        sam_checkpoint = args.ck_point
-
     sam_model = models.sam.SAM(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
     sam_model.optimizer = torch.optim.AdamW(sam_model.parameters(), lr=args.lr)
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer, 20, eta_min=1.0e-7)
@@ -116,6 +113,9 @@ def main(args):
     sam_model.make_HQ_model(model_type=args.model_type, num_token=args.num_hq_token)
     if args.resume != 0:
         sam_model = load_checkpoint(sam_model, os.path.join(args.result, 'model', str(args.resume)+'_model.pth'))
+    if args.ck_point is not None:
+        sam_model = load_checkpoint(sam_model, args.ck_point)
+
     sam_model = sam_model.cuda()
 
 
