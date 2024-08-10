@@ -537,7 +537,7 @@ class SAM(nn.Module):
                 # print(img_name)
                 if img_name[-7:-4] == '2_3': #TNBC
                 # if img_name[-6:-4] == '_3': #MO
-                    bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
+                    bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(self.gt_mask)
                     bce_loss_local, iou_loss_local = self.backward_G_local(epoch, self.gt_mask, global_gt)
                     # if epoch< 10:
                     #     bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss * 200, offset_loss * 200, iou_loss * 200, bce_loss_local * 200, iou_loss_local * 200
