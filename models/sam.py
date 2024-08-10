@@ -455,20 +455,21 @@ class SAM(nn.Module):
 
         for b in range(len(self.mask_prompt_adapter)):
             train_map = (l_gt[b] != -1)
+            train_map2 = (g_gt[b] != -1)
             l_pseudo_maks = torch.zeros_like(self.mask_prompt_adapter[b])
             g_pseudo_maks = torch.zeros_like(self.mask_prompt_adapter[b])
-            for i in range(len(l_pseudo_maks)):
+            for i in range(len(g_pseudo_maks)):
                 l_pseudo_maks[i] = (l_gt[b].unsqueeze(0) == (i+1))
                 g_pseudo_maks[i] = (g_gt[b].unsqueeze(0) == (i+1))
 
-            bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
-            iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
+            # bce_loss_local += (self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
+            # iou_loss_local += _iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
 
             # bce_loss_local += (1-((epoch+1)/50))*(self.criterionBCE(self.mask_prompt_adapter[b], l_pseudo_maks)*train_map).mean()
             # iou_loss_local += (1-((epoch+1)/50))*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), l_pseudo_maks.unsqueeze(0), ignored_map=train_map)
-            # bce_loss_local += ((epoch+1)/50)*(self.criterionBCE(self.mask_prompt_adapter[b], g_pseudo_maks)*train_map).mean()
-            # iou_loss_local += ((epoch+1)/50)*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), g_pseudo_maks.unsqueeze(0), ignored_map=train_map)
-        del l_pseudo_maks
+            bce_loss_local += ((epoch+1)/50)*(self.criterionBCE(self.mask_prompt_adapter[b], g_pseudo_maks)*train_map2).mean()
+            iou_loss_local += ((epoch+1)/50)*_iou_loss(self.mask_prompt_adapter[b].unsqueeze(0), g_pseudo_maks.unsqueeze(0), ignored_map=train_map2)
+        del l_pseudo_maks, g_pseudo_maks
         return bce_loss_local, iou_loss_local
 
     def forward(self):  # , point_prompt=None
@@ -549,7 +550,8 @@ class SAM(nn.Module):
                     return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq.clone(), 0, 0
                 else:
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()
-                    bce_loss_local, iou_loss_local = 0, 0
+                    bce_loss_local, iou_loss_local = self.backward_G_local(epoch, global_gt, global_gt)
+                    # bce_loss_local, iou_loss_local = 0, 0
                 self.loss_G = bce_loss + iou_loss + offset_loss + bce_loss_local + iou_loss_local
 
         del self.input
