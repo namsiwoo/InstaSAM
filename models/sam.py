@@ -548,7 +548,7 @@ class SAM(nn.Module):
                 # #     self.optimizer.step()
                 # #     del self.input, self.gt_mask
                 # #     return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq.clone(), 0, 0
-                # else:
+                else:
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()
                     bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
                     # bce_loss_local, iou_loss_local = 0, 0
