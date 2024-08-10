@@ -539,16 +539,16 @@ class SAM(nn.Module):
                 # if img_name[-6:-4] == '_3': #MO
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(self.gt_mask)
                     bce_loss_local, iou_loss_local = self.backward_G_local(epoch, self.gt_mask, global_gt)
-                    # if epoch< 10:
-                    #     bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss * 200, offset_loss * 200, iou_loss * 200, bce_loss_local * 200, iou_loss_local * 200
-                    # else:
-                    bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss*5, offset_loss*5, iou_loss*5, bce_loss_local*5, iou_loss_local*5
-                # elif epoch<10:
-                #     self.optimizer.zero_grad()
-                #     self.optimizer.step()
-                #     del self.input, self.gt_mask
-                #     return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq.clone(), 0, 0
-                else:
+                    if epoch< 10:
+                        bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss * 200, offset_loss * 200, iou_loss * 200, bce_loss_local * 200, iou_loss_local * 200
+                    else:
+                        bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss*5, offset_loss*5, iou_loss*5, bce_loss_local*5, iou_loss_local*5
+                # # elif epoch<10:
+                # #     self.optimizer.zero_grad()
+                # #     self.optimizer.step()
+                # #     del self.input, self.gt_mask
+                # #     return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq.clone(), 0, 0
+                # else:
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()
                     bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
                     # bce_loss_local, iou_loss_local = 0, 0
