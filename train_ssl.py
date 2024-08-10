@@ -81,27 +81,29 @@ def main(args):
         encoder_mode = {'name': 'sam', 'img_size': args.img_size, 'mlp_ratio': 4, 'patch_size': 16, 'qkv_bias': True, 'use_rel_pos': True, 'window_size': 14, 'out_chans': 256, 'scale_factor': 32, 'input_type': 'fft',
                         'freq_nums': 0.25, 'prompt_type': 'highpass', 'prompt_embed_dim': 256, 'tuning_stage': 1234, 'handcrafted_tune': True, 'embedding_tune': True, 'adaptor': 'adaptor', 'embed_dim': 1280,
                         'depth': 32, 'num_heads': 16, 'global_attn_indexes': [7, 15, 23, 31]}
-        sam_checkpiont = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_h_4b8939.pth'
-        # sam_checkpiont = '/media/NAS/nas_187/siwoo/2023/result/transformer_freeze_new_h2_pseudo_MO_2/model/Aji_best_model.pth'
+        sam_checkpoint = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_h_4b8939.pth'
+        # sam_checkpoint = '/media/NAS/nas_187/siwoo/2023/result/transformer_freeze_new_h2_pseudo_MO_2/model/Aji_best_model.pth'
     elif args.model_type == 'vit_l':
         encoder_mode = {'name': 'sam', 'img_size': args.img_size, 'mlp_ratio': 4, 'patch_size': 16, 'qkv_bias': True, 'use_rel_pos': True, 'window_size': 14, 'out_chans': 256, 'scale_factor': 32, 'input_type': 'fft',
                         'freq_nums': 0.25, 'prompt_type': 'highpass', 'prompt_embed_dim': 256, 'tuning_stage': 1234, 'handcrafted_tune': True, 'embedding_tune': True, 'adaptor': 'adaptor', 'embed_dim': 1024,
                         'depth': 24, 'num_heads': 16, 'global_attn_indexes': [5, 11, 17, 23]}
-        sam_checkpiont = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_l_0b3195.pth'
+        sam_checkpoint = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_l_0b3195.pth'
     elif args.model_type == 'vit_b' or args.model_type == 'medsam':
         encoder_mode = {'name': 'sam', 'img_size': args.img_size, 'mlp_ratio': 4, 'patch_size': 16, 'qkv_bias': True, 'use_rel_pos': True, 'window_size': 14, 'out_chans': 256, 'scale_factor': 32, 'input_type': 'fft',
                         'freq_nums': 0.25, 'prompt_type': 'highpass', 'prompt_embed_dim': 256, 'tuning_stage': 1234, 'handcrafted_tune': True, 'embedding_tune': True, 'adaptor': 'adaptor', 'embed_dim': 768,
                         'depth': 12, 'num_heads': 12, 'global_attn_indexes': [2, 5, 8, 11]}
         if args.model_type == 'vit_b':
-            sam_checkpiont = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_b_01ec64.pth'
+            sam_checkpoint = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_b_01ec64.pth'
         else:
-            sam_checkpiont = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/medsam_vit_b.pth'
+            sam_checkpoint = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/medsam_vit_b.pth'
 
+    if args.ck_point is not None:
+        sam_checkpoint = args.ck_point
 
     sam_model = models.sam.SAM(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
     sam_model.optimizer = torch.optim.AdamW(sam_model.parameters(), lr=args.lr)
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer, 20, eta_min=1.0e-7)
-    sam_model = load_checkpoint(sam_model, sam_checkpiont)
+    sam_model = load_checkpoint(sam_model, sam_checkpoint)
 
     for name, para in sam_model.named_parameters():
         if "image_encoder" in name and "prompt_generator" not in name:
@@ -580,6 +582,8 @@ if __name__ == '__main__':
     parser.add_argument('--shift',default='0', type=int, help='0, 2, 4, 6, 8')
     parser.add_argument('--fs', action='store_true', help='few-shot setting')
     parser.add_argument('--data_path', default='', help='few-shot setting')
+    parser.add_argument('--ck_point',default=None, type=str, help='MoNuSeg, CPM 17, CoNSeP, TNBC')
+
 
     # parser.add_argument('--data', default='/media/NAS/nas_32/siwoo/TNBC/TNBC/via instance learning data_for_train/TNBC', help='path to dataset')
     # parser.add_argument('--data', default='/media/NAS/nas_32/siwoo/TNBC/TNBC_shift4/via instance learning data_for_train/TNBC_shift4', help='path to dataset')
