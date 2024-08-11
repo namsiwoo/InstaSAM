@@ -155,7 +155,7 @@ class ImageEncoderViT(nn.Module):
             x_ori = x.clone()
         if self.adapter2:
             prompt2 = self.prompt_generator2.get_prompt(handcrafted_feature, embedding_feature)
-            x2 = x.clone
+            x2 = x.clone()
 
         B, H, W = x.shape[0], x.shape[1], x.shape[2]
         interm_embeddings = []
