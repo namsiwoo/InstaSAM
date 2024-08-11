@@ -164,7 +164,7 @@ class ImageEncoderViT(nn.Module):
             x = prompt[i].reshape(B, H, W, -1) + x
             x = blk(x)
             if self.adapter2:
-                x2 = prompt[i].reshape(B, H, W, -1) + x2
+                x2 = prompt2[i].reshape(B, H, W, -1) + x2
                 x2 = blk(x2)
 
             if mk_p_label == True:
