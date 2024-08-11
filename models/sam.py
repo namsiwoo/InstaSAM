@@ -216,10 +216,10 @@ class SAM(nn.Module):
 
         self.mask_decoder.make_local_module(model_type, self.prompt_embed_dim,
                                             local_transformer=TwoWayTransformer(
-                                                depth=2,
-                                                embedding_dim=self.prompt_embed_dim,
-                                                mlp_dim=2048,
-                                                num_heads=8,
+                                            depth=2,
+                                            embedding_dim=self.prompt_embed_dim,
+                                            mlp_dim=2048,
+                                            num_heads=8,
                                             ), )
 
 
@@ -228,6 +228,8 @@ class SAM(nn.Module):
             # self.criterionOFFSET = offset_Loss(300, 300)
         else:
             self.criterionOFFSET = offset_Loss_sonnet(224, 224)
+    def make_adapter2(self):
+        self.image_encoder.make_adapter2()
 
     def set_input(self, input, gt_mask=None, clu=None, vor=None):
         self.input = input.to(self.device)

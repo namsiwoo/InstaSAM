@@ -62,6 +62,7 @@ class ImageEncoderViT(nn.Module):
         """
         super().__init__()
         self.img_size = img_size
+        self.patch_size = patch_size
         self.embed_dim = embed_dim
         self.depth = depth
 
@@ -132,6 +133,13 @@ class ImageEncoderViT(nn.Module):
         self.num_stages = self.depth
         self.out_indices = tuple(range(self.num_stages))
 
+    def make_adapter2(self):
+        self.prompt_generator2 = PromptGenerator(self.scale_factor, self.prompt_type, self.embed_dim,
+                                                self.tuning_stage, self.depth,
+                                                self.input_type, self.freq_nums,
+                                                self.handcrafted_tune, self.embedding_tune, self.adaptor,
+                                                self.img_size, self.patch_size)
+        self.adapter2 = True
     def forward(self, x: torch.Tensor, mk_p_label=False):
         inp = x
 
@@ -145,12 +153,19 @@ class ImageEncoderViT(nn.Module):
 
         if mk_p_label == True:
             x_ori = x.clone()
+        if self.adapter2:
+            prompt2 = self.prompt_generator2.get_prompt(handcrafted_feature, embedding_feature)
+            x2 = x.clone
+
         B, H, W = x.shape[0], x.shape[1], x.shape[2]
         interm_embeddings = []
         outs = []
         for i, blk in enumerate(self.blocks):
             x = prompt[i].reshape(B, H, W, -1) + x
             x = blk(x)
+            if self.adapter2:
+                x2 = prompt[i].reshape(B, H, W, -1) + x2
+                x2 = blk(x2)
 
             if mk_p_label == True:
                 x_ori=blk(x_ori)
@@ -163,8 +178,12 @@ class ImageEncoderViT(nn.Module):
         x = self.neck(x.permute(0, 3, 1, 2))
 
         if mk_p_label == True:
-            x_ori = self.neck(x_ori.permute(0, 3, 1, 2))
-            return x, interm_embeddings, x_ori
+            if self.adapter2:
+                x2 = self.neck(x2.permute(0, 3, 1, 2))
+                return x2, interm_embeddings, x
+            else:
+                x_ori = self.neck(x_ori.permute(0, 3, 1, 2))
+                return x, interm_embeddings, x_ori
         else:
             return x, interm_embeddings
 

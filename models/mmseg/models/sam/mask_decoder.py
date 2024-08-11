@@ -114,7 +114,7 @@ class MaskDecoder(nn.Module):
             nn.GELU(),
             nn.Conv2d(transformer_dim // 4, transformer_dim // 8, 3, 1, 1))
 
-    def make_local_module(self, model_type, transformer_dim, local_transformer=None):
+    def make_local_module(self):
         import copy
 
         self.local_transformer = copy.deepcopy(self.transformer)

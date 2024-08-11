@@ -111,6 +111,8 @@ def main(args):
         #     para.requires_grad_(False)
 
     sam_model.make_HQ_model(model_type=args.model_type, num_token=args.num_hq_token)
+    if args.adapter2:
+        sam_model.make_adapter2()
     if args.resume != 0:
         sam_model = load_checkpoint(sam_model, os.path.join(args.result, 'model', str(args.resume)+'_model.pth'))
     if args.ck_point is not None:
@@ -575,7 +577,7 @@ if __name__ == '__main__':
     parser.add_argument('--semi', action='store_true')
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--test', action='store_true')
-
+    parser.add_argument('--adapter2',action='store_true')
 
     parser.add_argument('--data_type',default='crop', type=str ,help='crop, patch')
     parser.add_argument('--data',default='MoNuSeg',help='MoNuSeg, CPM 17, CoNSeP, TNBC')
