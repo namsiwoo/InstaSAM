@@ -132,6 +132,7 @@ class ImageEncoderViT(nn.Module):
                                                 img_size, patch_size)
         self.num_stages = self.depth
         self.out_indices = tuple(range(self.num_stages))
+        self.adapter2 = False
 
     def make_adapter2(self):
         self.prompt_generator2 = PromptGenerator(self.scale_factor, self.prompt_type, self.embed_dim,
