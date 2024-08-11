@@ -442,6 +442,9 @@ def test(args, device):
 
     sam_model.make_HQ_model(model_type=args.model_type, num_token=args.num_hq_token)
     sam_model = sam_model.cuda()
+    if args.adapter2:
+        sam_model.make_adapter2()
+
 
     # sam_checkpoint = torch.load(os.path.join(args.model, 'Aji_best_model.pth'))
     # sam_model.load_state_dict(sam_checkpoint, strict=False)
