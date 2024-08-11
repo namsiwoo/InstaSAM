@@ -119,7 +119,6 @@ class gt_with_weak_dataset(torch.utils.data.Dataset):
                 sample = [img, box_label, point]#, cluster_label, voronoi_label]  # , new_mask
                 sample = self.transform(sample)
 
-
         else:
             # mask = Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')).convert('L')
             # mask = np.array(mask)
@@ -722,16 +721,61 @@ class MoNuSeg_dataset_coarse_label(torch.utils.data.Dataset):
         return self.num_samples
 
 if __name__ == '__main__':
-    path = '/media/NAS/nas_187/datasets/galaxy_dataset_UNIST/train/masks'
-    name = os.listdir(path)
-    for n in name:
-        mask = np.load(os.path.join(path, n))
-        point = np.zeros_like(mask)
-        label_regions = skimage.measure.regionprops(mask)
-        for i, region in enumerate(label_regions):
-            # point_coords.append([round(region.centroid[0]), round(region.centroid[1])])
-            point[round(region.centroid[0]), round(region.centroid[1])] = 255
-        np.save(os.path.join('/media/NAS/nas_187/datasets/galaxy_dataset_UNIST/train/point', n[:-4] + '.npy'), point)
+    # path = '/media/NAS/nas_187/datasets/galaxy_dataset_UNIST/train/masks'
+    # name = os.listdir(path)
+    # for n in name:
+    #     mask = np.load(os.path.join(path, n))
+    #     point = np.zeros_like(mask)
+    #     label_regions = skimage.measure.regionprops(mask)
+    #     for i, region in enumerate(label_regions):
+    #         # point_coords.append([round(region.centroid[0]), round(region.centroid[1])])
+    #         point[round(region.centroid[0]), round(region.centroid[1])] = 255
+    #     np.save(os.path.join('/media/NAS/nas_187/datasets/galaxy_dataset_UNIST/train/point', n[:-4] + '.npy'), point)
+
+    import json, random
+    from collections import OrderedDict
+
+    # data_dir = '/media/NAS/nas_70/open_dataset/TNBC/TNBC/via instance learning data_for_train/TNBC'
+    data_dir = '/media/NAS/nas_70/open_dataset/TNBC/TNBC/images'
+    json_dir = '/media/NAS/nas_70/open_dataset/TNBC/TNBC_new'
+
+
+    data_list = os.listdir(data_dir)
+    random.shuffle(data_list)
+
+    train_list = data_dir[:-7-13]
+    val_list = data_dir[-7-13:-13]
+    test_list = data_dir[-13:]
+
+
+    # train_dir = os.path.join(data_dir, 'train', 'images')
+    # train_list = os.listdir(train_dir)
+    # val_list = ['image_01.png', 'image_05.png', 'image_07.png', 'image_13.png', 'image_20.png', 'image_30.png']
+    # for i in val_list:
+    #     train_list.remove(i)
+    #
+    # for i in train_list:
+    #     img = Image.open(f"{train_dir}/{i}")
+    #     img.save(f"{save_dir}/{i}")
+    # for i in val_list:
+    #     img = Image.open(f"{train_dir}/{i}")
+    #     img.save(f"{save_dir}/{i}")
+    #
+    # test_dir = os.path.join(data_dir, 'test', 'images')
+    # test_list = os.listdir(test_dir)
+    # new_test_list = []
+    # for i in range(len(test_list)):
+    #     img = Image.open(f"{test_dir}/image_{str(i).zfill(2)}.png")
+    #     img.save(f"{save_dir}/image_{str(i + len(train_list) + len(val_list)).zfill(2)}.png")
+    #     new_test_list.append(f"image_{str(i + len(train_list) + len(val_list)).zfill(2)}.png")
+
+    json_data = OrderedDict()
+    json_data['train'] = train_list
+    json_data['val'] = val_list
+    json_data['test'] = test_list
+
+    with open('{:s}/train_val_test.json'.format(json_dir), 'w') as make_file:
+        json.dump(json_data, make_file, indent='\t')
 
 
 
