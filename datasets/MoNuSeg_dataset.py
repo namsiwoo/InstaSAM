@@ -743,9 +743,9 @@ if __name__ == '__main__':
     data_list = os.listdir(data_dir)
     random.shuffle(data_list)
 
-    train_list = data_dir[:-7-13]
-    val_list = data_dir[-7-13:-13]
-    test_list = data_dir[-13:]
+    train_list = data_list[:-7-13]
+    val_list = data_list[-7-13:-13]
+    test_list = data_list[-13:]
 
 
     # train_dir = os.path.join(data_dir, 'train', 'images')
