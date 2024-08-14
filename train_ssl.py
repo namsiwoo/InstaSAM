@@ -102,11 +102,11 @@ def main(args):
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer, 20, eta_min=1.0e-7)
     sam_model = load_checkpoint(sam_model, sam_checkpoint)
 
-    # for name, para in sam_model.named_parameters():
-    #     if "image_encoder" in name and "prompt_generator" not in name:
-    #         para.requires_grad_(False)
-    #     if "prompt_encoder" in name:
-    #         para.requires_grad_(False)
+    for name, para in sam_model.named_parameters():
+        if "image_encoder" in name and "prompt_generator" not in name:
+            para.requires_grad_(False)
+        if "prompt_encoder" in name:
+            para.requires_grad_(False)
         # if "mask_decoder" in name:
         #     para.requires_grad_(False)
 
