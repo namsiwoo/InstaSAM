@@ -261,7 +261,7 @@ class SAM(nn.Module):
             multimask_output=False,
             mask_token_only=False,
             local_path=False,
-            interm_embeddings=self.interm_embeddings[0].detach(), #.detach(),
+            interm_embeddings=self.interm_embeddings[0], #.detach(),
         )
         self.pred_mask = self.postprocess_masks(masks, self.inp_size, (224,224))
         self.masks_hq = self.postprocess_masks(masks_hq, self.inp_size, (224,224))
