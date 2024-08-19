@@ -54,7 +54,7 @@ def split_forward(model, input, sam_input_size, device, num_hq_token, size=224):
             with torch.no_grad():
                 # channels = [[2, 3], [0, 0], [0, 0]]
                 channels = [1, 1]
-                masks, flows, styles, diams = model.eval(input_patch, diameter=None, flow_threshold=None, channels=channels)
+                masks, flows, styles, diams = model.eval(input_patch.numpy(), diameter=None, flow_threshold=None, channels=channels)
                 # masks = torch.from_numpy(np.array(masks))
                 # flows = np.array(flows)
                 # styles = np.array(styles)
@@ -109,7 +109,7 @@ def test(args, device):
 
 
 
-            output, output_offset = split_forward(model, input, size, device, 2, size)
+            output = split_forward(model, input, size, device, 2, size)
             # binary_mask = torch.sigmoid(output).detach().cpu().numpy()
             print(output.shape, output_offset.shape)
             print(torch.unique(output))
