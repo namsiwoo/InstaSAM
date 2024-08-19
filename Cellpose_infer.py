@@ -3,6 +3,7 @@ import skimage.io
 import matplotlib.pyplot as plt
 
 import numpy as np
+from PIL import Image
 
 from urllib.parse import urlparse
 from cellpose import models, core
@@ -34,8 +35,7 @@ def split_forward(model, input, sam_input_size, device, num_hq_token, size=224):
 
     _, c, h, w = input.size()
 
-    output = torch.zeros((input.size(0), 1, h, w))
-    offset_output = torch.zeros((input.size(0), num_hq_token, h, w))
+    output = np.zeros((input.size(0), 1, h, w))
 
     for i in range(0, h - overlap, size - overlap):
         r_end = i + size if i + size < h else h
@@ -66,10 +66,9 @@ def split_forward(model, input, sam_input_size, device, num_hq_token, size=224):
             # offset_output[:, :, ind1_s:ind1_e, ind2_s:ind2_e] = flows[:, :, ind1_s - i:ind1_e - i,
             #                                          ind2_s - j:ind2_e - j]
 
-    output = output[:, :, :h0, :w0].to(device)
-    offset_output = offset_output[:, :, :h0, :w0].to(device)
-    return output, offset_output
-
+    output = output[:, :, :h0, :w0]
+    # offset_output = offset_output[:, :, :h0, :w0].to(device)
+    return output
 def test(args, device):
     if args.data_type == 'crop':
         test_dataseet = Crop_dataset(args, 'test', use_mask=args.sup, data=args.data)
@@ -116,13 +115,13 @@ def test(args, device):
             print(torch.unique(output))
 
 
-            if len(np.unique(binary_map)) == 1:
+            if len(np.unique(output)) == 1:
                 dice, iou, aji = 0, 0, 0
             else:
-                dice, iou = accuracy_object_level(instance_map, mask[0][0].detach().cpu().numpy())
-                aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map, img_name)
-                pq_list, _ = get_fast_pq(mask[0][0].detach().cpu().numpy(), instance_map) #[dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
-                ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), instance_map)
+                dice, iou = accuracy_object_level(output, mask[0][0].detach().cpu().numpy())
+                aji = AJI_fast(mask[0][0].detach().cpu().numpy(), output, img_name)
+                pq_list, _ = get_fast_pq(mask[0][0].detach().cpu().numpy(), output) #[dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
+                ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), output)
 
             mean_dice += dice / (len(test_dataloader))  # *len(local_rank))
             mean_iou += iou / (len(test_dataloader))  # len(local_rank))
@@ -136,20 +135,12 @@ def test(args, device):
             mean_ap2 += ap[1] / (len(test_dataloader))
             mean_ap3 += ap[2] / (len(test_dataloader))
 
-            instance_map = mk_colored(instance_map) * 255
+            instance_map = mk_colored(output) * 255
             instance_map = Image.fromarray((instance_map).astype(np.uint8))
             instance_map.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_pred_inst.png'))
 
-            marker = mk_colored(marker) * 255
-            marker = Image.fromarray((marker).astype(np.uint8))
-            marker.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_marker.png'))
-
-            pred = mk_colored(binary_map) * 255
-            pred = Image.fromarray((pred).astype(np.uint8))
-            pred.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_pred.png'))
-
-            pred_flow_vis = Image.fromarray(pred_flow_vis.astype(np.uint8))
-            pred_flow_vis.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_flow_vis.png'))
+            # pred_flow_vis = Image.fromarray(pred_flow_vis.astype(np.uint8))
+            # pred_flow_vis.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_flow_vis.png'))
 
             mask = mk_colored(mask[0][0].detach().cpu().numpy()) * 255
             mask = Image.fromarray((mask).astype(np.uint8))
