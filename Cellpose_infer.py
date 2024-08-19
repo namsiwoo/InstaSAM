@@ -61,7 +61,7 @@ def split_forward(model, input, sam_input_size, device, num_hq_token, size=224):
                 # diams = np.array(diams)
                 # print(masks.shape, flows.shape, styles.shape, diams.shape)
 
-            output[:, :, ind1_s:ind1_e, ind2_s:ind2_e] = masks[:, :, ind1_s - i:ind1_e - i,
+            output[:, :, ind1_s:ind1_e, ind2_s:ind2_e] = masks[ind1_s - i:ind1_e - i,
                                                      ind2_s - j:ind2_e - j]
             # offset_output[:, :, ind1_s:ind1_e, ind2_s:ind2_e] = flows[:, :, ind1_s - i:ind1_e - i,
             #                                          ind2_s - j:ind2_e - j]
