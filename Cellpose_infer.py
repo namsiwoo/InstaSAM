@@ -111,7 +111,6 @@ def test(args, device):
 
             output = split_forward(model, input, size, device, 2, size)
             # binary_mask = torch.sigmoid(output).detach().cpu().numpy()
-            print(output.shape, output_offset.shape)
             print(torch.unique(output))
 
 
