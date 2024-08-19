@@ -187,7 +187,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_path', default='', help='few-shot setting')
     parser.add_argument('--ck_point', default=None, type=str, help='MoNuSeg, CPM 17, CoNSeP, TNBC')
 
-    parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/cellpose', help='')
+    parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/cellpose_model/cellpose', help='')
 
     parser.add_argument('--seed', default=42, type=int)
     args = parser.parse_args()
