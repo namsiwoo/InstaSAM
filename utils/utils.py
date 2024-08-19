@@ -632,7 +632,6 @@ def get_fast_pq(true, pred, match_iou=0.5):
     )
 
     # caching pairwise iou
-    print(np.unique(t_mask), true_id_list)
     for true_id in true_id_list[1:]:  # 0-th is background
         try:
             t_mask = true_masks[true_id]
@@ -648,7 +647,7 @@ def get_fast_pq(true, pred, match_iou=0.5):
                 iou = inter / (total - inter)
                 pairwise_iou[true_id - 1, pred_id - 1] = iou
         except:
-            print(np.unique(t_mask), true_id_list)
+            print(t_mask.shape, true_id_list)
 
     #
     if match_iou >= 0.5:
