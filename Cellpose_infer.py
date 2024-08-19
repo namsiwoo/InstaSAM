@@ -56,15 +56,15 @@ def split_forward(model, input, sam_input_size, device, num_hq_token, size=224):
                 channels = [1, 1]
                 masks, flows, styles, diams = model.eval(input_patch, diameter=None, flow_threshold=None, channels=channels)
                 masks = np.array(masks)
-                flows = np.array(flows)
-                styles = np.array(styles)
-                diams = np.array(diams)
-                print(masks.shape, flows.shape, styles.shape, diams.shape)
+                # flows = np.array(flows)
+                # styles = np.array(styles)
+                # diams = np.array(diams)
+                # print(masks.shape, flows.shape, styles.shape, diams.shape)
 
             output[:, :, ind1_s:ind1_e, ind2_s:ind2_e] = masks[:, :, ind1_s - i:ind1_e - i,
                                                      ind2_s - j:ind2_e - j]
-            offset_output[:, :, ind1_s:ind1_e, ind2_s:ind2_e] = flows[:, :, ind1_s - i:ind1_e - i,
-                                                     ind2_s - j:ind2_e - j]
+            # offset_output[:, :, ind1_s:ind1_e, ind2_s:ind2_e] = flows[:, :, ind1_s - i:ind1_e - i,
+            #                                          ind2_s - j:ind2_e - j]
 
     output = output[:, :, :h0, :w0].to(device)
     offset_output = offset_output[:, :, :h0, :w0].to(device)
