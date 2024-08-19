@@ -115,9 +115,9 @@ def test(args, device):
 
 
 
-            print(np.unique(masks))
-            plt.imshow(masks)
-            plt.savefig('/media/NAS/nas_187/siwoo/2024/revision/cellpose_model/cellpose/img/test/ex.png')
+            # print(np.unique(masks))
+            # plt.imshow(masks)
+            # plt.savefig('/media/NAS/nas_187/siwoo/2024/revision/cellpose_model/cellpose/img/test/ex.png')
 
 
             if len(np.unique(masks)) == 1:
