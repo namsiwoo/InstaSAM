@@ -52,8 +52,10 @@ def split_forward(model, input, sam_input_size, device, num_hq_token, size=224):
             # input_patch = F.interpolate(input_patch, (sam_input_size, sam_input_size), mode='bilinear', align_corners=True)
 
             with torch.no_grad():
-                channels = [[2, 3], [0, 0], [0, 0]]
+                # channels = [[2, 3], [0, 0], [0, 0]]
+                channels = [1, 1]
                 masks, flows, styles, diams = model.eval(input_patch, diameter=None, flow_threshold=None, channels=channels)
+                print(masks.size(), flows.size(), styles.size(), diams.size())
 
             output[:, :, ind1_s:ind1_e, ind2_s:ind2_e] = masks[:, :, ind1_s - i:ind1_e - i,
                                                      ind2_s - j:ind2_e - j]
