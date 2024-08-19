@@ -107,23 +107,26 @@ def test(args, device):
             img_name = pack[1][0]
             print(img_name, 'is processing....')
 
+            channels = [2, 3]
+            masks, flows, styles, diams = model.eval(input.numpy(), diameter=None, flow_threshold=None,
+                                                     channels=channels)
+
+            # output = split_forward(model, input, size, device, 2, size)
 
 
-            output = split_forward(model, input, size, device, 2, size)
-            # binary_mask = torch.sigmoid(output).detach().cpu().numpy()
-            output = output[0, 0]
-            print(np.unique(output))
-            plt.imshow(output)
+
+            print(np.unique(masks))
+            plt.imshow(masks)
             plt.savefig('/media/NAS/nas_187/siwoo/2024/revision/cellpose_model/cellpose/img/test/ex.png')
 
 
-            if len(np.unique(output)) == 1:
+            if len(np.unique(masks)) == 1:
                 dice, iou, aji = 0, 0, 0
             else:
-                dice, iou = accuracy_object_level(output, mask[0][0].detach().cpu().numpy())
-                aji = AJI_fast(mask[0][0].detach().cpu().numpy(), output, img_name)
-                pq_list, _ = get_fast_pq(mask[0][0].detach().cpu().numpy(), output) #[dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
-                ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), output)
+                dice, iou = accuracy_object_level(masks, mask[0][0].detach().cpu().numpy())
+                aji = AJI_fast(mask[0][0].detach().cpu().numpy(), masks, img_name)
+                pq_list, _ = get_fast_pq(mask[0][0].detach().cpu().numpy(), masks) #[dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
+                ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), masks)
 
             mean_dice += dice / (len(test_dataloader))  # *len(local_rank))
             mean_iou += iou / (len(test_dataloader))  # len(local_rank))
@@ -137,7 +140,7 @@ def test(args, device):
             mean_ap2 += ap[1] / (len(test_dataloader))
             mean_ap3 += ap[2] / (len(test_dataloader))
 
-            instance_map = mk_colored(output) * 255
+            instance_map = mk_colored(masks) * 255
             instance_map = Image.fromarray((instance_map).astype(np.uint8))
             instance_map.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_pred_inst.png'))
 
