@@ -112,6 +112,8 @@ def test(args, device):
             output = split_forward(model, input, size, device, 2, size)
             # binary_mask = torch.sigmoid(output).detach().cpu().numpy()
             print(np.unique(output))
+            plt.imshow(output)
+            plt.savefig('/media/NAS/nas_187/siwoo/2024/revision/cellpose_model/cellpose/img/test/ex.png')
 
 
             if len(np.unique(output)) == 1:
