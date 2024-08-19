@@ -632,19 +632,24 @@ def get_fast_pq(true, pred, match_iou=0.5):
     )
 
     # caching pairwise iou
+    print(np.unique(t_mask), true_id_list)
     for true_id in true_id_list[1:]:  # 0-th is background
-        t_mask = true_masks[true_id]
-        pred_true_overlap = pred[t_mask > 0]
-        pred_true_overlap_id = np.unique(pred_true_overlap)
-        pred_true_overlap_id = list(pred_true_overlap_id)
-        for pred_id in pred_true_overlap_id:
-            if pred_id == 0:  # ignore
-                continue  # overlaping background
-            p_mask = pred_masks[pred_id]
-            total = (t_mask + p_mask).sum()
-            inter = (t_mask * p_mask).sum()
-            iou = inter / (total - inter)
-            pairwise_iou[true_id - 1, pred_id - 1] = iou
+        try:
+            t_mask = true_masks[true_id]
+            pred_true_overlap = pred[t_mask > 0]
+            pred_true_overlap_id = np.unique(pred_true_overlap)
+            pred_true_overlap_id = list(pred_true_overlap_id)
+            for pred_id in pred_true_overlap_id:
+                if pred_id == 0:  # ignore
+                    continue  # overlaping background
+                p_mask = pred_masks[pred_id]
+                total = (t_mask + p_mask).sum()
+                inter = (t_mask * p_mask).sum()
+                iou = inter / (total - inter)
+                pairwise_iou[true_id - 1, pred_id - 1] = iou
+        except:
+            print(np.unique(t_mask), true_id_list)
+
     #
     if match_iou >= 0.5:
         paired_iou = pairwise_iou[pairwise_iou > match_iou]
