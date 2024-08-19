@@ -53,7 +53,7 @@ def split_forward(model, input, sam_input_size, device, num_hq_token, size=224):
 
             with torch.no_grad():
                 # channels = [[2, 3], [0, 0], [0, 0]]
-                channels = [1, 1]
+                channels = [2, 3]
                 masks, flows, styles, diams = model.eval(input_patch.numpy(), diameter=None, flow_threshold=None, channels=channels)
                 # masks = torch.from_numpy(np.array(masks))
                 # flows = np.array(flows)
