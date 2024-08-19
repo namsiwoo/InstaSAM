@@ -239,12 +239,12 @@ class DeepCell_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         self.use_mask = use_mask
         self.data=data
 
-        # self.mean = np.array([123.675, 116.28, 103.53])
-        # self.std = np.array([58.395, 57.12, 57.375])
+        self.mean = np.array([123.675, 116.28, 103.53])
+        self.std = np.array([58.395, 57.12, 57.375])
 
-        print('Norm is not used')
-        self.mean = np.array([1, 1, 1])
-        self.std = np.array([1, 1, 1])
+        # print('Norm is not used')
+        # self.mean = np.array([1, 1, 1])
+        # self.std = np.array([1, 1, 1])
 
         if self.args.sup == True:
             from datasets.get_transforms_ori import get_transforms
