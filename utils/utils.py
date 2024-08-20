@@ -647,7 +647,7 @@ def get_fast_pq(true, pred, match_iou=0.5):
                 iou = inter / (total - inter)
                 pairwise_iou[true_id - 1, pred_id - 1] = iou
         except:
-            print(true_masks.shape, true_id_list)
+            print(len(true_masks), true_id_list)
 
     #
     if match_iou >= 0.5:
