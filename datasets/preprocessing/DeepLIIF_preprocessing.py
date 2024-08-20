@@ -49,7 +49,7 @@ if __name__ == '__main__':
                     negative = (crop_img[:, :, 2] == 0).astype(np.uint8)*255
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
                     instance, _, _ = make_instance_sonnet(instance, positive+negative)
-
+                    print(np.unique(positive), np.unique(negative), np.unique(instance))
                     positive = Image.fromarray(positive.astype('uint8'))
                     negative = Image.fromarray(negative.astype('uint8'))
                     instance = Image.fromarray(instance.astype('uint16'))
