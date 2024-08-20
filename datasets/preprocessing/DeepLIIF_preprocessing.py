@@ -33,6 +33,7 @@ if __name__ == '__main__':
     img_size = 512
 
     dict_list = []
+    print('train.....')
     if args.train == True:
         img_list = os.listdir(os.path.join(data_path, train_path))
         for i in range(len(img_classes)):
@@ -49,9 +50,8 @@ if __name__ == '__main__':
                     negative = (crop_img[:, :, 2] == 1).astype(np.uint8)*255
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
                     instance, _, _ = make_instance_sonnet(instance, positive+negative)
-                    print(np.unique(positive), np.unique(negative), np.unique(instance))
-                    positive = Image.fromarray(positive.astype('uint8'))
-                    negative = Image.fromarray(negative.astype('uint8'))
+                    positive = Image.fromarray(positive.astype('uint8')).convert('L')
+                    negative = Image.fromarray(negative.astype('uint8')).convert('L')
                     instance = Image.fromarray(instance.astype('uint16'))
 
                     positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'train', img_name))
@@ -61,7 +61,7 @@ if __name__ == '__main__':
                 crop_img = Image.fromarray(crop_img.astype(np.uint8))
                 crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'train', img_name))
 
-
+    print('val.....')
     if args.val == True:
         img_list = os.listdir(os.path.join(data_path, val_path))
         for i in range(len(img_classes)):
@@ -79,8 +79,8 @@ if __name__ == '__main__':
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
                     instance, _, _ = make_instance_sonnet(instance, positive+negative)
 
-                    positive = Image.fromarray(positive.astype('uint8'))
-                    negative = Image.fromarray(negative.astype('uint8'))
+                    positive = Image.fromarray(positive.astype('uint8')).convert('L')
+                    negative = Image.fromarray(negative.astype('uint8')).convert('L')
                     instance = Image.fromarray(instance.astype('uint16'))
 
                     positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'val', img_name))
@@ -89,6 +89,7 @@ if __name__ == '__main__':
                 crop_img = Image.fromarray(crop_img.astype(np.uint8))
                 crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'val', img_name))
 
+    print('test.....')
     if args.test == True:
         img_list = os.listdir(os.path.join(data_path, test_path))
         for i in range(len(img_classes)):
@@ -106,8 +107,8 @@ if __name__ == '__main__':
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
                     instance, _, _ = make_instance_sonnet(instance, positive+negative)
 
-                    positive = Image.fromarray(positive.astype('uint8'))
-                    negative = Image.fromarray(negative.astype('uint8'))
+                    positive = Image.fromarray(positive.astype('uint8')).convert('L')
+                    negative = Image.fromarray(negative.astype('uint8')).convert('L')
                     instance = Image.fromarray(instance.astype('uint16'))
 
                     positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'test', img_name))
