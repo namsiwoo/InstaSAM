@@ -45,8 +45,8 @@ if __name__ == '__main__':
             for i in range(len(img_classes)):
                 crop_img = img[:, i*img_size: (i+1)*img_size, :]
                 if i == 5:
-                    positive = (crop_img[:, :, 0] == 1).astype(np.uint8)
-                    negative = (crop_img[:, :, 2] == 0).astype(np.uint8)
+                    positive = (crop_img[:, :, 0] == 1).astype(np.uint8)*255
+                    negative = (crop_img[:, :, 2] == 0).astype(np.uint8)*255
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
                     instance, _, _ = make_instance_sonnet(instance, positive+negative)
 
@@ -74,8 +74,8 @@ if __name__ == '__main__':
             for i in range(len(img_classes)):
                 crop_img = img[:, i * img_size: (i + 1) * img_size, :]
                 if i == 5:
-                    positive = (crop_img[:, :, 0] == 1).astype(np.uint8)
-                    negative = (crop_img[:, :, 2] == 0).astype(np.uint8)
+                    positive = (crop_img[:, :, 0] == 1).astype(np.uint8)*255
+                    negative = (crop_img[:, :, 2] == 0).astype(np.uint8)*255
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
                     instance, _, _ = make_instance_sonnet(instance, positive+negative)
 
@@ -101,8 +101,8 @@ if __name__ == '__main__':
             for i in range(len(img_classes)):
                 crop_img = img[:, i * img_size: (i + 1) * img_size, :]
                 if i == 5:
-                    positive = (crop_img[:, :, 0] == 1).astype(np.uint8)
-                    negative = (crop_img[:, :, 2] == 0).astype(np.uint8)
+                    positive = (crop_img[:, :, 0] == 1).astype(np.uint8)*255
+                    negative = (crop_img[:, :, 2] == 0).astype(np.uint8)*255
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
                     instance, _, _ = make_instance_sonnet(instance, positive+negative)
 
