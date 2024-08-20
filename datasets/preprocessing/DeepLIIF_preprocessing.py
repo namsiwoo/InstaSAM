@@ -45,6 +45,7 @@ if __name__ == '__main__':
                     positive = (crop_img[:, :, 0] == 1)#.astype(np.uint8)
                     print(len(positive))
                     print(positive.shape)
+                    print(type(positive))
                     negative = (crop_img[:, :, 2] == 0).astype(np.uint8)
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
                     instance = make_instance_sonnet(instance, positive+negative)
