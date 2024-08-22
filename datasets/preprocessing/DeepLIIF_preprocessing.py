@@ -96,8 +96,8 @@ if __name__ == '__main__':
                     negative = Image.fromarray(negative.astype('uint8')).convert('L')
                     instance = Image.fromarray(instance.astype('uint16'))
 
-                    positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'val', img_name))
-                    negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'val', img_name))
+                    # positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'val', img_name))
+                    # negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'val', img_name))
                     instance.save(os.path.join(data_path, 'DeepLIIF', 'labels_instance', 'val', img_name))
                 # crop_img = Image.fromarray(crop_img.astype(np.uint8))
                 # crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'val', img_name))
@@ -125,8 +125,8 @@ if __name__ == '__main__':
                     # for region in label_regions:
                     #     point[int(region.centroid[0]), int(region.centroid[1])] = 255
 
-                    positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'test', img_name))
-                    negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'test', img_name))
+                    # positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'test', img_name))
+                    # negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'test', img_name))
                     instance.save(os.path.join(data_path, 'DeepLIIF', 'labels_instance', 'test', img_name))
                 # crop_img = Image.fromarray(crop_img.astype(np.uint8))
                 # crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'test', img_name))
