@@ -470,7 +470,7 @@ def test(args, device):
     if args.test_name == None:
         args.test_name == 'test'
     else:
-        args.test_name = 'test_'+'args.test_name'
+        args.test_name = 'test_'+args.test_name
 
     os.makedirs(os.path.join(args.result, 'img',args.test_name), exist_ok=True)
     sam_model.eval()
