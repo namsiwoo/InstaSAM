@@ -85,7 +85,12 @@ if __name__ == '__main__':
                     positive = (crop_img[:, :, 0] != 0).astype(np.uint8)*255
                     negative = (crop_img[:, :, 2] != 0).astype(np.uint8)*255
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
-                    instance, _, _ = make_instance_sonnet(instance, positive+negative)
+                    _, instance, _ = make_instance_sonnet(instance, positive+negative)
+
+                    # point = np.zeros_like(instance)
+                    # label_regions = skimage.measure.regionprops(instance)
+                    # for region in label_regions:
+                    #     point[int(region.centroid[0]), int(region.centroid[1])] = 255
 
                     positive = Image.fromarray(positive.astype('uint8')).convert('L')
                     negative = Image.fromarray(negative.astype('uint8')).convert('L')
@@ -94,8 +99,8 @@ if __name__ == '__main__':
                     positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'val', img_name))
                     negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'val', img_name))
                     instance.save(os.path.join(data_path, 'DeepLIIF', 'labels_instance', 'val', img_name))
-                crop_img = Image.fromarray(crop_img.astype(np.uint8))
-                crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'val', img_name))
+                # crop_img = Image.fromarray(crop_img.astype(np.uint8))
+                # crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'val', img_name))
 
     print('test.....')
     if args.test == True:
@@ -113,14 +118,15 @@ if __name__ == '__main__':
                     positive = (crop_img[:, :, 0] != 0).astype(np.uint8)*255
                     negative = (crop_img[:, :, 2] != 0).astype(np.uint8)*255
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
-                    instance, _, _ = make_instance_sonnet(instance, positive+negative)
+                    _, instance, _ = make_instance_sonnet(instance, positive+negative)
 
-                    positive = Image.fromarray(positive.astype('uint8')).convert('L')
-                    negative = Image.fromarray(negative.astype('uint8')).convert('L')
-                    instance = Image.fromarray(instance.astype('uint16'))
+                    # point = np.zeros_like(instance)
+                    # label_regions = skimage.measure.regionprops(instance)
+                    # for region in label_regions:
+                    #     point[int(region.centroid[0]), int(region.centroid[1])] = 255
 
                     positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'test', img_name))
                     negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'test', img_name))
                     instance.save(os.path.join(data_path, 'DeepLIIF', 'labels_instance', 'test', img_name))
-                crop_img = Image.fromarray(crop_img.astype(np.uint8))
-                crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'test', img_name))
+                # crop_img = Image.fromarray(crop_img.astype(np.uint8))
+                # crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'test', img_name))
