@@ -466,7 +466,7 @@ def test(args, device):
 
     test_dataloader = DataLoader(test_dataseet)
 
-    os.makedirs(os.path.join(args.result, 'img','test'), exist_ok=True)
+    os.makedirs(os.path.join(args.result, 'img',args.test_name), exist_ok=True)
     sam_model.eval()
     mean_dice, mean_iou, mean_aji = 0, 0, 0
     mean_dq, mean_sq, mean_pq = 0, 0, 0
@@ -526,22 +526,22 @@ def test(args, device):
 
             instance_map = mk_colored(instance_map) * 255
             instance_map = Image.fromarray((instance_map).astype(np.uint8))
-            instance_map.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_pred_inst.png'))
+            instance_map.save(os.path.join(args.result, 'img', args.test_name, str(img_name) + '_pred_inst.png'))
 
             marker = mk_colored(marker) * 255
             marker = Image.fromarray((marker).astype(np.uint8))
-            marker.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_marker.png'))
+            marker.save(os.path.join(args.result, 'img', args.test_name, str(img_name) + '_marker.png'))
 
             pred = mk_colored(binary_map) * 255
             pred = Image.fromarray((pred).astype(np.uint8))
-            pred.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_pred.png'))
+            pred.save(os.path.join(args.result, 'img', args.test_name, str(img_name) + '_pred.png'))
 
             pred_flow_vis = Image.fromarray(pred_flow_vis.astype(np.uint8))
-            pred_flow_vis.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_flow_vis.png'))
+            pred_flow_vis.save(os.path.join(args.result, 'img', args.test_name, str(img_name) + '_flow_vis.png'))
 
             mask = mk_colored(mask[0][0].detach().cpu().numpy()) * 255
             mask = Image.fromarray((mask).astype(np.uint8))
-            mask.save(os.path.join(args.result, 'img', 'test', str(img_name) + '_mask.png'))
+            mask.save(os.path.join(args.result, 'img', args.test_name, str(img_name) + '_mask.png'))
 
 
 
@@ -553,7 +553,7 @@ def test(args, device):
                  '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
 
 
-    f = open(os.path.join(args.result,'img', 'test', "result.txt"), 'w')
+    f = open(os.path.join(args.result,'img', args.test_name, "result.txt"), 'w')
     f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
             '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dice, mean_iou, mean_aji))
     f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
@@ -562,7 +562,7 @@ def test(args, device):
             '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_ap1, mean_ap2, mean_ap3))
     f.close()
 
-    f = open(os.path.join(args.result, "result.txt"), 'w')
+    f = open(os.path.join(args.result, "result"+args.test_name[4:]+".txt"), 'w')
     f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
             '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dice, mean_iou, mean_aji))
     f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
@@ -610,6 +610,7 @@ if __name__ == '__main__':
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift4_fs2/img', help='')
     # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift_4_fs2/model', help='')
     parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/cellpose', help='')
+    parser.add_argument('--test_name', default='test', help='')
 
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/pannuke_sup/img', help='')
     # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2024/revision/pannuke_sup/model', help='')
