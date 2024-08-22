@@ -125,6 +125,10 @@ if __name__ == '__main__':
                     # for region in label_regions:
                     #     point[int(region.centroid[0]), int(region.centroid[1])] = 255
 
+                    positive = Image.fromarray(positive.astype('uint8')).convert('L')
+                    negative = Image.fromarray(negative.astype('uint8')).convert('L')
+                    instance = Image.fromarray(instance.astype('uint16'))
+
                     # positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'test', img_name))
                     # negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'test', img_name))
                     instance.save(os.path.join(data_path, 'DeepLIIF', 'labels_instance', 'test', img_name))
