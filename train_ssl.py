@@ -508,6 +508,8 @@ def test(args, device):
 
             if len(np.unique(binary_map)) == 1:
                 dice, iou, aji = 0, 0, 0
+                pq_list = [0, 0, 0]
+                ap = [0, 0, 0]
             else:
                 dice, iou = accuracy_object_level(instance_map, mask[0][0].detach().cpu().numpy())
                 aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map, img_name)
