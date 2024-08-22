@@ -11,6 +11,81 @@ from torchvision.transforms.functional import resize, to_pil_image  # type: igno
 from scipy.ndimage.morphology import binary_dilation
 import skimage.morphology, skimage.measure
 
+class IHC_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
+    def __init__(self, args, split, use_mask=False, data='DAPI'):
+        self.args = args
+        self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
+        self.split = split
+        self.use_mask = use_mask
+        self.data=data
+
+        self.mean = np.array([123.675, 116.28, 103.53])
+        self.std = np.array([58.395, 57.12, 57.375])
+
+        # print('Norm is not used')
+        # self.mean = np.array([1, 1, 1])
+        # self.std = np.array([1, 1, 1])
+
+        if self.args.sup == True:
+            from datasets.get_transforms_ori import get_transforms
+            n_mask = 0
+        # create image augmentation
+        else:
+            from datasets.get_transforms_ssl import get_transforms
+            n_mask =1
+
+        if self.split == 'train':
+            self.transform = get_transforms({
+                # 'random_resize': [0.8, 1.25],
+                'horizontal_flip': True,
+                'random_affine': 0.3,
+                'random_rotation': 90,
+                'random_crop': 224,
+                'label_encoding': [0, n_mask], #new_label: 3 else 2
+                'to_tensor': 1, # number of img
+                'normalize': np.array([self.mean, self.std])
+            })
+        else:
+            self.transform = get_transforms({
+                'to_tensor': 1,
+                'normalize': np.array([self.mean, self.std])
+            })
+
+        # read samples
+        self.samples = self.read_samples(self.root_dir, self.split, few_shot=args.fs)
+
+        # set num samples
+        self.num_samples = len(self.samples)
+        print('{} dataset {} loaded'.format(self.split, self.num_samples))
+
+
+    def read_samples(self, root_dir, split, few_shot=False):
+        samples = os.listdir(os.path.join(root_dir, self.data, split))
+        return samples
+    def __getitem__(self, index):
+        img_name = self.samples[index % len(self.samples)]
+        img = Image.open(os.path.join(self.root_dir, self.data, self.split, img_name)).convert('RGB')
+
+        if self.split == 'train':
+            if self.use_mask == True:
+                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
+                box_label = skimage.morphology.label(box_label)
+                box_label = Image.fromarray(box_label.astype(np.uint16))
+                sample = [img, box_label]
+            else:
+                point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
+                point = binary_dilation(np.array(point), iterations=2)
+                point = Image.fromarray(point)
+                sample = [img, point]
+        else:
+            mask = Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-3]+'png'))
+            sample = [img, mask]
+        sample = self.transform(sample)
+
+        return sample, str(img_name)
+    def __len__(self):
+        return self.num_samples
+
 class gt_with_weak_dataset(torch.utils.data.Dataset):
     def __init__(self, args, split, sup=False):
         self.args = args
