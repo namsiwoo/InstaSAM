@@ -1,7 +1,7 @@
 import os, argparse
 import numpy as np
 from PIL import Image
-import skimage.io as io
+import skimage.morphology
 from skimage.exposure import rescale_intensity
 from utils.utils import mk_colored
 from utils.hv_process import make_instance_sonnet
@@ -50,12 +50,20 @@ if __name__ == '__main__':
                     negative = (crop_img[:, :, 2] != 0).astype(np.uint8)*255
                     instance = (np.sum(crop_img, axis=2)>0).astype(np.uint8)
                     _, instance, _ = make_instance_sonnet(instance, positive+negative)
-                    positive = Image.fromarray(positive.astype('uint8')).convert('L')
-                    negative = Image.fromarray(negative.astype('uint8')).convert('L')
+
+                    point = np.zeros_like(instance)
+                    label_regions = skimage.measure.regionprops(instance)
+                    for region in label_regions:
+                        point[int(region.centroid[0]), int(region.centroid[1])] = 255
+
+                    # positive = Image.fromarray(positive.astype('uint8')).convert('L')
+                    # negative = Image.fromarray(negative.astype('uint8')).convert('L')
+                    point = Image.fromarray(point.astype(np.uint8))
                     instance = Image.fromarray(instance.astype('uint16'))
 
-                    positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'train', img_name))
-                    negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'train', img_name))
+                    # positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'train', img_name))
+                    # negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'train', img_name))
+                    point.save(os.path.join(data_path, 'DeepLIIF', 'labels_point', 'train', img_name))
                     instance.save(os.path.join(data_path, 'DeepLIIF', 'labels_instance', 'train', img_name))
 
                 crop_img = Image.fromarray(crop_img.astype(np.uint8))
