@@ -467,7 +467,7 @@ def test(args, device):
         test_dataseet = MoNuSeg_weak_dataset(args, 'test', sup=args.sup)
 
     test_dataloader = DataLoader(test_dataseet)
-    if args.test_name == None:
+    if args.test_name == "None":
         args.test_name == 'test'
     else:
         args.test_name = 'test_'+args.test_name
@@ -618,7 +618,7 @@ if __name__ == '__main__':
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift4_fs2/img', help='')
     # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift_4_fs2/model', help='')
     parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/cellpose', help='')
-    parser.add_argument('--test_name', default=None, type=str, help='')
+    parser.add_argument('--test_name', default='None', type=str, help='')
 
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2024/revision/pannuke_sup/img', help='')
     # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2024/revision/pannuke_sup/model', help='')
