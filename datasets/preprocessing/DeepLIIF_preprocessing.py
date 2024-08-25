@@ -9,6 +9,7 @@ from utils.hv_process import make_instance_sonnet
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
+    parser.add_argument('--data', default='DeepLIIF', type=str)
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--val', action='store_true')
     parser.add_argument('--test', action='store_true')
@@ -25,9 +26,16 @@ if __name__ == '__main__':
 
     ### Load the test split
     data_path = '/media/NAS/nas_70/open_dataset/DeepLIIF'
-    train_path = 'DeepLIIF_Training_Set'
-    val_path = 'DeepLIIF_Validation_Set'
-    test_path = 'DeepLIIF_Testing_Set'
+
+    if args.data == 'DeepLIIF':
+        train_path = 'DeepLIIF_Training_Set'
+        val_path = 'DeepLIIF_Validation_Set'
+        test_path = 'DeepLIIF_Testing_Set'
+    elif args.data == 'BC':
+        train_path = 'BC-DeepLIIF_Training_Set'
+        val_path = 'BC-DeepLIIF_Validation_Set'
+    else:
+        print('error')
 
     img_classes = ['IHC', 'Hematoxylin', 'DAPI', 'Lap2', 'Ki67','masks']
     img_size = 512
