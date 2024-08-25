@@ -45,10 +45,10 @@ if __name__ == '__main__':
     if args.train == True:
         img_list = os.listdir(os.path.join(data_path, train_path))
         for i in range(len(img_classes)):
-            os.makedirs(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'train'), exist_ok=True)
-        os.makedirs(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'train'), exist_ok=True)
-        os.makedirs(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'train'), exist_ok=True)
-        os.makedirs(os.path.join(data_path, 'DeepLIIF','labels_instance', 'train'), exist_ok=True)
+            os.makedirs(os.path.join(data_path, args.data, img_classes[i], 'train'), exist_ok=True)
+        os.makedirs(os.path.join(data_path, args.data, 'positive_mask', 'train'), exist_ok=True)
+        os.makedirs(os.path.join(data_path, args.data, 'negative_mask', 'train'), exist_ok=True)
+        os.makedirs(os.path.join(data_path, args.data,'labels_instance', 'train'), exist_ok=True)
         for img_name in img_list:
             img = np.array(Image.open(os.path.join(data_path, train_path, img_name)))
             for i in range(len(img_classes)):
@@ -69,22 +69,22 @@ if __name__ == '__main__':
                     point = Image.fromarray(point.astype(np.uint8))
                     instance = Image.fromarray(instance.astype('uint16'))
 
-                    # positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'train', img_name))
-                    # negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'train', img_name))
-                    # point.save(os.path.join(data_path, 'DeepLIIF', 'labels_point', 'train', img_name))
-                    instance.save(os.path.join(data_path, 'DeepLIIF', 'labels_instance', 'train', img_name))
+                    # positive.save(os.path.join(data_path, args.data, 'positive_mask', 'train', img_name))
+                    # negative.save(os.path.join(data_path, args.data, 'negative_mask', 'train', img_name))
+                    # point.save(os.path.join(data_path, args.data, 'labels_point', 'train', img_name))
+                    instance.save(os.path.join(data_path, args.data, 'labels_instance', 'train', img_name))
                 #
                 # crop_img = Image.fromarray(crop_img.astype(np.uint8))
-                # crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'train', img_name))
+                # crop_img.save(os.path.join(data_path, args.data, img_classes[i], 'train', img_name))
 
     print('val.....')
     if args.val == True:
         img_list = os.listdir(os.path.join(data_path, val_path))
         for i in range(len(img_classes)):
-            os.makedirs(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'val'), exist_ok=True)
-        os.makedirs(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'val'), exist_ok=True)
-        os.makedirs(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'val'), exist_ok=True)
-        os.makedirs(os.path.join(data_path, 'DeepLIIF','labels_instance', 'val'), exist_ok=True)
+            os.makedirs(os.path.join(data_path, args.data, img_classes[i], 'val'), exist_ok=True)
+        os.makedirs(os.path.join(data_path, args.data, 'positive_mask', 'val'), exist_ok=True)
+        os.makedirs(os.path.join(data_path, args.data, 'negative_mask', 'val'), exist_ok=True)
+        os.makedirs(os.path.join(data_path, args.data,'labels_instance', 'val'), exist_ok=True)
         for img_name in img_list:
             img = np.array(Image.open(os.path.join(data_path, val_path, img_name)))
             for i in range(len(img_classes)):
@@ -104,20 +104,20 @@ if __name__ == '__main__':
                     negative = Image.fromarray(negative.astype('uint8')).convert('L')
                     instance = Image.fromarray(instance.astype('uint16'))
 
-                    # positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'val', img_name))
-                    # negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'val', img_name))
-                    instance.save(os.path.join(data_path, 'DeepLIIF', 'labels_instance', 'val', img_name))
+                    # positive.save(os.path.join(data_path, args.data, 'positive_mask', 'val', img_name))
+                    # negative.save(os.path.join(data_path, args.data, 'negative_mask', 'val', img_name))
+                    instance.save(os.path.join(data_path, args.data, 'labels_instance', 'val', img_name))
                 # crop_img = Image.fromarray(crop_img.astype(np.uint8))
-                # crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'val', img_name))
+                # crop_img.save(os.path.join(data_path, args.data, img_classes[i], 'val', img_name))
 
     print('test.....')
     if args.test == True:
         img_list = os.listdir(os.path.join(data_path, test_path))
         for i in range(len(img_classes)):
-            os.makedirs(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'test'), exist_ok=True)
-        os.makedirs(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'test'), exist_ok=True)
-        os.makedirs(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'test'), exist_ok=True)
-        os.makedirs(os.path.join(data_path, 'DeepLIIF','labels_instance', 'test'), exist_ok=True)
+            os.makedirs(os.path.join(data_path, args.data, img_classes[i], 'test'), exist_ok=True)
+        os.makedirs(os.path.join(data_path, args.data, 'positive_mask', 'test'), exist_ok=True)
+        os.makedirs(os.path.join(data_path, args.data, 'negative_mask', 'test'), exist_ok=True)
+        os.makedirs(os.path.join(data_path, args.data,'labels_instance', 'test'), exist_ok=True)
         for img_name in img_list:
             img = np.array(Image.open(os.path.join(data_path, test_path, img_name)))
             for i in range(len(img_classes)):
@@ -137,8 +137,8 @@ if __name__ == '__main__':
                     negative = Image.fromarray(negative.astype('uint8')).convert('L')
                     instance = Image.fromarray(instance.astype('uint16'))
 
-                    # positive.save(os.path.join(data_path, 'DeepLIIF', 'positive_mask', 'test', img_name))
-                    # negative.save(os.path.join(data_path, 'DeepLIIF', 'negative_mask', 'test', img_name))
-                    instance.save(os.path.join(data_path, 'DeepLIIF', 'labels_instance', 'test', img_name))
+                    # positive.save(os.path.join(data_path, args.data, 'positive_mask', 'test', img_name))
+                    # negative.save(os.path.join(data_path, args.data, 'negative_mask', 'test', img_name))
+                    instance.save(os.path.join(data_path, args.data, 'labels_instance', 'test', img_name))
                 # crop_img = Image.fromarray(crop_img.astype(np.uint8))
-                # crop_img.save(os.path.join(data_path, 'DeepLIIF', img_classes[i], 'test', img_name))
+                # crop_img.save(os.path.join(data_path, args.data, img_classes[i], 'test', img_name))
