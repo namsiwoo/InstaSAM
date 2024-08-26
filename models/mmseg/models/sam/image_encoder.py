@@ -116,10 +116,10 @@ class ImageEncoderViT(nn.Module):
 
         self.scale_factor = 32
         self.tuning_stage = 1234
-        # self.prompt_type = 'highpass'
-        # self.input_type = 'fft'
         self.prompt_type = 'highpass'
-        self.input_type = 'all'
+        self.input_type = 'fft'
+        # self.prompt_type = 'highpass'
+        # self.input_type = 'all'
 
         self.freq_nums = 0.25
         self.handcrafted_tune = True
