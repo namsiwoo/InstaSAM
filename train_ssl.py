@@ -144,7 +144,7 @@ def main(args):
     elif args.data_type == 'gal':
         train_dataset = Galaxy_dataset(args, 'train', use_mask=args.sup, data='nuclei')
         val_dataset = Galaxy_dataset(args, 'val', use_mask=args.sup, data='nuclei')
-    elif args.data == 'DeepLIIF':
+    elif args.data == 'DeepLIIF' or args.data == 'DeepLIIF_BC':
         train_dataset = IHC_dataset(args, 'train', use_mask=args.sup, data=args.data_type)
         val_dataset = IHC_dataset(args, 'val', use_mask=args.sup, data=args.data_type)
     else:
@@ -461,7 +461,7 @@ def test(args, device):
         test_dataseet = DeepCell_dataset(args, 'test', use_mask=args.sup, data='nuclei')
     elif args.data_type == 'gal':
         test_dataseet = Galaxy_dataset(args, 'test_real', use_mask=args.sup, data='nuclei')
-    elif args.data == 'DeepLIIF':
+    elif args.data == 'DeepLIIF' or args.data == 'DeepLIIF_BC':
         test_dataseet = IHC_dataset(args, 'test', use_mask=args.sup, data=args.data_type)
     else:
         test_dataseet = MoNuSeg_weak_dataset(args, 'test', sup=args.sup)
