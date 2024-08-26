@@ -667,6 +667,8 @@ if __name__ == '__main__':
         args.data_path = '/media/NAS/nas_187/datasets/galaxy_dataset_UNIST'
     elif args.data == 'DeepLIIF':
         args.data_path = '/media/NAS/nas_70/open_dataset/DeepLIIF/DeepLIIF'
+    elif args.data == 'DeepLIIF_BC':
+        args.data_path = '/media/NAS/nas_70/open_dataset/DeepLIIF/BC'
     else:
         print('wrong data name was entered')
 
