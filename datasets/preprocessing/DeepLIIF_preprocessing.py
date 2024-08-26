@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
                     # positive.save(os.path.join(data_path, args.data, 'positive_mask', 'train', img_name))
                     # negative.save(os.path.join(data_path, args.data, 'negative_mask', 'train', img_name))
-                    # point.save(os.path.join(data_path, args.data, 'labels_point', 'train', img_name))
+                    point.save(os.path.join(data_path, args.data, 'labels_point', 'train', img_name))
                     instance.save(os.path.join(data_path, args.data, 'labels_instance', 'train', img_name))
                 #
                 crop_img = Image.fromarray(crop_img.astype(np.uint8))
