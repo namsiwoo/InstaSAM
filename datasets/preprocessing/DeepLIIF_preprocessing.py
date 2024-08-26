@@ -74,8 +74,8 @@ if __name__ == '__main__':
                     # point.save(os.path.join(data_path, args.data, 'labels_point', 'train', img_name))
                     instance.save(os.path.join(data_path, args.data, 'labels_instance', 'train', img_name))
                 #
-                # crop_img = Image.fromarray(crop_img.astype(np.uint8))
-                # crop_img.save(os.path.join(data_path, args.data, img_classes[i], 'train', img_name))
+                crop_img = Image.fromarray(crop_img.astype(np.uint8))
+                crop_img.save(os.path.join(data_path, args.data, img_classes[i], 'train', img_name))
 
     print('val.....')
     if args.val == True:
@@ -107,8 +107,8 @@ if __name__ == '__main__':
                     # positive.save(os.path.join(data_path, args.data, 'positive_mask', 'val', img_name))
                     # negative.save(os.path.join(data_path, args.data, 'negative_mask', 'val', img_name))
                     instance.save(os.path.join(data_path, args.data, 'labels_instance', 'val', img_name))
-                # crop_img = Image.fromarray(crop_img.astype(np.uint8))
-                # crop_img.save(os.path.join(data_path, args.data, img_classes[i], 'val', img_name))
+                crop_img = Image.fromarray(crop_img.astype(np.uint8))
+                crop_img.save(os.path.join(data_path, args.data, img_classes[i], 'val', img_name))
 
     print('test.....')
     if args.test == True:
@@ -140,5 +140,5 @@ if __name__ == '__main__':
                     # positive.save(os.path.join(data_path, args.data, 'positive_mask', 'test', img_name))
                     # negative.save(os.path.join(data_path, args.data, 'negative_mask', 'test', img_name))
                     instance.save(os.path.join(data_path, args.data, 'labels_instance', 'test', img_name))
-                # crop_img = Image.fromarray(crop_img.astype(np.uint8))
-                # crop_img.save(os.path.join(data_path, args.data, img_classes[i], 'test', img_name))
+                crop_img = Image.fromarray(crop_img.astype(np.uint8))
+                crop_img.save(os.path.join(data_path, args.data, img_classes[i], 'test', img_name))
