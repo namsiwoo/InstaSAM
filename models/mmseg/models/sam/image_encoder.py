@@ -314,7 +314,7 @@ class ImageEncoderViT_DA(nn.Module):
 
 
         self.space_query = nn.Parameter(torch.empty(1, 1, embed_dim))
-        self.channel_query = nn.Linear(self.c_dim, 1)
+        self.channel_query = nn.Linear(embed_dim, 1)
         self.grl = GradientReversal()
 
         self.space_D = MLP(embed_dim, embed_dim, 1, 3)
@@ -353,8 +353,8 @@ class ImageEncoderViT_DA(nn.Module):
         space_query = self.space_query.expand(x.shape[0], -1, -1) # 1, 1, C
         # channel_query = self.channel_query(self.grl(x.flatten(1, 2))).transpose(1, 2) # 1, 1, L (L=H*W)
 
-        channel_query = F.adaptive_avg_pool2d(x.clone().permute(0, 3, 1, 2), self.spatial_shape)
-        channel_query = self.channel_query(self.grl(channel_query.flatten(2))).transpose(1, 2) # 1, 1, L (L=H*W)
+        channel_query = F.adaptive_avg_pool2d(x.permute(0, 3, 1, 2), self.spatial_shape)
+        channel_query = self.channel_query(self.grl(channel_query.flatten(2).transpose(1, 2))).transpose(1, 2) # 1, 1, L (L=H*W)
         space_query2, channel_query2 = space_query.clone(), channel_query.clone()
 
         for i, blk in enumerate(self.blocks):
@@ -422,6 +422,7 @@ class Domain_adapt(nn.Module):
         space_query = self.space_attn(space_query, k, v)
         print(x.shape, k.shape, v.shape, space_query.shape, channel_query.shape)
         k, v = remove_mask_and_warp(x, k, v, self.spatial_shape)
+        print(k.shape, v.shape)
         channel_query = self.channel_attn(channel_query, k, v)
 
         return space_query, channel_query
