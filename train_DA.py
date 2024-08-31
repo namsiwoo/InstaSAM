@@ -198,7 +198,7 @@ def main(args):
                 label = batch[0][1].squeeze(1)
                 # point = batch[0][2]
                 sam_model.set_input(img, label)
-                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
+                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
                 bce_local_loss, iou_local_loss = 0, 0
             else:
                 if args.semi == True:
@@ -221,18 +221,19 @@ def main(args):
             # bce_local_loss, iou_local_loss = backwards_local
             lr_scheduler.step()
 
-            loss = bce_loss + iou_loss + 5*offset_loss + bce_local_loss + iou_local_loss #sam_model.loss_G.item()
+            loss = bce_loss + iou_loss + offset_loss + bce_local_loss + iou_local_loss +space_loss+ channel_loss #sam_model.loss_G.item()
 
             train_loss += loss / len(train_dataloader)
 
             if (iter + 1) % args.print_fq == 0:
-                print('{}/{} epoch, {}/{} batch, train loss: {}, bce: {}, iou: {}, offset: {} // local bce: {} iou: {}'.format(epoch,
+                print('{}/{} epoch, {}/{} batch, train loss: {}, bce: {}, iou: {}, offset: {} // local bce: {} iou: {} // space: {}, channel: {}'.format(epoch,
                                                                                                         args.epochs,
                                                                                                         iter + 1,
                                                                                                         len(train_dataloader),
                                                                                                         loss, bce_loss,
                                                                                                         iou_loss,
-                                                                                                        offset_loss, bce_local_loss, iou_local_loss))
+                                                                                                        offset_loss, bce_local_loss,
+                                                                                                        iou_local_loss, space_loss, channel_loss))
 
                 if args.plt == True:
                     import matplotlib.pyplot as plt
