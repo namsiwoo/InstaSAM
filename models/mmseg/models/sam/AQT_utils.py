@@ -83,7 +83,23 @@ class DomainAttention(nn.Module):
     def with_pos_embed(tensor, pos):
         return tensor if pos is None else tensor + pos
 
-    def forward(self, query, src, pos=None, padding_mask=None):
+    # def forward(self, query, src, pos=None, padding_mask=None):
+    #     """ Args:
+    #         query (batch_size, num_queries, d_model): discriminator query
+    #         src, pos (batch_size, sequence_length, d_model): patch tokens and position encodings
+    #         padding_mask (batch_size, sequence_length): key padding mask
+    #     """
+    #     r_query, _ = self.cross_attn(
+    #         query=query.transpose(0, 1),
+    #         key=self.grl(self.with_pos_embed(src, pos)).transpose(0, 1),
+    #         value=self.grl(src).transpose(0, 1),
+    #         key_padding_mask=padding_mask,
+    #     )
+    #     query = query + self.dropout1(r_query.transpose(0, 1))
+    #     query = self.norm1(query)
+    #     query = query + self.dropout2(self.linear(query))
+    #     query = self.norm2(query)
+    def forward(self, query, key, value, padding_mask=None):
         """ Args:
             query (batch_size, num_queries, d_model): discriminator query
             src, pos (batch_size, sequence_length, d_model): patch tokens and position encodings
@@ -91,8 +107,8 @@ class DomainAttention(nn.Module):
         """
         r_query, _ = self.cross_attn(
             query=query.transpose(0, 1),
-            key=self.grl(self.with_pos_embed(src, pos)).transpose(0, 1),
-            value=self.grl(src).transpose(0, 1),
+            key=self.grl(key).transpose(0, 1),
+            value=self.grl(value).transpose(0, 1),
             key_padding_mask=padding_mask,
         )
         query = query + self.dropout1(r_query.transpose(0, 1))

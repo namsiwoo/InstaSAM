@@ -419,8 +419,8 @@ class Domain_adapt(nn.Module):
         # q, k, v with shape (B * nHead, H * W, C)
         q, k, v = qkv.reshape(3, B * self.num_heads, H * W, -1).unbind(0)
 
-        space_query = self.space_attn(space_query, k, q, v)
-        channel_query = self.channel_attn(channel_query, v, v)
+        space_query = self.space_attn(space_query, k, v)
+        channel_query = self.channel_attn(channel_query, k, v)
 
         return space_query, channel_query
 
