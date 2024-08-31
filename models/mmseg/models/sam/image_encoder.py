@@ -232,7 +232,7 @@ class ImageEncoderViT_DA(nn.Module):
         self.patch_size = patch_size
         self.embed_dim = embed_dim
         self.depth = depth
-        self.spatial_shape = (embed_dim**(1/2), embed_dim**(1/2))
+        self.spatial_shape = embed_dim**(1/2)
 
         self.patch_embed = PatchEmbed(
             kernel_size=(patch_size, patch_size),
@@ -268,9 +268,7 @@ class ImageEncoderViT_DA(nn.Module):
                 dim=embed_dim,
                 num_heads=num_heads,
                 qkv_bias=qkv_bias,
-                use_rel_pos=use_rel_pos,
-                rel_pos_zero_init=rel_pos_zero_init,
-                input_size=(img_size // patch_size, img_size // patch_size),
+                spatial_shape = self.spatial_shape,
             )
             self.DA_blks.append(DA_blk)
 
@@ -393,9 +391,7 @@ class Domain_adapt(nn.Module):
         dim: int,
         num_heads: int = 8,
         qkv_bias: bool = True,
-        use_rel_pos: bool = False,
-        rel_pos_zero_init: bool = True,
-        input_size: Optional[Tuple[int, int]] = None,
+        spatial_shape: int = 28,
     ) -> None:
         """
         Args:
@@ -411,6 +407,7 @@ class Domain_adapt(nn.Module):
         self.qkv = nn.Linear(dim, dim * 2, bias=qkv_bias)
         self.space_attn = DomainAttention(dim, num_heads, dropout=0.1)
         self.channel_attn = DomainAttention(dim, num_heads, dropout=0.1)
+        self.spatial_shape = spatial_shape
 
     def forward(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
         B, H, W, C = x.shape
@@ -420,7 +417,7 @@ class Domain_adapt(nn.Module):
         k, v = kv.reshape(2, B, H * W, -1).unbind(0)
         space_query = self.space_attn(space_query, k, v)
         print(x.shape, k.shape, v.shape, space_query.shape, channel_query.shape)
-        k, v = remove_mask_and_warp(x, k, v)
+        k, v = remove_mask_and_warp(x, k, v, self.spatial_shape)
         channel_query = self.channel_attn(channel_query, k, v)
 
         return space_query, channel_query
