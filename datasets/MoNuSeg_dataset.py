@@ -53,7 +53,7 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
             })
 
         # read samples
-        self.samples = self.read_samples(self.root_dir, self.split, few_shot=args.fs)
+        self.samples = self.read_samples(self.split, few_shot=args.fs)
 
         # set num samples
         if self.split == 'train':
