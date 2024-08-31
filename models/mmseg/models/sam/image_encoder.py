@@ -233,6 +233,7 @@ class ImageEncoderViT_DA(nn.Module):
         self.embed_dim = embed_dim
         self.depth = depth
         self.spatial_shape = (28, 28)#tuple((embed_dim**(1/2), embed_dim**(1/2)))
+        self.d_model = 784
 
         self.patch_embed = PatchEmbed(
             kernel_size=(patch_size, patch_size),
@@ -265,7 +266,7 @@ class ImageEncoderViT_DA(nn.Module):
             )
             self.blocks.append(block)
             DA_blk = Domain_adapt(
-                dim=embed_dim,
+                dim=self.d_model,
                 num_heads=num_heads,
                 qkv_bias=qkv_bias,
                 spatial_shape = self.spatial_shape,
@@ -310,16 +311,16 @@ class ImageEncoderViT_DA(nn.Module):
         self.out_indices = tuple(range(self.num_stages))
 
 
-        self.space_query = nn.Parameter(torch.empty(1, 1, embed_dim))
-        self.channel_query = nn.Linear(embed_dim, 1)
+        self.space_query = nn.Parameter(torch.empty(1, 1, self.d_model))
+        self.channel_query = nn.Linear(self.d_model, 1)
         self.grl = GradientReversal()
 
-        self.space_D = MLP(embed_dim, embed_dim, 1, 3)
+        self.space_D = MLP(self.d_model, self.d_model, 1, 3)
         for layer in self.space_D.layers:
             nn.init.xavier_uniform_(layer.weight, gain=1)
             nn.init.constant_(layer.bias, 0)
 
-        self.channel_D = MLP(embed_dim, embed_dim, 1, 3)
+        self.channel_D = MLP(self.d_model, self.d_model, 1, 3)
         for layer in self.channel_D.layers:
             nn.init.xavier_uniform_(layer.weight, gain=1)
             nn.init.constant_(layer.bias, 0)
