@@ -328,7 +328,7 @@ class ImageEncoderViT_DA(nn.Module):
         inp = x
         inp2 = x2
 
-        x = self.patch_embed(x) # bs, h, w, c
+        x = self.patch_embed(x) # bs, h, w, c: 1, 64, 64, 784
         x2 = self.patch_embed(x2)
 
         embedding_feature = self.prompt_generator.init_embeddings(x)
@@ -349,6 +349,7 @@ class ImageEncoderViT_DA(nn.Module):
 
         # Domain adapt
         space_query = self.space_query.expand(x.shape[0], -1, -1)
+        print(x.permute(0, 3, 1, 2).shape)
         channel_query = self.channel_query(self.grl(x.permute(0, 3, 1, 2))).flatten(0, 1)
         space_query2, channel_query2 = space_query.clone(), channel_query.clone()
 
