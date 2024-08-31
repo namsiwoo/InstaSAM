@@ -232,6 +232,7 @@ class ImageEncoderViT_DA(nn.Module):
         self.patch_size = patch_size
         self.embed_dim = embed_dim
         self.depth = depth
+        self.spatial_shape = (embed_dim**(1/2), embed_dim**(1/2))
 
         self.patch_embed = PatchEmbed(
             kernel_size=(patch_size, patch_size),
@@ -349,7 +350,10 @@ class ImageEncoderViT_DA(nn.Module):
 
         # Domain adapt
         space_query = self.space_query.expand(x.shape[0], -1, -1) # 1, 1, C
-        channel_query = self.channel_query(self.grl(x.flatten(1, 2))).transpose(1, 2) # 1, 1L (L=H*W)
+        # channel_query = self.channel_query(self.grl(x.flatten(1, 2))).transpose(1, 2) # 1, 1, L (L=H*W)
+
+        channel_query = F.adaptive_avg_pool2d(x.permute(0, 3, 1, 2), self.spatial_shape)
+        channel_query = self.channel_query(self.grl(channel_query.flatten(2))).transpose(1, 2) # 1, 1, L (L=H*W)
         space_query2, channel_query2 = space_query.clone(), channel_query.clone()
 
         for i, blk in enumerate(self.blocks):
@@ -414,12 +418,9 @@ class Domain_adapt(nn.Module):
         kv = self.qkv(x).reshape(B, H * W, 2, 1, -1).permute(2, 0, 3, 1, 4)
         # q, k, v with shape (B * nHead, H * W, C)
         k, v = kv.reshape(2, B, H * W, -1).unbind(0)
-        print(x.shape, space_query.shape, channel_query.shape, k.shape, v.shape, k.permute(0, 2, 1).shape)
         space_query = self.space_attn(space_query, k, v)
-        k, v = k.view(B, H, W, C).permute(0, 3, 1, 2), v.view(B, H, W, C).permute(0, 3, 1, 2)
-        k, v = F.adaptive_avg_pool2d(k, (28, 28)), F.adaptive_avg_pool2d(v, (28, 28))
-        k, v = k.flatten(2), v.flatten(2)
-        print(k.shape, v.shape)
+
+        k, v = remove_mask_and_warp(x, k, v)
         channel_query = self.channel_attn(channel_query, k, v)
 
         return space_query, channel_query

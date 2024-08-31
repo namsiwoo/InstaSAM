@@ -8,7 +8,7 @@ from torch import nn
 import torch.nn.functional as F
 
 
-def remove_mask_and_warp(src, pos, padding_mask, level_start_index, spatial_shapes):
+def remove_mask_and_warp(x, k, v, spatial_shapes=(28, 28)):
     """ Removes padding mask in sequence and warps each level of tokens into fixed-sized sequences.
 
     Args:
@@ -22,27 +22,11 @@ def remove_mask_and_warp(src, pos, padding_mask, level_start_index, spatial_shap
         position encodings. The last two dimensions indicate sequence length (i.e., H*W) and model
         dimension, respectively.
     """
-
-    B, _, C = src.shape
-    sqrt_C = int(C ** 0.5)
-    src_warped = []
-    pos_warped = []
-    for start, shape in zip(level_start_index, spatial_shapes):
-        H, W = shape
-        s = src[:, start:start+H*W].view(B, H, W, C).permute(0, 3, 1, 2)
-        p = pos[:, start:start+H*W].view(B, H, W, C).permute(0, 3, 1, 2)
-        m = padding_mask[:, start:start+H*W].view(B, H, W)
-
-        not_m = ~m
-        real_H = not_m.sum(1).max(1).values
-        real_W = not_m.sum(2).max(1).values
-
-        src_warped.append(torch.stack([F.adaptive_avg_pool2d(s_i[:, :real_H[i], :real_W[i]], sqrt_C) for i, s_i in enumerate(s)]))
-        pos_warped.append(torch.stack([F.adaptive_avg_pool2d(p_i[:, :real_H[i], :real_W[i]], sqrt_C) for i, p_i in enumerate(p)]))
-
-    src_warped = torch.stack(src_warped, dim=1).flatten(-2).transpose(-2, -1)
-    pos_warped = torch.stack(pos_warped, dim=1).flatten(-2).transpose(-2, -1)
-    return src_warped, pos_warped
+    B, H, W, C = x.shape
+    k, v = k.view(B, H, W, C).permute(0, 3, 1, 2), v.view(B, H, W, C).permute(0, 3, 1, 2)
+    k, v = F.adaptive_avg_pool2d(k, spatial_shapes), F.adaptive_avg_pool2d(v, spatial_shapes)
+    k, v = k.flatten(2), v.flatten(2)
+    return k, v
 
 class MLP(nn.Module):
     """ Very simple multi-layer perceptron (also called FFN)"""
