@@ -349,7 +349,7 @@ class ImageEncoderViT_DA(nn.Module):
 
         # Domain adapt
         space_query = self.space_query.expand(x.shape[0], -1, -1)
-        channel_query = self.channel_query(self.grl(x.permute(0, 3, 1, 2).flatten(2))).flatten(0, 1)
+        channel_query = self.channel_query(self.grl(x.flatten(2))).flatten(0, 1)
         space_query2, channel_query2 = space_query.clone(), channel_query.clone()
 
         for i, blk in enumerate(self.blocks):
