@@ -141,7 +141,7 @@ class SAM(nn.Module):
     def __init__(self, inp_size=None, encoder_mode=None, loss=None, device=None):
         super().__init__()
         self.embed_dim = encoder_mode['embed_dim']
-        self.image_encoder = ImageEncoderViT(
+        self.image_encoder = ImageEncoderViT_DA(
             img_size=inp_size,
             patch_size=encoder_mode['patch_size'],
             in_chans=3,
