@@ -416,7 +416,7 @@ class Domain_adapt(nn.Module):
         k, v = kv.reshape(2, B, H * W, -1).unbind(0)
         print(x.shape, space_query.shape, channel_query.shape, k.shape, v.shape, k.permute(0, 2, 1).shape)
         space_query = self.space_attn(space_query, k, v)
-        channel_query = self.channel_attn(channel_query, k.permute(0, 2, 1), v.permute(0, 2, 1))
+        channel_query = self.channel_attn(channel_query, k.flatten(0,1).transpose(1, 2), v.flatten(0,1).transpose(1, 2))
 
         return space_query, channel_query
 
