@@ -358,8 +358,8 @@ class ImageEncoderViT_DA(nn.Module):
             x = blk(x)
 
             # Domain adapt
-            space_query, channel_query = self.DA_blks(x, space_query, channel_query)
-            space_query2, channel_query2 = self.DA_blks(x2, space_query2, channel_query2)
+            space_query, channel_query = self.DA_blks[i](x, space_query, channel_query)
+            space_query2, channel_query2 = self.DA_blks[i](x2, space_query2, channel_query2)
 
             if mk_p_label == True:
                 x_ori=blk(x_ori)
