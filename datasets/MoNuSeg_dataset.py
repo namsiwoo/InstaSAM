@@ -12,7 +12,7 @@ from scipy.ndimage.morphology import binary_dilation
 import skimage.morphology, skimage.measure
 
 class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
-    def __init__(self, args, split, use_mask=False, data=('CPM', 'BC'), ext='.png'):
+    def __init__(self, args, split, use_mask=False, data=('CPM', 'BC'), ext='.png', train_ihc=False):
         self.args = args
         self.split = split
         self.use_mask = use_mask

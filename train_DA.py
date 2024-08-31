@@ -170,8 +170,8 @@ def main(args):
     #     else:
     #         print('********', name)
 
-    train_dataset = DA_dataset(args, 'train', use_mask=args.sup, data=(args.data1, args.data2), ext='.png')
-    val_dataset = DA_dataset(args, 'val', use_mask=args.sup, data=(args.data1, args.data2), ext='.png')
+    train_dataset = DA_dataset(args, 'train', use_mask=args.sup, data=(args.data1, args.data2), ext=args.ext)
+    val_dataset = DA_dataset(args, 'val', use_mask=args.sup, data=(args.data1, args.data2))
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
     val_dataloader = DataLoader(val_dataset)
@@ -639,6 +639,10 @@ if __name__ == '__main__':
 
     args.data1 = assign_data_path(args.data1)
     args.data2 = assign_data_path(args.data2)
+
+    if args.data1 == 'CoNSeP' or 'CPM':
+        args.ext = '_label.png'
+
 
     print('=' * 40)
     print(' ' * 14 + 'Arguments')
