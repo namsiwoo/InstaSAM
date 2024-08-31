@@ -79,17 +79,17 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
             img_name = self.samples[0][index % len(self.samples[0])]
             img1 = Image.open(os.path.join(self.data1, 'images', self.split, img_name)).convert('RGB')
             if self.use_mask == True:
-                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+self.ext)))
+                box_label = np.array(Image.open(os.path.join(self.data1, 'labels_instance', self.split, img_name[:-4]+self.ext)))
                 box_label = skimage.morphology.label(box_label)
                 box_label = Image.fromarray(box_label.astype(np.uint16))
                 sample = [img1, img2, box_label]
             else:
-                point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4]+self.ext)).convert('L')
+                point = Image.open(os.path.join(self.data1, 'labels_point', self.split, img_name[:-4]+self.ext)).convert('L')
                 point = binary_dilation(np.array(point), iterations=2)
                 point = Image.fromarray(point)
                 sample = [img1, img2, point]
         else:
-            mask = Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+self.ext))
+            mask = Image.open(os.path.join(self.data2, 'labels_instance', self.split, img_name[:-4]+self.ext))
             sample = [img2, mask]
         sample = self.transform(sample)
 
