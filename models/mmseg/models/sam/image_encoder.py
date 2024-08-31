@@ -328,7 +328,7 @@ class ImageEncoderViT_DA(nn.Module):
         inp = x
         inp2 = x2
 
-        x = self.patch_embed(x)
+        x = self.patch_embed(x) # bs, h, w, c
         x2 = self.patch_embed(x2)
 
         embedding_feature = self.prompt_generator.init_embeddings(x)
@@ -404,10 +404,6 @@ class Domain_adapt(nn.Module):
                 positional parameter size.
         """
         super().__init__()
-        self.num_heads = num_heads
-        head_dim = dim // num_heads
-        self.scale = head_dim**-0.5
-
         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
         self.space_attn = DomainAttention(dim, num_heads, dropout=0.1)
         self.channel_attn = DomainAttention(dim, num_heads, dropout=0.1)
@@ -415,9 +411,9 @@ class Domain_adapt(nn.Module):
     def forward(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
         B, H, W, _ = x.shape
         # qkv with shape (3, B, nHead, H * W, C)
-        qkv = self.qkv(x).reshape(B, H * W, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)
+        qkv = self.qkv(x).reshape(B, H * W, 3, -1).permute(2, 0, 3, 1, 4)
         # q, k, v with shape (B * nHead, H * W, C)
-        q, k, v = qkv.reshape(3, B * self.num_heads, H * W, -1).unbind(0)
+        q, k, v = qkv.reshape(3, B, H * W, -1).unbind(0)
         print(x.shape, space_query.shape, channel_query.shape, k.shape, v.shape)
         space_query = self.space_attn(space_query, k, v)
         channel_query = self.channel_attn(channel_query, k, v)
