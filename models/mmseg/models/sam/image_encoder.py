@@ -411,7 +411,7 @@ class Domain_adapt(nn.Module):
     def forward(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
         B, H, W, _ = x.shape
         # qkv with shape (3, B, nHead, H * W, C)
-        qkv = self.qkv(x).reshape(B, H * W, 3, -1).permute(2, 0, 3, 1, 4)
+        qkv = self.qkv(x).reshape(B, H * W, 3, 1, -1).permute(2, 0, 3, 1, 4)
         # q, k, v with shape (B * nHead, H * W, C)
         q, k, v = qkv.reshape(3, B, H * W, -1).unbind(0)
         print(x.shape, space_query.shape, channel_query.shape, k.shape, v.shape)
