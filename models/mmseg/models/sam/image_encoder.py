@@ -417,7 +417,7 @@ class Domain_adapt(nn.Module):
         print(x.shape, space_query.shape, channel_query.shape, k.shape, v.shape, k.permute(0, 2, 1).shape)
         space_query = self.space_attn(space_query, k, v)
         k, v = k.view(B, H, W, C).permute(0, 3, 1, 2), v.view(B, H, W, C).permute(0, 3, 1, 2)
-        k, v = F.adaptive_avg_pool2d(k, (C**(0.5), C**(0.5))), F.adaptive_avg_pool2d(v, (C**(0.5), C**(0.5)))
+        k, v = F.adaptive_avg_pool2d(k, ((C ** (0.5), C ** (0.5))), F.adaptive_avg_pool2d(v, ((C ** (0.5), C ** (0.5)))
         channel_query = self.channel_attn(channel_query, k.permute(0, 2, 1), v.permute(0, 2, 1))
 
         return space_query, channel_query
