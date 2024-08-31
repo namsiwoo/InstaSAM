@@ -267,7 +267,8 @@ class ImageEncoderViT_DA(nn.Module):
             )
             self.blocks.append(block)
             DA_blk = Domain_adapt(
-                dim=self.d_model,
+                dim=embed_dim,
+                d_model=self.d_model,
                 num_heads=self.DA_num_heads,
                 qkv_bias=qkv_bias,
                 spatial_shape = self.spatial_shape,
@@ -391,6 +392,7 @@ class Domain_adapt(nn.Module):
     def __init__(
         self,
         dim: int,
+        d_model: int,
         num_heads: int = 8,
         qkv_bias: bool = True,
         spatial_shape: int = 28,
@@ -407,8 +409,8 @@ class Domain_adapt(nn.Module):
         """
         super().__init__()
         self.qkv = nn.Linear(dim, dim * 2, bias=qkv_bias)
-        self.space_attn = DomainAttention(dim, num_heads, dropout=0.1)
-        self.channel_attn = DomainAttention(dim, num_heads, dropout=0.1)
+        self.space_attn = DomainAttention(d_model, num_heads, dropout=0.1)
+        self.channel_attn = DomainAttention(d_model, num_heads, dropout=0.1)
         self.spatial_shape = spatial_shape
 
     def forward(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
