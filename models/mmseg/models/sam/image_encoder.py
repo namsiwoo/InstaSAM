@@ -348,8 +348,8 @@ class ImageEncoderViT_DA(nn.Module):
         outs = []
 
         # Domain adapt
-        space_query = self.space_query.expand(x.shape[0], -1, -1)
-        channel_query = self.channel_query(self.grl(x.flatten(1, 2))).flatten(0, 1)
+        space_query = self.space_query.expand(x.shape[0], -1, -1) # 1, 1, C
+        channel_query = self.channel_query(self.grl(x.flatten(1, 2))).flatten(0, 1) # L, 1 (L=H*W)
         space_query2, channel_query2 = space_query.clone(), channel_query.clone()
 
         for i, blk in enumerate(self.blocks):
@@ -416,7 +416,7 @@ class Domain_adapt(nn.Module):
         q, k, v = qkv.reshape(3, B, H * W, -1).unbind(0)
         print(x.shape, space_query.shape, channel_query.shape, k.shape, v.shape)
         space_query = self.space_attn(space_query, k, v)
-        channel_query = self.channel_attn(channel_query, k, v)
+        channel_query = self.channel_attn(channel_query, k.transpose(1, 2), v.transpose(1, 2))
 
         return space_query, channel_query
 
