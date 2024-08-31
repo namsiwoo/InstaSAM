@@ -313,6 +313,7 @@ class ImageEncoderViT_DA(nn.Module):
 
         self.space_query = nn.Parameter(torch.empty(1, 1, embed_dim))
         self.channel_query = nn.Linear(embed_dim, 1)
+        self.grl = GradientReversal()
 
         self.space_D = MLP(embed_dim, embed_dim, 1, 3)
         for layer in self.space_D.layers:
