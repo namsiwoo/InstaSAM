@@ -232,7 +232,7 @@ class ImageEncoderViT_DA(nn.Module):
         self.patch_size = patch_size
         self.embed_dim = embed_dim
         self.depth = depth
-        self.spatial_shape = tuple((embed_dim**(1/2), embed_dim**(1/2)))
+        self.spatial_shape = (28, 28)#tuple((embed_dim**(1/2), embed_dim**(1/2)))
 
         self.patch_embed = PatchEmbed(
             kernel_size=(patch_size, patch_size),
