@@ -234,6 +234,7 @@ class ImageEncoderViT_DA(nn.Module):
         self.depth = depth
         self.spatial_shape = (16, 16)#tuple((embed_dim**(1/2), embed_dim**(1/2)))
         self.d_model = 256
+        self.DA_num_heads = 8
 
         self.patch_embed = PatchEmbed(
             kernel_size=(patch_size, patch_size),
@@ -267,7 +268,7 @@ class ImageEncoderViT_DA(nn.Module):
             self.blocks.append(block)
             DA_blk = Domain_adapt(
                 dim=self.d_model,
-                num_heads=num_heads,
+                num_heads=self.DA_num_heads,
                 qkv_bias=qkv_bias,
                 spatial_shape = self.spatial_shape,
             )
