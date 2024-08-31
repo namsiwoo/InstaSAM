@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from typing import Optional, Tuple, Type
 
 from .common import LayerNorm2d, MLPBlock
-from .AQT_utils import MLP, DomainAttention, GradientReversal
+from .AQT_utils import remove_mask_and_warp, MLP, DomainAttention, GradientReversal
 import math
 import warnings
 from itertools import repeat
@@ -409,14 +409,14 @@ class Domain_adapt(nn.Module):
         self.channel_attn = DomainAttention(dim, num_heads, dropout=0.1)
 
     def forward(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
-        B, H, W, _ = x.shape
+        B, H, W, C = x.shape
         # qkv with shape (3, B, nHead, H * W, C)
         kv = self.qkv(x).reshape(B, H * W, 2, 1, -1).permute(2, 0, 3, 1, 4)
         # q, k, v with shape (B * nHead, H * W, C)
         k, v = kv.reshape(2, B, H * W, -1).unbind(0)
         print(x.shape, space_query.shape, channel_query.shape, k.shape, v.shape, k.permute(0, 2, 1).shape)
         space_query = self.space_attn(space_query, k, v)
-        k, v = F.adaptive_max_pool2d(k, (k.shape[0], k.shape[2], k.shape[2])), F.adaptive_max_pool2d(v, (k.shape[0], k.shape[2], k.shape[2]))
+        k, v = remove_mask_and_warp(k, 1, (C**(0.5), C**(0.5))), remove_mask_and_warp(v, 1, (C**(0.5), C**(0.5)))
         channel_query = self.channel_attn(channel_query, k.permute(0, 2, 1), v.permute(0, 2, 1))
 
         return space_query, channel_query
