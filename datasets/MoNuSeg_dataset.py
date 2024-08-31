@@ -64,7 +64,7 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
 
 
     def read_samples(self, split, few_shot=False):
-        samples2 = os.listdir(os.path.join(self.data2, self.data2, split))
+        samples2 = os.listdir(os.path.join(self.data2, 'images', split))
 
         if split == 'train':
             samples1 = os.listdir(os.path.join(self.data1, 'images', split))
