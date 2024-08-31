@@ -484,7 +484,7 @@ class SAM(nn.Module):
         # _, self.interm_embeddings, self.features = self.image_encoder(self.input, mk_p_label=True)
 
         # Embed prompts
-        sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.input.device)
+        sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.input1.device)
         dense_embeddings = self.no_mask_embed.weight.reshape(1, -1, 1, 1).expand(
             bs, -1, self.image_embedding_size, self.image_embedding_size
         )
@@ -565,7 +565,7 @@ class SAM(nn.Module):
                     # bce_loss_local, iou_loss_local = 0, 0
                 self.loss_G = bce_loss + iou_loss + offset_loss + bce_loss_local + iou_loss_local
 
-        del self.input
+        del self.input1, self.input2
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
