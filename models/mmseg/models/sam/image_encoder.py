@@ -11,6 +11,7 @@ import torch.nn.functional as F
 from typing import Optional, Tuple, Type
 
 from .common import LayerNorm2d, MLPBlock
+from .AQT_utils import MLP, DomainAttention, GradientReversal
 import math
 import warnings
 from itertools import repeat
@@ -188,7 +189,242 @@ class ImageEncoderViT(nn.Module):
         else:
             return x, interm_embeddings
 
+class ImageEncoderViT_DA(nn.Module):
+    def __init__(
+        self,
+        img_size: int = 1024,
+        patch_size: int = 16,
+        in_chans: int = 3,
+        embed_dim: int = 768,
+        depth: int = 12,
+        num_heads: int = 12,
+        mlp_ratio: float = 4.0,
+        out_chans: int = 256,
+        qkv_bias: bool = True,
+        norm_layer: Type[nn.Module] = nn.LayerNorm,
+        act_layer: Type[nn.Module] = nn.GELU,
+        use_abs_pos: bool = True,
+        use_rel_pos: bool = False,
+        rel_pos_zero_init: bool = True,
+        window_size: int = 0,
+        global_attn_indexes: Tuple[int, ...] = (),
+    ) -> None:
+        """
+        Args:
+            img_size (int): Input image size.
+            patch_size (int): Patch size.
+            in_chans (int): Number of input image channels.
+            embed_dim (int): Patch embedding dimension.
+            depth (int): Depth of ViT.
+            num_heads (int): Number of attention heads in each ViT block.
+            mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
+            qkv_bias (bool): If True, add a learnable bias to query, key, value.
+            norm_layer (nn.Module): Normalization layer.
+            act_layer (nn.Module): Activation layer.
+            use_abs_pos (bool): If True, use absolute positional embeddings.
+            use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
+            rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
+            window_size (int): Window size for window attention blocks.
+            global_attn_indexes (list): Indexes for blocks using global attention.
+        """
+        super().__init__()
+        self.img_size = img_size
+        self.patch_size = patch_size
+        self.embed_dim = embed_dim
+        self.depth = depth
 
+        self.patch_embed = PatchEmbed(
+            kernel_size=(patch_size, patch_size),
+            stride=(patch_size, patch_size),
+            in_chans=in_chans,
+            embed_dim=embed_dim,
+        )
+
+        self.pos_embed: Optional[nn.Parameter] = None
+        if use_abs_pos:
+            # Initialize absolute positional embedding with pretrain image size.
+            self.pos_embed = nn.Parameter(
+                torch.zeros(1, img_size // patch_size, img_size // patch_size, embed_dim)
+            )
+
+        self.blocks = nn.ModuleList()
+        self.DA_blks = nn.ModuleList() #Domain_adapt(self.depth, out_chans, num_heads)
+        for i in range(depth):
+            block = Block(
+                dim=embed_dim,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                qkv_bias=qkv_bias,
+                norm_layer=norm_layer,
+                act_layer=act_layer,
+                use_rel_pos=use_rel_pos,
+                rel_pos_zero_init=rel_pos_zero_init,
+                window_size=window_size if i not in global_attn_indexes else 0,
+                input_size=(img_size // patch_size, img_size // patch_size),
+            )
+            self.blocks.append(block)
+            DA_blk = Domain_adapt(
+                dim=embed_dim,
+                num_heads=num_heads,
+                qkv_bias=qkv_bias,
+                use_rel_pos=use_rel_pos,
+                rel_pos_zero_init=rel_pos_zero_init,
+                input_size=(img_size // patch_size, img_size // patch_size),
+            )
+            self.DA_blks.append(DA_blk)
+
+        self.neck = nn.Sequential(
+            nn.Conv2d(
+                embed_dim,
+                out_chans,
+                kernel_size=1,
+                bias=False,
+            ),
+            LayerNorm2d(out_chans),
+            nn.Conv2d(
+                out_chans,
+                out_chans,
+                kernel_size=3,
+                padding=1,
+                bias=False,
+            ),
+            LayerNorm2d(out_chans),
+        )
+
+        self.scale_factor = 32
+        self.tuning_stage = 1234
+        self.prompt_type = 'highpass'
+        self.input_type = 'fft'
+        # self.prompt_type = 'highpass'
+        # self.input_type = 'all'
+
+        self.freq_nums = 0.25
+        self.handcrafted_tune = True
+        self.embedding_tune = True
+        self.adaptor = 'adaptor'
+        self.prompt_generator = PromptGenerator(self.scale_factor, self.prompt_type, self.embed_dim,
+                                                self.tuning_stage, self.depth,
+                                                self.input_type, self.freq_nums,
+                                                self.handcrafted_tune, self.embedding_tune, self.adaptor,
+                                                img_size, patch_size)
+        self.num_stages = self.depth
+        self.out_indices = tuple(range(self.num_stages))
+
+
+        self.space_query = nn.Parameter(torch.empty(1, 1, embed_dim))
+        self.channel_query = nn.Linear(embed_dim, 1)
+
+        self.space_D = MLP(embed_dim, embed_dim, 1, 3)
+        for layer in self.space_D.layers:
+            nn.init.xavier_uniform_(layer.weight, gain=1)
+            nn.init.constant_(layer.bias, 0)
+
+        self.channel_D = MLP(embed_dim, embed_dim, 1, 3)
+        for layer in self.channel_D.layers:
+            nn.init.xavier_uniform_(layer.weight, gain=1)
+            nn.init.constant_(layer.bias, 0)
+    def forward(self, x: torch.Tensor, x2: torch.Tensor, mk_p_label=False):
+        inp = x
+        inp2 = x2
+
+        x = self.patch_embed(x)
+        x2 = self.patch_embed(x2)
+
+        embedding_feature = self.prompt_generator.init_embeddings(x)
+        handcrafted_feature = self.prompt_generator.init_handcrafted(inp)
+        prompt = self.prompt_generator.get_prompt(handcrafted_feature, embedding_feature)
+
+        embedding_feature2 = self.prompt_generator.init_embeddings(x2)
+        handcrafted_feature2 = self.prompt_generator.init_handcrafted(inp2)
+        prompt2 = self.prompt_generator.get_prompt(handcrafted_feature2, embedding_feature2)
+        del inp, inp2
+        if self.pos_embed is not None:
+            x = x + self.pos_embed
+            x2 = x2 + self.pos_embed
+
+        if mk_p_label == True:
+            x_ori = x.clone()
+
+        B, H, W = x.shape[0], x.shape[1], x.shape[2]
+        interm_embeddings = []
+        outs = []
+
+        # Domain adapt
+        space_query = self.space_query.expand(x.shape[0], -1, -1)
+        channel_query = self.channel_query(self.grl(x.shape[0])).flatten(0, 1).transpose(1, 2)
+        space_query2, channel_query2 = space_query.clone(), channel_query.clone()
+
+        for i, blk in enumerate(self.blocks):
+            # Adapter
+            x = prompt[i].reshape(B, H, W, -1) + x
+            x = blk(x)
+
+            # Domain adapt
+            space_query, channel_query = self.DA_blks(x, space_query, channel_query)
+            space_query2, channel_query2 = self.DA_blks(x2, space_query2, channel_query2)
+
+            if mk_p_label == True:
+                x_ori=blk(x_ori)
+
+            if blk.window_size == 0:
+                interm_embeddings.append(x)
+            if i in self.out_indices:
+                outs.append(x)
+
+        x = self.neck(x.permute(0, 3, 1, 2))
+        space_query = self.space_D(space_query)
+        space_query2 = self.space_D(space_query2)
+        channel_query = self.channel_D(channel_query)
+        channel_query2 = self.channel_D(channel_query2)
+
+        if mk_p_label == True:
+            x_ori = self.neck(x_ori.permute(0, 3, 1, 2))
+            return x, interm_embeddings, x_ori, (space_query, space_query2), (channel_query, channel_query2)
+        else:
+            return x, interm_embeddings, (space_query, space_query2), (channel_query, channel_query2)
+
+class Domain_adapt(nn.Module):
+    """Multi-head Attention block with relative position embeddings."""
+
+    def __init__(
+        self,
+        dim: int,
+        num_heads: int = 8,
+        qkv_bias: bool = True,
+        use_rel_pos: bool = False,
+        rel_pos_zero_init: bool = True,
+        input_size: Optional[Tuple[int, int]] = None,
+    ) -> None:
+        """
+        Args:
+            dim (int): Number of input channels.
+            num_heads (int): Number of attention heads.
+            qkv_bias (bool):  If True, add a learnable bias to query, key, value.
+            rel_pos (bool): If True, add relative positional embeddings to the attention map.
+            rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
+            input_size (tuple(int, int) or None): Input resolution for calculating the relative
+                positional parameter size.
+        """
+        super().__init__()
+        self.num_heads = num_heads
+        head_dim = dim // num_heads
+        self.scale = head_dim**-0.5
+
+        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+        self.space_attn = DomainAttention(dim, num_heads, dropout=0.1)
+        self.channel_attn = DomainAttention(dim, num_heads, dropout=0.1)
+
+    def forward(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
+        B, H, W, _ = x.shape
+        # qkv with shape (3, B, nHead, H * W, C)
+        qkv = self.qkv(x).reshape(B, H * W, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)
+        # q, k, v with shape (B * nHead, H * W, C)
+        q, k, v = qkv.reshape(3, B * self.num_heads, H * W, -1).unbind(0)
+
+        space_query = self.space_attn(space_query, k, q, v)
+        channel_query = self.channel_attn(channel_query, v, v)
+
+        return space_query, channel_query
 
 def to_2tuple(x):
     if isinstance(x, container_abcs.Iterable):
