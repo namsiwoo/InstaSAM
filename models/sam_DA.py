@@ -479,7 +479,7 @@ class SAM(nn.Module):
         return bce_loss_local, iou_loss_local
 
     def forward(self):  # , point_prompt=None
-        bs = len(self.input)
+        bs = len(self.input1)
         features, interm_embeddings, self.space_query, self.channel_query = self.image_encoder(self.input1, self.input2)
         # _, self.interm_embeddings, self.features = self.image_encoder(self.input, mk_p_label=True)
 
