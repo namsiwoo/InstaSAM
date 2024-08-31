@@ -233,7 +233,7 @@ class ImageEncoderViT_DA(nn.Module):
         self.embed_dim = embed_dim
         self.depth = depth
         self.spatial_shape = (16, 16)#tuple((embed_dim**(1/2), embed_dim**(1/2)))
-        self.d_model = 256
+        self.c_dim = 256
         self.DA_num_heads = 8
 
         self.patch_embed = PatchEmbed(
@@ -268,7 +268,7 @@ class ImageEncoderViT_DA(nn.Module):
             self.blocks.append(block)
             DA_blk = Domain_adapt(
                 dim=embed_dim,
-                d_model=self.d_model,
+                c_dim=self.c_dim,
                 num_heads=self.DA_num_heads,
                 qkv_bias=qkv_bias,
                 spatial_shape = self.spatial_shape,
@@ -313,16 +313,16 @@ class ImageEncoderViT_DA(nn.Module):
         self.out_indices = tuple(range(self.num_stages))
 
 
-        self.space_query = nn.Parameter(torch.empty(1, 1, self.d_model))
-        self.channel_query = nn.Linear(self.d_model, 1)
+        self.space_query = nn.Parameter(torch.empty(1, 1, embed_dim))
+        self.channel_query = nn.Linear(self.c_dim, 1)
         self.grl = GradientReversal()
 
-        self.space_D = MLP(self.d_model, self.d_model, 1, 3)
+        self.space_D = MLP(embed_dim, embed_dim, 1, 3)
         for layer in self.space_D.layers:
             nn.init.xavier_uniform_(layer.weight, gain=1)
             nn.init.constant_(layer.bias, 0)
 
-        self.channel_D = MLP(self.d_model, self.d_model, 1, 3)
+        self.channel_D = MLP(self.c_dim, self.c_dim, 1, 3)
         for layer in self.channel_D.layers:
             nn.init.xavier_uniform_(layer.weight, gain=1)
             nn.init.constant_(layer.bias, 0)
@@ -392,7 +392,7 @@ class Domain_adapt(nn.Module):
     def __init__(
         self,
         dim: int,
-        d_model: int,
+        c_dim: int,
         num_heads: int = 8,
         qkv_bias: bool = True,
         spatial_shape: int = 28,
@@ -409,8 +409,8 @@ class Domain_adapt(nn.Module):
         """
         super().__init__()
         self.qkv = nn.Linear(dim, dim * 2, bias=qkv_bias)
-        self.space_attn = DomainAttention(d_model, num_heads, dropout=0.1)
-        self.channel_attn = DomainAttention(d_model, num_heads, dropout=0.1)
+        self.space_attn = DomainAttention(dim, num_heads, dropout=0.1)
+        self.channel_attn = DomainAttention(c_dim, num_heads, dropout=0.1)
         self.spatial_shape = spatial_shape
 
     def forward(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
