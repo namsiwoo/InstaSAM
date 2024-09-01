@@ -636,9 +636,9 @@ if __name__ == '__main__':
     args.data2 = assign_data_path(args.data2)
 
     if args.data1 == 'CoNSeP' or 'CPM':
-        args.ext1 = '_label.png'
+        args.train_IHC = True
     else:
-        args.ext2 = '.png'
+        args.train_IHC = False
 
 
     print('=' * 40)

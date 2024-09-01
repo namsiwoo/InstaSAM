@@ -21,9 +21,13 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         if train_IHC == True:
             self.path1 = 'IHC'
             self.path2 = 'images'
+            self.ext1 = '.png'
+            self.ext2 = '_label.png'
         else:
             self.path2 = 'IHC'
             self.path1 = 'images'
+            self.ext2 = '.png'
+            self.ext1 = '_label.png'
 
 
         self.mean = np.array([123.675, 116.28, 103.53])
@@ -85,12 +89,12 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
             img_name = self.samples[0][index % len(self.samples[0])]
             img1 = Image.open(os.path.join(self.data1, self.path1, self.split, img_name)).convert('RGB')
             if self.use_mask == True:
-                box_label = np.array(Image.open(os.path.join(self.data1, 'labels_instance', self.split, img_name[:-4]+self.ext)))
+                box_label = np.array(Image.open(os.path.join(self.data1, 'labels_instance', self.split, img_name[:-4]+self.ext1)))
                 box_label = skimage.morphology.label(box_label)
                 box_label = Image.fromarray(box_label.astype(np.uint16))
                 sample = [img1, img2, box_label]
             else:
-                point = Image.open(os.path.join(self.data1, 'labels_point', self.split, img_name[:-4]+self.ext)).convert('L')
+                point = Image.open(os.path.join(self.data1, 'labels_point', self.split, img_name[:-4]+self.ext1)).convert('L')
                 point = binary_dilation(np.array(point), iterations=2)
                 point = Image.fromarray(point)
                 sample = [img1, img2, point]
@@ -98,7 +102,7 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
             img_name = self.samples[index % len(self.samples)]
             img2 = Image.open(os.path.join(self.data2, self.path2, self.split, img_name)).convert('RGB')
 
-            mask = Image.open(os.path.join(self.data2, 'labels_instance', self.split, img_name[:-4]+self.ext))
+            mask = Image.open(os.path.join(self.data2, 'labels_instance', self.split, img_name[:-4]+self.ext2))
             sample = [img2, mask]
         sample = self.transform(sample)
 
