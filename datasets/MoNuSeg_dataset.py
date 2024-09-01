@@ -89,7 +89,7 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 point = Image.fromarray(point)
                 sample = [img1, img2, point]
         else:
-            img_name = self.samples[1][index % len(self.samples[0])]
+            img_name = self.samples[index % len(self.samples)]
             img2 = Image.open(os.path.join(self.data2, 'IHC', self.split, img_name)).convert('RGB')
 
             mask = Image.open(os.path.join(self.data2, 'labels_instance', self.split, img_name[:-4]+self.ext))
