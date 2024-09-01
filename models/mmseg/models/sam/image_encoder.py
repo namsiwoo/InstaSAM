@@ -355,6 +355,7 @@ class ImageEncoderViT_DA(nn.Module):
 
         # Domain adapt
         space_query = self.space_query.expand(x.shape[0], -1, -1) # 1, 1, C
+        print(space_query)
         # channel_query = self.channel_query(self.grl(x.flatten(1, 2))).transpose(1, 2) # 1, 1, L (L=H*W)
         channel_query = F.adaptive_avg_pool2d(x.permute(0, 3, 1, 2), self.spatial_shape)
         channel_query = self.channel_query(self.grl(channel_query.flatten(2).transpose(1, 2))).transpose(1, 2) # 1, 1, L (L=H*W)
@@ -372,7 +373,7 @@ class ImageEncoderViT_DA(nn.Module):
             # Domain adapt
             space_query, channel_query = self.DA_blks[i](x, space_query, channel_query)
             space_query2, channel_query2 = self.DA_blks[i](x2, space_query2, channel_query2)
-
+            print(space_query)
             if mk_p_label == True:
                 x_ori=blk(x_ori)
 
