@@ -636,9 +636,9 @@ if __name__ == '__main__':
     args.data2 = assign_data_path(args.data2)
 
     if args.data1 == 'CoNSeP' or 'CPM':
-        args.train_IHC = True
-    else:
         args.train_IHC = False
+    else:
+        args.train_IHC = True
 
 
     print('=' * 40)
