@@ -632,13 +632,15 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(args.result, 'img'), exist_ok=True)
         os.makedirs(os.path.join(args.result, 'model'), exist_ok=True)
 
-    args.data1 = assign_data_path(args.data1)
-    args.data2 = assign_data_path(args.data2)
-
     if args.data1 == 'CoNSeP' or 'CPM':
         args.train_IHC = False
     else:
         args.train_IHC = True
+
+    args.data1 = assign_data_path(args.data1)
+    args.data2 = assign_data_path(args.data2)
+
+
 
 
     print('=' * 40)
