@@ -481,6 +481,8 @@ class SAM(nn.Module):
     def forward(self):  # , point_prompt=None
         bs = len(self.input1)
         features, interm_embeddings, self.space_query, self.channel_query = self.image_encoder(self.input1, self.input2)
+        print(self.space_query.shape, self.channel_query.shape)
+        print(self.space_query)
         # _, self.interm_embeddings, self.features = self.image_encoder(self.input, mk_p_label=True)
 
         # Embed prompts

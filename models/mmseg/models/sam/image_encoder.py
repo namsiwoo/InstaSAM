@@ -318,14 +318,14 @@ class ImageEncoderViT_DA(nn.Module):
         self.grl = GradientReversal()
 
         self.space_D = MLP(embed_dim, embed_dim, 1, 3)
-        # for layer in self.space_D.layers:
-        #     nn.init.xavier_uniform_(layer.weight, gain=1)
-        #     nn.init.constant_(layer.bias, 0)
+        for layer in self.space_D.layers:
+            nn.init.xavier_uniform_(layer.weight, gain=1)
+            nn.init.constant_(layer.bias, 0)
 
         self.channel_D = MLP(self.c_dim, self.c_dim, 1, 3)
-        # for layer in self.channel_D.layers:
-        #     nn.init.xavier_uniform_(layer.weight, gain=1)
-        #     nn.init.constant_(layer.bias, 0)
+        for layer in self.channel_D.layers:
+            nn.init.xavier_uniform_(layer.weight, gain=1)
+            nn.init.constant_(layer.bias, 0)
     def forward(self, x: torch.Tensor, x2: torch.Tensor, mk_p_label=False):
         inp = x
         inp2 = x2
