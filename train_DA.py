@@ -197,7 +197,7 @@ def main(args):
                 label = batch[0][2].squeeze(1)
                 # point = batch[0][2]
                 sam_model.set_input(img, img2, label)
-                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
+                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt = sam_model.optimize_parameters(epoch=epoch) # point, epoch, batch[1][0]
                 bce_local_loss, iou_local_loss = 0, 0
             else:
                 if args.semi == True:
@@ -632,7 +632,7 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(args.result, 'img'), exist_ok=True)
         os.makedirs(os.path.join(args.result, 'model'), exist_ok=True)
 
-    if args.data1 == 'CoNSeP' or args.data1 ==  'CPM':
+    if args.data1 == 'CoNSeP' or args.data1 == 'CPM':
         args.train_IHC = False
     else:
         args.train_IHC = True

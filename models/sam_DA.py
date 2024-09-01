@@ -534,7 +534,10 @@ class SAM(nn.Module):
         if point_prompt == None:
             self.forward() #point_prompt
             bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt = self.backward_G()  # calculate graidents for G
-            self.loss_G = bce_loss + iou_loss + offset_loss + space_loss + channel_loss
+            if epoch < 5:
+                self.loss_G = bce_loss + iou_loss + offset_loss
+            else:
+                self.loss_G = bce_loss + iou_loss + offset_loss + space_loss + channel_loss
         else:
             if semi == False:
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
