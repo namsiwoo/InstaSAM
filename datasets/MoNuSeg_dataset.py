@@ -72,10 +72,10 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         else:
             return samples2
     def __getitem__(self, index):
-        img_name = self.samples[1][index % len(self.samples[1])]
-        img2 = Image.open(os.path.join(self.data2, 'IHC', self.split, img_name)).convert('RGB')
-
         if self.split == 'train':
+            img_name = self.samples[1][index % len(self.samples[1])]
+            img2 = Image.open(os.path.join(self.data2, 'IHC', self.split, img_name)).convert('RGB')
+
             img_name = self.samples[0][index % len(self.samples[0])]
             img1 = Image.open(os.path.join(self.data1, 'images', self.split, img_name)).convert('RGB')
             if self.use_mask == True:
@@ -89,6 +89,9 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 point = Image.fromarray(point)
                 sample = [img1, img2, point]
         else:
+            img_name = self.samples[1][index % len(self.samples[0])]
+            img2 = Image.open(os.path.join(self.data2, 'IHC', self.split, img_name)).convert('RGB')
+
             mask = Image.open(os.path.join(self.data2, 'labels_instance', self.split, img_name[:-4]+self.ext))
             sample = [img2, mask]
         sample = self.transform(sample)
