@@ -632,7 +632,7 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(args.result, 'img'), exist_ok=True)
         os.makedirs(os.path.join(args.result, 'model'), exist_ok=True)
 
-    if args.data1 == 'CoNSeP' or 'CPM':
+    if args.data1 == 'CoNSeP' or args.data1 ==  'CPM':
         args.train_IHC = False
     else:
         args.train_IHC = True
