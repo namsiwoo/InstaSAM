@@ -337,6 +337,10 @@ class ImageEncoderViT_DA(nn.Module):
         handcrafted_feature = self.prompt_generator.init_handcrafted(inp)
         prompt = self.prompt_generator.get_prompt(handcrafted_feature, embedding_feature)
 
+        embedding_feature2 = self.prompt_generator.init_embeddings(x2)
+        handcrafted_feature2 = self.prompt_generator.init_handcrafted(inp2)
+        prompt2 = self.prompt_generator.get_prompt(handcrafted_feature2, embedding_feature2)
+
         del inp, inp2
         if self.pos_embed is not None:
             x = x + self.pos_embed
@@ -361,6 +365,9 @@ class ImageEncoderViT_DA(nn.Module):
             # Adapter
             x = prompt[i].reshape(B, H, W, -1) + x
             x = blk(x)
+
+            x2 = prompt2[i].reshape(B, H, W, -1) + x2
+            x2 = blk(x2)
 
             # Domain adapt
             space_query, channel_query = self.DA_blks[i](x, space_query, channel_query)
