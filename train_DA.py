@@ -171,7 +171,7 @@ def main(args):
     #         print('********', name)
 
     train_dataset = DA_dataset(args, 'train', use_mask=args.sup, data=(args.data1, args.data2), ext=args.ext)
-    val_dataset = DA_dataset(args, 'val', use_mask=args.sup, data=(args.data1, args.data2))
+    val_dataset = DA_dataset(args, 'val', use_mask=args.sup, data=(args.data1, args.data2), ext=args.ext)
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
     val_dataloader = DataLoader(val_dataset)
