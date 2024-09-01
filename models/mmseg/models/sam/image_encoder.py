@@ -318,14 +318,14 @@ class ImageEncoderViT_DA(nn.Module):
         self.grl = GradientReversal()
 
         self.space_D = MLP(embed_dim, embed_dim, 1, 3)
-        for layer in self.space_D.layers:
-            nn.init.xavier_uniform_(layer.weight, gain=1)
-            nn.init.constant_(layer.bias, 0)
+        # for layer in self.space_D.layers:
+        #     nn.init.xavier_uniform_(layer.weight, gain=1)
+        #     nn.init.constant_(layer.bias, 0)
 
         self.channel_D = MLP(self.c_dim, self.c_dim, 1, 3)
-        for layer in self.channel_D.layers:
-            nn.init.xavier_uniform_(layer.weight, gain=1)
-            nn.init.constant_(layer.bias, 0)
+        # for layer in self.channel_D.layers:
+        #     nn.init.xavier_uniform_(layer.weight, gain=1)
+        #     nn.init.constant_(layer.bias, 0)
     def forward(self, x: torch.Tensor, x2: torch.Tensor, mk_p_label=False):
         inp = x
         inp2 = x2
@@ -356,9 +356,9 @@ class ImageEncoderViT_DA(nn.Module):
         # Domain adapt
         space_query = self.space_query.expand(x.shape[0], -1, -1) # 1, 1, C
         # channel_query = self.channel_query(self.grl(x.flatten(1, 2))).transpose(1, 2) # 1, 1, L (L=H*W)
-
         channel_query = F.adaptive_avg_pool2d(x.permute(0, 3, 1, 2), self.spatial_shape)
         channel_query = self.channel_query(self.grl(channel_query.flatten(2).transpose(1, 2))).transpose(1, 2) # 1, 1, L (L=H*W)
+
         space_query2, channel_query2 = space_query.clone(), channel_query.clone()
 
         for i, blk in enumerate(self.blocks):
