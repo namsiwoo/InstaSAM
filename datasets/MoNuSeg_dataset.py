@@ -12,13 +12,19 @@ from scipy.ndimage.morphology import binary_dilation
 import skimage.morphology, skimage.measure
 
 class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
-    def __init__(self, args, split, use_mask=False, data=('CPM', 'BC'), ext='.png', train_ihc=False):
+    def __init__(self, args, split, use_mask=False, data=('CPM', 'BC'), train_IHC=False):
         self.args = args
         self.split = split
         self.use_mask = use_mask
         self.data1=data[0]
         self.data2=data[1]
-        self.ext = ext
+        if train_IHC == True:
+            self.path1 = 'IHC'
+            self.path2 = 'images'
+        else:
+            self.path2 = 'IHC'
+            self.path1 = 'images'
+
 
         self.mean = np.array([123.675, 116.28, 103.53])
         self.std = np.array([58.395, 57.12, 57.375])
@@ -64,20 +70,20 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
 
 
     def read_samples(self, split, few_shot=False):
-        samples2 = os.listdir(os.path.join(self.data2, 'IHC', split))
+        samples2 = os.listdir(os.path.join(self.data2, self.path2, split))
 
         if split == 'train':
-            samples1 = os.listdir(os.path.join(self.data1, 'images', split))
+            samples1 = os.listdir(os.path.join(self.data1, self.path1, split))
             return samples1, samples2
         else:
             return samples2
     def __getitem__(self, index):
         if self.split == 'train':
             img_name = self.samples[1][index % len(self.samples[1])]
-            img2 = Image.open(os.path.join(self.data2, 'IHC', self.split, img_name)).convert('RGB')
+            img2 = Image.open(os.path.join(self.data2, self.path2, self.split, img_name)).convert('RGB')
 
             img_name = self.samples[0][index % len(self.samples[0])]
-            img1 = Image.open(os.path.join(self.data1, 'images', self.split, img_name)).convert('RGB')
+            img1 = Image.open(os.path.join(self.data1, self.path1, self.split, img_name)).convert('RGB')
             if self.use_mask == True:
                 box_label = np.array(Image.open(os.path.join(self.data1, 'labels_instance', self.split, img_name[:-4]+self.ext)))
                 box_label = skimage.morphology.label(box_label)
@@ -90,7 +96,7 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 sample = [img1, img2, point]
         else:
             img_name = self.samples[index % len(self.samples)]
-            img2 = Image.open(os.path.join(self.data2, 'IHC', self.split, img_name)).convert('RGB')
+            img2 = Image.open(os.path.join(self.data2, self.path2, self.split, img_name)).convert('RGB')
 
             mask = Image.open(os.path.join(self.data2, 'labels_instance', self.split, img_name[:-4]+self.ext))
             sample = [img2, mask]
