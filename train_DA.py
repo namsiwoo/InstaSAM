@@ -355,10 +355,6 @@ def main(args):
                     input = pack[0][0]
                     mask = pack[0][1]
                     img_name = pack[1][0]
-                    if args.data == 'segpc':
-                        size = 1024
-                    else:
-                        size = 224
 
                     output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token, size)
                     binary_mask = torch.sigmoid(output).detach().cpu().numpy()
@@ -490,10 +486,6 @@ def test(args, device):
         for iter, pack in enumerate(test_dataloader):
             input = pack[0][0]
             mask = pack[0][1]
-            if args.data == 'segpc':
-                size = 1024
-            else:
-                size = 224
 
             img_name = pack[1][0]
             print(img_name, 'is processing....')
