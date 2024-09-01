@@ -313,7 +313,10 @@ class ImageEncoderViT_DA(nn.Module):
         self.out_indices = tuple(range(self.num_stages))
 
 
-        self.space_query = nn.Parameter(torch.empty(1, 1, embed_dim))
+        # self.space_query = nn.Parameter(torch.empty(1, 1, embed_dim))
+        self.space_query = nn.Parameter(torch.randn(1, 1, embed_dim))
+        # self.space_query = nn.Embedding(1, 1, embed_dim)
+
         self.channel_query = nn.Linear(embed_dim, 1)
         self.grl = GradientReversal()
 
