@@ -420,9 +420,8 @@ class Domain_adapt(nn.Module):
         self.channel_attn = DomainAttention(c_dim, num_heads, dropout=0.1)
         self.spatial_shape = spatial_shape
 
-        for layer in self.qkv:
-            nn.init.xavier_uniform_(layer.weight, gain=1)
-            nn.init.constant_(layer.bias, 0)
+        torch.nn.init.uniform_(self.qkv.weight)
+        torch.nn.init.uniform_(self.qkv.bias)
 
     def forward(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
         B, H, W, C = x.shape
