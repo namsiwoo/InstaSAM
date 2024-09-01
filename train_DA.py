@@ -170,8 +170,8 @@ def main(args):
     #     else:
     #         print('********', name)
 
-    train_dataset = DA_dataset(args, 'train', use_mask=args.sup, data=(args.data1, args.data2), ext=args.ext)
-    val_dataset = DA_dataset(args, 'val', use_mask=args.sup, data=(args.data1, args.data2))
+    train_dataset = DA_dataset(args, 'train', use_mask=args.sup, data=(args.data1, args.data2), ext=args.ext1)
+    val_dataset = DA_dataset(args, 'val', use_mask=args.sup, data=(args.data1, args.data2), ext=args.ext2)
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
     val_dataloader = DataLoader(val_dataset)
@@ -468,7 +468,7 @@ def test(args, device):
     sam_model = load_checkpoint(sam_model, os.path.join(args.result, 'model', 'Aji_best_model.pth'))
     # sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Dice_best_model.pth'))
 
-    test_dataseet = DA_dataset(args, 'train', use_mask=args.sup, data=(args.data1, args.data2), ext='.png')
+    test_dataseet = DA_dataset(args, 'train', use_mask=args.sup, data=(args.data1, args.data2), ext=args.ext2)
 
     test_dataloader = DataLoader(test_dataseet)
     if args.test_name == "None":
@@ -636,7 +636,9 @@ if __name__ == '__main__':
     args.data2 = assign_data_path(args.data2)
 
     if args.data1 == 'CoNSeP' or 'CPM':
-        args.ext = '_label.png'
+        args.ext1 = '_label.png'
+    else:
+        args.ext2 = '.png'
 
 
     print('=' * 40)
