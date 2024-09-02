@@ -468,7 +468,7 @@ def test(args, device):
     sam_model = load_checkpoint(sam_model, os.path.join(args.result, 'model', 'Aji_best_model.pth'))
     # sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Dice_best_model.pth'))
 
-    test_dataseet = DA_dataset(args, 'train', use_mask=args.sup, data=(args.data1, args.data2), train_IHC=args.train_IHC)
+    test_dataseet = DA_dataset(args, 'test', use_mask=args.sup, data=(args.data1, args.data2), train_IHC=args.train_IHC)
 
     test_dataloader = DataLoader(test_dataseet)
     if args.test_name == "None":
