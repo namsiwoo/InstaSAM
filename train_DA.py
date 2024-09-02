@@ -458,7 +458,7 @@ def test(args, device):
                         'depth': 12, 'num_heads': 12, 'global_attn_indexes': [2, 5, 8, 11]}
         sam_checkpiont = 'sam_vit_b_01ec64.pth'
 
-    sam_model = models.sam.SAM(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
+    sam_model = models.sam.SAM_DA(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
 
     sam_model.make_HQ_model(model_type=args.model_type, num_token=args.num_hq_token)
     sam_model = sam_model.cuda()
