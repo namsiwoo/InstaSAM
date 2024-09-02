@@ -519,7 +519,7 @@ def test(args, device):
                 dice, iou = accuracy_object_level(instance_map, mask[0][0].detach().cpu().numpy())
                 aji = AJI_fast(mask[0][0].detach().cpu().numpy(), instance_map, img_name)
                 pq_list, _ = get_fast_pq(mask[0][0].detach().cpu().numpy(), instance_map) #[dq, sq, dq * sq], [paired_true, paired_pred, unpaired_true, unpaired_pred]
-                ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), instance_map)
+                # ap, _, _, _ = average_precision(mask[0][0].detach().cpu().numpy(), instance_map)
 
             mean_dice += dice / (len(test_dataloader))  # *len(local_rank))
             mean_iou += iou / (len(test_dataloader))  # len(local_rank))
@@ -529,9 +529,9 @@ def test(args, device):
             mean_sq += pq_list[1] / (len(test_dataloader))  # len(local_rank))
             mean_pq += pq_list[2] / (len(test_dataloader))
 
-            mean_ap1 += ap[0] / (len(test_dataloader))
-            mean_ap2 += ap[1] / (len(test_dataloader))
-            mean_ap3 += ap[2] / (len(test_dataloader))
+            # mean_ap1 += ap[0] / (len(test_dataloader))
+            # mean_ap2 += ap[1] / (len(test_dataloader))
+            # mean_ap3 += ap[2] / (len(test_dataloader))
 
             instance_map = mk_colored(instance_map) * 255
             instance_map = Image.fromarray((instance_map).astype(np.uint8))
@@ -558,8 +558,8 @@ def test(args, device):
                  '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
     print('test result: Average- DQ\tSQ\tPQ: '
                  '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dq, mean_sq, mean_pq))
-    print('test result: Average- AP1\tAP2\tAP3: '
-                 '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
+    # print('test result: Average- AP1\tAP2\tAP3: '
+    #              '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_ap1, mean_ap2, mean_ap3))
 
 
     f = open(os.path.join(args.result,'img', args.test_name, "result.txt"), 'w')
@@ -567,8 +567,8 @@ def test(args, device):
             '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dice, mean_iou, mean_aji))
     f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
             '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dq, mean_sq, mean_pq))
-    f.write('***test result_mask*** Average- AP1\tAP2\tAP3: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_ap1, mean_ap2, mean_ap3))
+    # f.write('***test result_mask*** Average- AP1\tAP2\tAP3: '
+    #         '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_ap1, mean_ap2, mean_ap3))
     f.close()
 
     f = open(os.path.join(args.result, "result"+args.test_name[4:]+".txt"), 'w')
@@ -576,8 +576,8 @@ def test(args, device):
             '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dice, mean_iou, mean_aji))
     f.write('***test result_mask*** Average- DQ\tSQ\tPQ: '
             '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_dq, mean_sq, mean_pq))
-    f.write('***test result_mask*** Average- AP1\tAP2\tAP3: '
-            '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_ap1, mean_ap2, mean_ap3))
+    # f.write('***test result_mask*** Average- AP1\tAP2\tAP3: '
+    #         '\t\t{:.4f}\t{:.4f}\t{:.4f}\n'.format(mean_ap1, mean_ap2, mean_ap3))
     f.close()
 
 
