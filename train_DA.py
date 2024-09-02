@@ -485,8 +485,8 @@ def test(args, device):
 
     with torch.no_grad():
         for iter, pack in enumerate(test_dataloader):
-            input = pack[0][1]
-            mask = pack[0][2]
+            input = pack[0][0]
+            mask = pack[0][1]
             size = 224
 
             img_name = pack[1][0]
