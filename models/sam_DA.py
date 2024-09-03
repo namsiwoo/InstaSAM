@@ -525,8 +525,8 @@ class SAM(nn.Module):
         else:
             self.loss_G = offset_loss + bce_loss
 
-        space_loss = 1- self.criterionBCE(self.space_query[0], self.space_query[1])
-        channel_loss = 1- self.criterionBCE(self.channel_query[0], self.channel_query[1])
+        space_loss = - self.criterionBCE(self.space_query[0], self.space_query[1])
+        channel_loss = - self.criterionBCE(self.channel_query[0], self.channel_query[1])
 
         return bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt
 
