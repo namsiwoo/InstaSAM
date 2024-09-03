@@ -525,8 +525,8 @@ class SAM(nn.Module):
         else:
             self.loss_G = offset_loss + bce_loss
 
-        space_loss = self.criterionBCE(self.space_query[0], torch.ones(self.space_query.shape[0]).to(self.device)) + self.criterionBCE(self.space_query[1], torch.zeros(self.space_query.shape[0]).to(self.device))
-        channel_loss = self.criterionBCE(self.channel_query[0], torch.ones(self.space_query.shape[0]).to(self.device)) + self.criterionBCE(self.channel_query[1], torch.zeros(self.space_query.shape[0]).to(self.device))
+        space_loss = self.criterionBCE(self.space_query[0], torch.ones(self.space_query[0].shape[0]).to(self.device)) + self.criterionBCE(self.space_query[1], torch.zeros(self.space_query[0].shape[0]).to(self.device))
+        channel_loss = self.criterionBCE(self.channel_query[0], torch.ones(self.space_query[0].shape[0]).to(self.device)) + self.criterionBCE(self.channel_query[1], torch.zeros(self.space_query[0].shape[0]).to(self.device))
 
         return bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt
 
