@@ -53,7 +53,7 @@ class Domain_adapt(nn.Module):
         torch.nn.init.uniform_(self.qkv.weight)
         torch.nn.init.uniform_(self.qkv.bias)
 
-    def make_query(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
+    def make_query(self, x: torch.Tensor, space_query, channel_query):
         B, H, W, C = x.shape
         # qkv with shape (3, B, nHead, H * W, C)
         kv = self.qkv(x).reshape(B, H * W, 2, 1, -1).permute(2, 0, 3, 1, 4)
@@ -65,7 +65,7 @@ class Domain_adapt(nn.Module):
 
         return space_query, channel_query
 
-    def forward(self, x1: torch.Tensor, x2: torch.Tensor):
+    def forward(self, x1, x2):
         # print(len(x1), len(x1[0]))
         # print((x1[0].shape))
 
@@ -79,6 +79,7 @@ class Domain_adapt(nn.Module):
 
 
         for i in range(len(x1)):
+            print(x1[i].shape, space_query.shape, channel_query.shape)
             space_query, channel_query = self.make_query(x1[i], space_query, channel_query)
             space_query2, channel_query2 = self.make_query(x2[i], space_query2, channel_query2)
 
