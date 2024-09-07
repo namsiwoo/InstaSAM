@@ -519,7 +519,7 @@ class SAM(nn.Module):
 
 
         # 1
-        self.space_query, self.channel_query = self.discriminator(interm_embeddings, interm_embeddings2)
+        # self.space_query, self.channel_query = self.discriminator(interm_embeddings, interm_embeddings2)
 
         # 2
         masks, masks_hq = self.mask_decoder(
