@@ -80,7 +80,7 @@ class Domain_adapt(nn.Module):
 
         for i in range(len(x1)):
             space_query, channel_query = self.make_query(x1[i], space_query, channel_query)
-            space_query2, channel_query2 = self.make_query()(x2[i], space_query2, channel_query2)
+            space_query2, channel_query2 = self.make_query(x2[i], space_query2, channel_query2)
 
         space_query = self.space_D(space_query)
         space_query2 = self.space_D(space_query2)
