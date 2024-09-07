@@ -66,10 +66,10 @@ class Domain_adapt(nn.Module):
         return space_query, channel_query
 
     def forward(self, x1: torch.Tensor, x2: torch.Tensor):
-        print(len(x1), len(x1[0]))
-        print((x1[0].shape))
+        # print(len(x1), len(x1[0]))
+        # print((x1[0].shape))
 
-        space_query = self.space_query.expand(x1[0].shape, -1, -1) # 1, 1, C
+        space_query = self.space_query.expand(x1[0].shape[0], -1, -1) # 1, 1, C
         space_query2, = space_query.clone()
 
         channel_query = F.adaptive_avg_pool2d(x1[0].permute(0, 3, 1, 2), self.spatial_shape)
