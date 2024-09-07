@@ -587,9 +587,11 @@ class SAM(nn.Module):
         self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
 
-        self.optimizer_dis.zero_grad()
-        self.loss_dis.backward()
-        self.optimizer_dis.step()
+
+        if epoch > 20:
+            self.optimizer_dis.zero_grad()
+            self.loss_dis.backward()
+            self.optimizer_dis.step()
 
         if point_prompt == None:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), space_loss.item(), channel_loss.item(), offset_gt
