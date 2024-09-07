@@ -600,7 +600,7 @@ class SAM(nn.Module):
     def infer(self, input, point_prompt=None):
         bs = 1
 
-        self.features, self.interm_embeddings, _, _ = self.image_encoder(input, input)
+        self.features, self.interm_embeddings, _, _ = self.image_encoder(input)
 
         # Embed prompts
         if point_prompt == None:
