@@ -29,7 +29,6 @@ class Domain_adapt(nn.Module):
                 positional parameter size.
         """
         super().__init__()
-        self.num_heads = num_heads
         self.qkv = nn.Linear(dim, dim * 2, bias=qkv_bias)
         self.space_attn = DomainAttention(dim, num_heads, dropout=0.1)
         self.channel_attn = DomainAttention(c_dim, num_heads, dropout=0.1)
@@ -57,9 +56,9 @@ class Domain_adapt(nn.Module):
     def make_query(self, x: torch.Tensor, space_query, channel_query):
         B, H, W, _ = x.shape
         # qkv with shape (3, B, nHead, H * W, C)
-        kv = self.qkv(x).reshape(B, H * W, 2, self.num_heads, -1).permute(2, 0, 3, 1, 4)
+        kv = self.qkv(x).reshape(B, H * W, 2, 1, -1).permute(2, 0, 3, 1, 4)
         # q, k, v with shape (B * nHead, H * W, C)
-        k, v = kv.reshape(2, B*self.num_heads, H * W, -1).unbind(0)
+        k, v = kv.reshape(2, B, H * W, -1).unbind(0)
         space_query = self.space_attn(space_query, k, v)
         k, v = remove_mask_and_warp(x, k, v, self.spatial_shape)
         channel_query = self.channel_attn(channel_query, k, v)
