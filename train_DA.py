@@ -139,8 +139,12 @@ def main(args):
 
     sam_model = models.sam_DA.SAM(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
     sam_model.optimizer = torch.optim.AdamW(sam_model.parameters(), lr=args.lr)
+
     sam_model.make_discriminator()
     sam_model.optimizer_dis = torch.optim.AdamW(sam_model.discriminator.parameters(), lr=args.lr)
+
+    sam_model.optimizer_dis = torch.optim.AdamW(sam_model.netD_mask.parameters(), lr=args.lr)
+    sam_model.optimizer_dis2 = torch.optim.AdamW(sam_model.netD_offset.parameters(), lr=args.lr)
 
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer, 20, eta_min=1.0e-7)
     lr_scheduler_dis = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer_dis, 20, eta_min=1.0e-7)

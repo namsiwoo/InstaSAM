@@ -583,7 +583,8 @@ class SAM(nn.Module):
             #     self.loss_G = bce_loss + iou_loss + offset_loss
             # else:
             self.loss_G = bce_loss + iou_loss + offset_loss
-            self.loss_dis = space_loss + channel_loss
+            self.loss_dis = space_loss
+            self.loss_dis2 = channel_loss
         else:
             if semi == False:
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
@@ -624,6 +625,10 @@ class SAM(nn.Module):
         self.optimizer_dis.zero_grad()
         self.loss_dis.backward()
         self.optimizer_dis.step()
+
+        self.optimizer_dis2.zero_grad()
+        self.loss_dis2.backward()
+        self.optimizer_dis2.step()
 
         if point_prompt == None:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), space_loss.item(), channel_loss.item(), offset_gt
