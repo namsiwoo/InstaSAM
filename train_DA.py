@@ -141,8 +141,8 @@ def main(args):
     sam_model.optimizer = torch.optim.AdamW(sam_model.parameters(), lr=args.lr)
 
     sam_model.make_discriminator()
-    sam_model.optimizer_dis = torch.optim.AdamW(sam_model.discriminator.parameters(), lr=args.lr)
 
+    # sam_model.optimizer_dis = torch.optim.AdamW(sam_model.discriminator.parameters(), lr=args.lr)
     sam_model.optimizer_dis = torch.optim.AdamW(sam_model.netD_mask.parameters(), lr=args.lr)
     sam_model.optimizer_dis2 = torch.optim.AdamW(sam_model.netD_offset.parameters(), lr=args.lr)
 
