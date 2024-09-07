@@ -34,7 +34,7 @@ class Domain_adapt(nn.Module):
         self.channel_attn = DomainAttention(c_dim, num_heads, dropout=0.1)
         self.spatial_shape = spatial_shape
 
-        self.space_query = nn.Parameter(torch.randn(1, 1, self.embed_dim))
+        self.space_query = nn.Parameter(torch.randn(1, 1, dim))
         # self.space_query = nn.Embedding(1, 1, embed_dim)
 
         self.channel_query = nn.Linear(dim, 1)
