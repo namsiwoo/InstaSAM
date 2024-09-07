@@ -59,7 +59,6 @@ class Domain_adapt(nn.Module):
         kv = self.qkv(x).reshape(B, H * W, 2, 1, -1).permute(2, 0, 3, 1, 4)
         # q, k, v with shape (B * nHead, H * W, C)
         k, v = kv.reshape(2, B, H * W, -1).unbind(0)
-        print('s', space_query.shape, k.shape, v.shape)
         space_query = self.space_attn(space_query, k, v)
         k, v = remove_mask_and_warp(x, k, v, self.spatial_shape)
         channel_query = self.channel_attn(channel_query, k, v)
@@ -71,7 +70,7 @@ class Domain_adapt(nn.Module):
         # print((x1[0].shape))
 
         space_query = self.space_query.expand(x1[0].shape[0], -1, -1) # 1, 1, C
-        space_query2, = space_query.clone()
+        space_query2 = space_query.clone()
 
         channel_query = F.adaptive_avg_pool2d(x1[0].permute(0, 3, 1, 2), self.spatial_shape)
         channel_query = self.channel_query(self.grl(channel_query.flatten(2).transpose(1, 2))).transpose(1, 2) # 1, 1, L (L=H*W)
@@ -80,8 +79,6 @@ class Domain_adapt(nn.Module):
 
 
         for i in range(len(x1)):
-            print(x1[i].shape, space_query.shape, channel_query.shape)
-            print(x2[i].shape, space_query2.shape, channel_query2.shape)
             space_query, channel_query = self.make_query(x1[i], space_query, channel_query)
             space_query2, channel_query2 = self.make_query(x2[i], space_query2, channel_query2)
 
