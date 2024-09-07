@@ -59,7 +59,6 @@ class Domain_adapt(nn.Module):
         kv = self.qkv(x).reshape(B, H * W, 2, 1, -1).permute(2, 0, 3, 1, 4)
         # q, k, v with shape (B * nHead, H * W, C)
         k, v = kv.reshape(2, B, H * W, -1).unbind(0)
-        print('s', space_query.shape, k.shape, v.shape)
         space_query = self.space_attn(space_query, k, v)
         k, v = remove_mask_and_warp(x, k, v, self.spatial_shape)
         channel_query = self.channel_attn(channel_query, k, v)
@@ -81,6 +80,7 @@ class Domain_adapt(nn.Module):
 
         for i in range(len(x1)):
             print(x1[i].shape, space_query.shape, channel_query.shape)
+            print(x2[i].shape, space_query.shape, channel_query.shape)
             space_query, channel_query = self.make_query(x1[i], space_query, channel_query)
             space_query2, channel_query2 = self.make_query(x2[i], space_query2, channel_query2)
 
