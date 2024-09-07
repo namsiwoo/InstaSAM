@@ -551,8 +551,6 @@ class SAM(nn.Module):
             #     self.loss_G = bce_loss + iou_loss + offset_loss
             # else:
             self.loss_G = bce_loss + iou_loss + offset_loss
-            print(space_loss)
-            print(channel_loss)
             self.loss_dis = space_loss + channel_loss
         else:
             if semi == False:
