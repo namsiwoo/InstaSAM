@@ -447,10 +447,10 @@ class SAM(nn.Module):
         self.c_dim = 256
         self.DA_num_heads = 8
         self.spatial_shape = (16, 16)
-        self.discriminator = Domain_adapt(self.embed_dim,
-                                          self.c_dim,
-                                          self.DA_num_heads,
-                                          self.spatial_shape,
+        self.discriminator = Domain_adapt(dim=self.embed_dim,
+                                          c_dim=self.c_dim,
+                                          num_heads=self.DA_num_heads,
+                                          spatial_shape=self.spatial_shape,
                                           )
     def backward_G_ssl(self, gt):
         binary_gt = gt.clone().unsqueeze(1)
