@@ -570,8 +570,11 @@ class SAM(nn.Module):
         channel_query1 = self.netD_offset(self.masks_hq)
         channel_query2 = self.netD_offset(self.masks_hq2)
 
-        space_loss = self.criterionBCE(space_query1, torch.ones_like(space_query1)).mean() + self.criterionBCE(space_query2, torch.zeros_like(space_query1)).mean()
-        channel_loss = self.criterionBCE(channel_query1, torch.ones_like(channel_query1)).mean() + self.criterionBCE(channel_query2, torch.zeros_like(channel_query1)).mean()
+        space_loss = torch.mean(F.relu(1. - space_query1)) + torch.mean(F.relu(1. + space_query2))
+        channel_loss = torch.mean(F.relu(1. - channel_query1)) + torch.mean(F.relu(1. + channel_query2))
+
+        # space_loss = self.criterionBCE(space_query1, torch.ones_like(space_query1)).mean() + self.criterionBCE(space_query2, torch.zeros_like(space_query1)).mean()
+        # channel_loss = self.criterionBCE(channel_query1, torch.ones_like(channel_query1)).mean() + self.criterionBCE(channel_query2, torch.zeros_like(channel_query1)).mean()
 
         return bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt
 
