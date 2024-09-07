@@ -7,6 +7,81 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+class Domain_adapt(nn.Module):
+    """Multi-head Attention block with relative position embeddings."""
+
+    def __init__(
+        self,
+        dim: int,
+        c_dim: int,
+        num_heads: int = 8,
+        qkv_bias: bool = True,
+        spatial_shape: int = 28,
+    ) -> None:
+        """
+        Args:
+            dim (int): Number of input channels.
+            num_heads (int): Number of attention heads.
+            qkv_bias (bool):  If True, add a learnable bias to query, key, value.
+            rel_pos (bool): If True, add relative positional embeddings to the attention map.
+            rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
+            input_size (tuple(int, int) or None): Input resolution for calculating the relative
+                positional parameter size.
+        """
+        super().__init__()
+        self.qkv = nn.Linear(dim, dim * 2, bias=qkv_bias)
+        self.space_attn = DomainAttention(dim, num_heads, dropout=0.1)
+        self.channel_attn = DomainAttention(c_dim, num_heads, dropout=0.1)
+        self.spatial_shape = spatial_shape
+
+        self.space_query = nn.Parameter(torch.randn(1, 1, self.embed_dim))
+        # self.space_query = nn.Embedding(1, 1, embed_dim)
+
+        self.channel_query = nn.Linear(dim, 1)
+        self.grl = GradientReversal()
+
+        self.space_D = MLP(dim, dim, 1, 3)
+        for layer in self.space_D.layers:
+            nn.init.xavier_uniform_(layer.weight, gain=1)
+            nn.init.constant_(layer.bias, 0)
+
+        self.channel_D = MLP(c_dim, c_dim, 1, 3)
+        for layer in self.channel_D.layers:
+            nn.init.xavier_uniform_(layer.weight, gain=1)
+            nn.init.constant_(layer.bias, 0)
+
+        torch.nn.init.uniform_(self.qkv.weight)
+        torch.nn.init.uniform_(self.qkv.bias)
+
+    def make_query(self, x: torch.Tensor, space_query, channel_query) -> torch.Tensor:
+        B, H, W, C = x.shape
+        # qkv with shape (3, B, nHead, H * W, C)
+        kv = self.qkv(x).reshape(B, H * W, 2, 1, -1).permute(2, 0, 3, 1, 4)
+        # q, k, v with shape (B * nHead, H * W, C)
+        k, v = kv.reshape(2, B, H * W, -1).unbind(0)
+        space_query = self.space_attn(space_query, k, v)
+        k, v = remove_mask_and_warp(x, k, v, self.spatial_shape)
+        channel_query = self.channel_attn(channel_query, k, v)
+
+        return space_query, channel_query
+
+    def forward(self, x1: torch.Tensor, x2: torch.Tensor):
+
+        space_query = self.space_query.expand(x1.shape[0], -1, -1) # 1, 1, C
+        channel_query = F.adaptive_avg_pool2d(x1.permute(0, 3, 1, 2), self.spatial_shape)
+        channel_query = self.channel_query(self.grl(channel_query.flatten(2).transpose(1, 2))).transpose(1, 2) # 1, 1, L (L=H*W)
+        space_query2, channel_query2 = space_query.clone(), channel_query.clone()
+
+        for i in range(len(x1)):
+            space_query, channel_query = self.make_query(x1[i], space_query, channel_query)
+            space_query2, channel_query2 = self.make_query()(x2[i], space_query2, channel_query2)
+
+        space_query = self.space_D(space_query)
+        space_query2 = self.space_D(space_query2)
+        channel_query = self.channel_D(channel_query)
+        channel_query2 = self.channel_D(channel_query2)
+
+        return (space_query, space_query2), (channel_query, channel_query2)
 
 def remove_mask_and_warp(x, k, v, spatial_shapes=(28, 28)):
     """ Removes padding mask in sequence and warps each level of tokens into fixed-sized sequences.

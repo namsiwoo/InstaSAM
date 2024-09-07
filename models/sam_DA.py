@@ -10,6 +10,7 @@ import torch.nn.functional as F
 
 from models import register
 from .mmseg.models.sam import ImageEncoderViT, ImageEncoderViT_DA, MaskDecoder, TwoWayTransformer, PromptEncoder
+from .mmseg.models.sam.AQT_utils import Domain_adapt, GradientReversal, MLP
 from utils.loss_offset import offset_Loss, offset_Loss_sonnet
 
 logger = logging.getLogger(__name__)
@@ -141,7 +142,7 @@ class SAM(nn.Module):
     def __init__(self, inp_size=None, encoder_mode=None, loss=None, device=None):
         super().__init__()
         self.embed_dim = encoder_mode['embed_dim']
-        self.image_encoder = ImageEncoderViT_DA(
+        self.image_encoder = ImageEncoderViT(
             img_size=inp_size,
             patch_size=encoder_mode['patch_size'],
             in_chans=3,
@@ -201,6 +202,7 @@ class SAM(nn.Module):
         self.image_embedding_size = inp_size // encoder_mode['patch_size']
         self.no_mask_embed = nn.Embedding(1, encoder_mode['prompt_embed_dim'])
 
+        self.embed_dim = encoder_mode['embed_dim']
         # self.HQ_model = MaskDecoderHQ('vit_h')
 
         # HQ_module = self.HQ_model.modules
@@ -441,6 +443,15 @@ class SAM(nn.Module):
             del sparse_embeddings, dense_embeddings, iou_preds, mask_prompt
             return pseudo_gt_global, mask_prompt_adapter
 
+    def make_discriminator(self):
+        self.c_dim = 256
+        self.DA_num_heads = 8
+        self.spatial_shape = (16, 16)
+        self.discriminator = Domain_adapt(self.embed_dim,
+                                          self.c_dim,
+                                          self.DA_num_heads,
+                                          self.spatial_shape,
+                                          )
     def backward_G_ssl(self, gt):
         binary_gt = gt.clone().unsqueeze(1)
         binary_gt[binary_gt > 0] = 1.
@@ -480,8 +491,10 @@ class SAM(nn.Module):
 
     def forward(self):  # , point_prompt=None
         bs = len(self.input1)
-        features, interm_embeddings, self.space_query, self.channel_query = self.image_encoder(self.input1, self.input2)
-        # _, self.interm_embeddings, self.features = self.image_encoder(self.input, mk_p_label=True)
+        features, interm_embeddings = self.image_encoder(self.input1)
+        _, interm_embeddings2 = self.image_encoder(self.input2)
+
+        self.space_query, self.channel_query = self.discriminator(interm_embeddings, interm_embeddings2)
 
         # Embed prompts
         sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.input1.device)
@@ -537,7 +550,8 @@ class SAM(nn.Module):
             # if epoch < 5:
             #     self.loss_G = bce_loss + iou_loss + offset_loss
             # else:
-            self.loss_G = bce_loss + iou_loss + offset_loss + space_loss + channel_loss
+            self.loss_G = bce_loss + iou_loss + offset_loss
+            self.loss_dis = space_loss + channel_loss
         else:
             if semi == False:
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
@@ -572,6 +586,10 @@ class SAM(nn.Module):
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
+
+        self.optimizer_dis.zero_grad()
+        self.loss_dis.backward()
+        self.optimizer_dis.step()
 
         if point_prompt == None:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), space_loss.item(), channel_loss.item(), offset_gt

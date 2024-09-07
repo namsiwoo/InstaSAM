@@ -139,7 +139,11 @@ def main(args):
 
     sam_model = models.sam_DA.SAM(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
     sam_model.optimizer = torch.optim.AdamW(sam_model.parameters(), lr=args.lr)
+    sam_model.make_discriminator()
+    sam_model.optimizer_dis = torch.optim.AdamW(sam_model.discriminator.parameters(), lr=args.lr)
+
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer, 20, eta_min=1.0e-7)
+    lr_scheduler_dis = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer_dis, 20, eta_min=1.0e-7)
     sam_model = load_checkpoint(sam_model, sam_checkpoint)
 
     for name, para in sam_model.named_parameters():
@@ -219,6 +223,7 @@ def main(args):
             # bce_loss, offset_gt, offset_loss, iou_loss = backwards
             # bce_local_loss, iou_local_loss = backwards_local
             lr_scheduler.step()
+            lr_scheduler_dis.step()
 
             loss = bce_loss + iou_loss + offset_loss + bce_local_loss + iou_local_loss +space_loss+ channel_loss #sam_model.loss_G.item()
 
