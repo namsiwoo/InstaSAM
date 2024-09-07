@@ -173,7 +173,7 @@ class ImageEncoderViT(nn.Module):
                 x_ori=blk(x_ori)
 
             if blk.window_size == 0:
-                interm_embeddings.append(x)
+                interm_embeddings.append(x.detach())
             if i in self.out_indices:
                 outs.append(x)
 
