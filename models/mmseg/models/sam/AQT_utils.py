@@ -66,7 +66,8 @@ class Domain_adapt(nn.Module):
         return space_query, channel_query
 
     def forward(self, x1: torch.Tensor, x2: torch.Tensor):
-        print(len(x1), print(torch.tensor(x1).shape))
+        print(len(x1), len(x1[0]))
+        print((x1[0].shape))
 
         space_query = self.space_query.expand(x1[0].shape, -1, -1) # 1, 1, C
         space_query2, = space_query.clone()
