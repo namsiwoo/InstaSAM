@@ -140,11 +140,13 @@ def main(args):
     sam_model = models.sam_DA.SAM(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
     sam_model.optimizer = torch.optim.AdamW(sam_model.parameters(), lr=args.lr)
 
-    sam_model.make_discriminator()
+    sam_model.make_discriminator(type=args.dis_type)
 
-    # sam_model.optimizer_dis = torch.optim.AdamW(sam_model.discriminator.parameters(), lr=args.lr)
-    sam_model.optimizer_dis = torch.optim.AdamW(sam_model.netD_mask.parameters(), lr=args.lr)
-    sam_model.optimizer_dis2 = torch.optim.AdamW(sam_model.netD_offset.parameters(), lr=args.lr)
+    if args.dis_type == 1:
+        sam_model.optimizer_dis = torch.optim.AdamW(sam_model.discriminator.parameters(), lr=args.lr)
+    else:
+        sam_model.optimizer_dis = torch.optim.AdamW(sam_model.netD_mask.parameters(), lr=args.lr)
+        sam_model.optimizer_dis2 = torch.optim.AdamW(sam_model.netD_offset.parameters(), lr=args.lr)
 
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer, 20, eta_min=1.0e-7)
     lr_scheduler_dis = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer_dis, 20, eta_min=1.0e-7)
@@ -621,7 +623,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', default='vit_h', help='')
     # parser.add_argument('--sam_checkpoint', default='/media/NAS/nas_187/siwoo/2023/result/transformer_freeze_new_h2_MO/model/Aji_best_model.pth')
     parser.add_argument('--print_fq', default=15, type=int, help='')
-    parser.add_argument('--ord_th', default=0.5, type=float)
+    parser.add_argument('--dis_type', default=1, type=int)
 
     # parser.add_argument('--result', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift4_fs2/img', help='')
     # parser.add_argument('--model', default='/media/NAS/nas_187/siwoo/2023/result/MO_shift_4_fs2/model', help='')

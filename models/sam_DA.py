@@ -443,18 +443,21 @@ class SAM(nn.Module):
             del sparse_embeddings, dense_embeddings, iou_preds, mask_prompt
             return pseudo_gt_global, mask_prompt_adapter
 
-    def make_discriminator(self):
-        # self.c_dim = 256
-        # self.DA_num_heads = 8
-        # self.spatial_shape = (16, 16)
-        # self.discriminator = Domain_adapt(dim=self.embed_dim,
-        #                                   c_dim=self.c_dim,
-        #                                   num_heads=self.DA_num_heads,
-        #                                   spatial_shape=self.spatial_shape,
-        #                                   )
+    def make_discriminator(self, type):
+        self.type = type
+        if type == 1:
+            self.c_dim = 256
+            self.DA_num_heads = 8
+            self.spatial_shape = (16, 16)
+            self.discriminator = Domain_adapt(dim=self.embed_dim,
+                                              c_dim=self.c_dim,
+                                              num_heads=self.DA_num_heads,
+                                              spatial_shape=self.spatial_shape,
+                                              )
 
-        self.netD_mask = Discriminator(input_nc=1).to(self.device)
-        self.netD_offset = Discriminator(input_nc=2).to(self.device)
+        else:
+            self.netD_mask = Discriminator(input_nc=1).to(self.device)
+            self.netD_offset = Discriminator(input_nc=2).to(self.device)
 
     def backward_G_ssl(self, gt):
         binary_gt = gt.clone().unsqueeze(1)
@@ -519,21 +522,23 @@ class SAM(nn.Module):
 
 
         # 1
-        # self.space_query, self.channel_query = self.discriminator(interm_embeddings, interm_embeddings2)
+        if self.type == 1:
+            self.space_query, self.channel_query = self.discriminator(interm_embeddings, interm_embeddings2)
 
         # 2
-        masks, masks_hq = self.mask_decoder(
-            image_embeddings=features2,
-            image_pe=self.prompt_encoder.get_dense_pe(),
-            sparse_prompt_embeddings=sparse_embeddings,
-            dense_prompt_embeddings=dense_embeddings,
-            multimask_output=False,
-            mask_token_only=False,
-            local_path=False,
-            interm_embeddings=interm_embeddings2[0],
-        )
-        self.pred_mask2 = self.postprocess_masks(masks, self.inp_size, (224, 224))
-        self.masks_hq2 = self.postprocess_masks(masks_hq, self.inp_size, (224, 224))
+        else:
+            masks, masks_hq = self.mask_decoder(
+                image_embeddings=features2,
+                image_pe=self.prompt_encoder.get_dense_pe(),
+                sparse_prompt_embeddings=sparse_embeddings,
+                dense_prompt_embeddings=dense_embeddings,
+                multimask_output=False,
+                mask_token_only=False,
+                local_path=False,
+                interm_embeddings=interm_embeddings2[0],
+            )
+            self.pred_mask2 = self.postprocess_masks(masks, self.inp_size, (224, 224))
+            self.masks_hq2 = self.postprocess_masks(masks_hq, self.inp_size, (224, 224))
 
 
         # self.pred_mask = self.postprocess_masks(masks, self.inp_size, (300, 300))
@@ -559,19 +564,19 @@ class SAM(nn.Module):
             self.loss_G = offset_loss + bce_loss
 
         # 1
-        # space_loss = self.criterionBCE(self.space_query[0], torch.ones_like(self.space_query[0]).to(self.device)) + self.criterionBCE(self.space_query[1], torch.zeros_like(self.space_query[0]).to(self.device))
-        # channel_loss = self.criterionBCE(self.channel_query[0], torch.ones_like(self.space_query[0]).to(self.device)) + self.criterionBCE(self.channel_query[1], torch.zeros_like(self.space_query[0]).to(self.device))
-        #
-        # return bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt
+        if self.type == 1:
+            space_loss = self.criterionBCE(self.space_query[0], torch.ones_like(self.space_query[0]).to(self.device)) + self.criterionBCE(self.space_query[1], torch.zeros_like(self.space_query[0]).to(self.device))
+            channel_loss = self.criterionBCE(self.channel_query[0], torch.ones_like(self.space_query[0]).to(self.device)) + self.criterionBCE(self.channel_query[1], torch.zeros_like(self.space_query[0]).to(self.device))
 
         #2
-        space_query1 = self.netD_mask(self.pred_mask.detach())
-        space_query2 = self.netD_mask(self.pred_mask2.detach())
-        channel_query1 = self.netD_offset(self.masks_hq.detach())
-        channel_query2 = self.netD_offset(self.masks_hq2.detach())
+        else:
+            space_query1 = self.netD_mask(self.pred_mask.detach())
+            space_query2 = self.netD_mask(self.pred_mask2.detach())
+            channel_query1 = self.netD_offset(self.masks_hq.detach())
+            channel_query2 = self.netD_offset(self.masks_hq2.detach())
 
-        space_loss = torch.mean(F.relu(1. - space_query1)) + torch.mean(F.relu(1. + space_query2))
-        channel_loss = torch.mean(F.relu(1. - channel_query1)) + torch.mean(F.relu(1. + channel_query2))
+            space_loss = torch.mean(F.relu(1. - space_query1)) + torch.mean(F.relu(1. + space_query2))
+            channel_loss = torch.mean(F.relu(1. - channel_query1)) + torch.mean(F.relu(1. + channel_query2))
 
         # space_loss = self.criterionBCE(space_query1, torch.ones_like(space_query1)).mean() + self.criterionBCE(space_query2, torch.zeros_like(space_query1)).mean()
         # channel_loss = self.criterionBCE(channel_query1, torch.ones_like(channel_query1)).mean() + self.criterionBCE(channel_query2, torch.zeros_like(channel_query1)).mean()
@@ -586,8 +591,11 @@ class SAM(nn.Module):
             #     self.loss_G = bce_loss + iou_loss + offset_loss
             # else:
             self.loss_G = bce_loss + iou_loss + offset_loss
-            self.loss_dis = space_loss
-            self.loss_dis2 = channel_loss
+            if self.type == 1:
+                self.loss_dis = space_loss + channel_loss
+            else:
+                self.loss_dis = space_loss
+                self.loss_dis2 = channel_loss
         else:
             if semi == False:
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
@@ -629,9 +637,10 @@ class SAM(nn.Module):
         self.loss_dis.backward()
         self.optimizer_dis.step()
 
-        self.optimizer_dis2.zero_grad()
-        self.loss_dis2.backward()
-        self.optimizer_dis2.step()
+        if self.type == 2:
+            self.optimizer_dis2.zero_grad()
+            self.loss_dis2.backward()
+            self.optimizer_dis2.step()
 
         if point_prompt == None:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), space_loss.item(), channel_loss.item(), offset_gt
