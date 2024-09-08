@@ -628,18 +628,18 @@ class SAM(nn.Module):
 
         del self.input1, self.input2
         self.optimizer.zero_grad()  # set G's gradients to zero
-        self.loss_G.backward()
+        self.loss_G.backward(retain_graph = True)
         self.optimizer.step()  # udpate G's weights
 
 
         # if epoch > 20:
         self.optimizer_dis.zero_grad()
-        self.loss_dis.backward(retain_graph=True)
+        self.loss_dis.backward()
         self.optimizer_dis.step()
 
         if self.type == 2:
             self.optimizer_dis2.zero_grad()
-            self.loss_dis2.backward(retain_graph=True)
+            self.loss_dis2.backward()
             self.optimizer_dis2.step()
 
         if point_prompt == None:
