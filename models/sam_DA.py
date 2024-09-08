@@ -623,7 +623,7 @@ class SAM(nn.Module):
         self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
 
-        del self.input1, self.input2, self.loss_G, self.loss_dis, self.loss_dis2, self.loss_dis3, self.pred_mask2, self.masks_hq2
+        del self.loss_G, self.loss_dis, self.loss_dis2, self.loss_dis3, self.pred_mask2, self.masks_hq2
         # train discriminator....
 
         self.forward()
