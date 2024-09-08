@@ -615,9 +615,9 @@ class SAM(nn.Module):
         bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
         space_loss, channel_loss = self.backward_G_dis()
         if self.type ==3:
-            self.loss_G = bce_loss + iou_loss + offset_loss +space_loss + channel_loss
-        else:
             self.loss_G = bce_loss + iou_loss + offset_loss + space_loss[0] + space_loss[1] + channel_loss[0] + channel_loss[1]
+        else:
+            self.loss_G = bce_loss + iou_loss + offset_loss +space_loss + channel_loss
 
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
