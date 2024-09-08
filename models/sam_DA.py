@@ -455,7 +455,18 @@ class SAM(nn.Module):
                                               spatial_shape=self.spatial_shape,
                                               )
 
+        elif self.type ==2:
+            self.netD_mask = Discriminator(input_nc=1).to(self.device)
+            self.netD_offset = Discriminator(input_nc=2).to(self.device)
         else:
+            self.c_dim = 256
+            self.DA_num_heads = 8
+            self.spatial_shape = (16, 16)
+            self.discriminator = Domain_adapt(dim=self.embed_dim,
+                                              c_dim=self.c_dim,
+                                              num_heads=self.DA_num_heads,
+                                              spatial_shape=self.spatial_shape,
+                                              )
             self.netD_mask = Discriminator(input_nc=1).to(self.device)
             self.netD_offset = Discriminator(input_nc=2).to(self.device)
 
