@@ -675,6 +675,8 @@ class SAM(nn.Module):
                 self.optimizer_dis2.zero_grad()
                 self.loss_dis3.backward()
                 self.optimizer_dis3.step()
+                space_loss = space_loss[0]
+                channel_loss = channel_loss[0]
 
 
         if point_prompt == None:
