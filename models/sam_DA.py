@@ -570,10 +570,10 @@ class SAM(nn.Module):
 
         #2
         else:
-            space_query1 = self.netD_mask(self.pred_mask)#.detach())
-            space_query2 = self.netD_mask(self.pred_mask2)#.detach())
-            channel_query1 = self.netD_offset(self.masks_hq)#.detach())
-            channel_query2 = self.netD_offset(self.masks_hq2)#.detach())
+            space_query1 = self.netD_mask(self.pred_mask.detach())
+            space_query2 = self.netD_mask(self.pred_mask2.detach())
+            channel_query1 = self.netD_offset(self.masks_hq.detach())
+            channel_query2 = self.netD_offset(self.masks_hq2.detach())
 
             space_loss = torch.mean(F.relu(1. - space_query1)) + torch.mean(F.relu(1. + space_query2))
             channel_loss = torch.mean(F.relu(1. - channel_query1)) + torch.mean(F.relu(1. + channel_query2))
@@ -628,7 +628,7 @@ class SAM(nn.Module):
 
         del self.input1, self.input2
         self.optimizer.zero_grad()  # set G's gradients to zero
-        self.loss_G.backward(retain_graph = True)
+        self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
 
 
