@@ -540,6 +540,9 @@ class SAM(nn.Module):
             self.pred_mask2 = self.postprocess_masks(masks, self.inp_size, (224, 224))
             self.masks_hq2 = self.postprocess_masks(masks_hq, self.inp_size, (224, 224))
 
+            if self.type == 3:
+                self.space_query, self.channel_query = self.discriminator(interm_embeddings, interm_embeddings2)
+
 
         # self.pred_mask = self.postprocess_masks(masks, self.inp_size, (300, 300))
         # self.masks_hq = self.postprocess_masks(masks_hq, self.inp_size, (300, 300))
@@ -577,6 +580,15 @@ class SAM(nn.Module):
 
             space_loss = torch.mean(F.relu(1. - space_query1)) + torch.mean(F.relu(1. + space_query2))
             channel_loss = torch.mean(F.relu(1. - channel_query1)) + torch.mean(F.relu(1. + channel_query2))
+            if self.type == 3:
+                space_loss2 = self.criterionBCE(self.space_query[0], torch.ones_like(self.space_query[0]).to(
+                    self.device)) + self.criterionBCE(self.space_query[1],
+                                                      torch.zeros_like(self.space_query[0]).to(self.device))
+                channel_loss2 = self.criterionBCE(self.channel_query[0], torch.ones_like(self.space_query[0]).to(
+                    self.device)) + self.criterionBCE(self.channel_query[1],
+                                                      torch.zeros_like(self.space_query[0]).to(self.device))
+                space_loss = (space_loss, space_loss2)
+                channel_loss = (channel_loss, channel_loss2)
 
         # space_loss = self.criterionBCE(space_query1, torch.ones_like(space_query1)).mean() + self.criterionBCE(space_query2, torch.zeros_like(space_query1)).mean()
         # channel_loss = self.criterionBCE(channel_query1, torch.ones_like(channel_query1)).mean() + self.criterionBCE(channel_query2, torch.zeros_like(channel_query1)).mean()
@@ -593,9 +605,16 @@ class SAM(nn.Module):
             self.loss_G = bce_loss + iou_loss + offset_loss
             if self.type == 1:
                 self.loss_dis = space_loss + channel_loss
-            else:
+            elif self.type ==2:
                 self.loss_dis = space_loss
                 self.loss_dis2 = channel_loss
+            elif self.type == 3:
+                self.loss_dis = space_loss[1] + channel_loss[1]
+                self.loss_dis2 = space_loss[0]
+                self.loss_dis3 = channel_loss[0]
+
+
+
         else:
             if semi == False:
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
@@ -637,10 +656,15 @@ class SAM(nn.Module):
         self.loss_dis.backward()
         self.optimizer_dis.step()
 
-        if self.type == 2:
+        if self.type != 1:
             self.optimizer_dis2.zero_grad()
             self.loss_dis2.backward()
             self.optimizer_dis2.step()
+            if self.type == 3:
+                self.optimizer_dis2.zero_grad()
+                self.loss_dis3.backward()
+                self.optimizer_dis3.step()
+
 
         if point_prompt == None:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), space_loss.item(), channel_loss.item(), offset_gt
