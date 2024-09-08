@@ -577,6 +577,9 @@ class SAM(nn.Module):
         else:
             self.loss_G = offset_loss + bce_loss
 
+        return bce_loss, offset_loss, iou_loss, offset_gt
+
+    def backward_G_dis(self):
         # 1
         if self.type == 1:
             space_loss = self.criterionBCE(self.space_query[0], torch.ones_like(self.space_query[0]).to(self.device)) + self.criterionBCE(self.space_query[1], torch.zeros_like(self.space_query[0]).to(self.device))
@@ -604,63 +607,31 @@ class SAM(nn.Module):
         # space_loss = self.criterionBCE(space_query1, torch.ones_like(space_query1)).mean() + self.criterionBCE(space_query2, torch.zeros_like(space_query1)).mean()
         # channel_loss = self.criterionBCE(channel_query1, torch.ones_like(channel_query1)).mean() + self.criterionBCE(channel_query2, torch.zeros_like(channel_query1)).mean()
 
-        return bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt
+        return space_loss, channel_loss
 
     def optimize_parameters(self, point_prompt=None, img_name=None, semi=False, epoch=0):
-        if point_prompt == None:
-            self.forward() #point_prompt
-            bce_loss, offset_loss, iou_loss, space_loss, channel_loss, offset_gt = self.backward_G()  # calculate graidents for G
-            # if epoch < 5:
-            #     self.loss_G = bce_loss + iou_loss + offset_loss
-            # else:
-            self.loss_G = bce_loss + iou_loss + offset_loss
-            if self.type == 1:
-                self.loss_dis = space_loss + channel_loss
-            elif self.type ==2:
-                self.loss_dis = space_loss
-                self.loss_dis2 = channel_loss
-            elif self.type == 3:
-                self.loss_dis = space_loss[1] + channel_loss[1]
-                self.loss_dis2 = space_loss[0]
-                self.loss_dis3 = channel_loss[0]
+        #train Generator....
+        self.forward() #point_prompt
+        bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
+        space_loss, channel_loss = self.backward_G_dis()
+        self.loss_G = bce_loss + iou_loss + offset_loss +space_loss + channel_loss
 
-
-
-        else:
-            if semi == False:
-                local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
-                bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
-                bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
-                self.loss_G = bce_loss + iou_loss + 5*offset_loss + bce_loss_local + iou_loss_local
-
-            else:
-                local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
-                # if img_name[-5] != '7': CoNSeP
-                # print(img_name)
-                if img_name[-7:-4] == '2_3': #TNBC
-                # if img_name[-6:-4] == '_3': #MO
-                    bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(self.gt_mask)
-                    bce_loss_local, iou_loss_local = self.backward_G_local(epoch, self.gt_mask, global_gt)
-                    if epoch< 10:
-                        bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss * 200, offset_loss * 200, iou_loss * 200, bce_loss_local * 200, iou_loss_local * 200
-                    else:
-                        bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss*5, offset_loss*5, iou_loss*5, bce_loss_local*5, iou_loss_local*5
-                # # elif epoch<10:
-                # #     self.optimizer.zero_grad()
-                # #     self.optimizer.step()
-                # #     del self.input, self.gt_mask
-                # #     return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq.clone(), 0, 0
-                else:
-                    bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()
-                    bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
-                    # bce_loss_local, iou_loss_local = 0, 0
-                self.loss_G = bce_loss + iou_loss + offset_loss + bce_loss_local + iou_loss_local
-
-        del self.input1, self.input2
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
 
+        self.forward()
+        space_loss, channel_loss = self.backward_G_dis()
+
+        if self.type == 1:
+            self.loss_dis = space_loss + channel_loss
+        elif self.type ==2:
+            self.loss_dis = space_loss
+            self.loss_dis2 = channel_loss
+        elif self.type == 3:
+            self.loss_dis = space_loss[1] + channel_loss[1]
+            self.loss_dis2 = space_loss[0]
+            self.loss_dis3 = channel_loss[0]
 
         # if epoch > 20:
         self.optimizer_dis.zero_grad()
