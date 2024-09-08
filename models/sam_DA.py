@@ -651,7 +651,7 @@ class SAM(nn.Module):
                 self.optimizer_dis3.step()
                 space_loss = space_loss[0]
                 channel_loss = channel_loss[0]
-        del self.input1, self.input2, self.loss_G, self.loss_dis, self.loss_dis2, self.loss_dis3
+        del self.input1, self.input2, self.loss_G, self.loss_dis, self.loss_dis2, self.loss_dis3, self.pred_mask2, self.masks_hq2
 
         if point_prompt == None:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), space_loss.item(), channel_loss.item(), offset_gt
