@@ -634,12 +634,12 @@ class SAM(nn.Module):
 
         # if epoch > 20:
         self.optimizer_dis.zero_grad()
-        self.loss_dis.backward()
+        self.loss_dis.backward(retain_graph=True)
         self.optimizer_dis.step()
 
         if self.type == 2:
             self.optimizer_dis2.zero_grad()
-            self.loss_dis2.backward()
+            self.loss_dis2.backward(retain_graph=True)
             self.optimizer_dis2.step()
 
         if point_prompt == None:
