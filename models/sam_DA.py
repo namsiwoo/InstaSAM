@@ -570,10 +570,10 @@ class SAM(nn.Module):
 
         #2
         else:
-            space_query1 = self.netD_mask(self.pred_mask.detach())
-            space_query2 = self.netD_mask(self.pred_mask2.detach())
-            channel_query1 = self.netD_offset(self.masks_hq.detach())
-            channel_query2 = self.netD_offset(self.masks_hq2.detach())
+            space_query1 = self.netD_mask(self.pred_mask)#.detach())
+            space_query2 = self.netD_mask(self.pred_mask2)#.detach())
+            channel_query1 = self.netD_offset(self.masks_hq)#.detach())
+            channel_query2 = self.netD_offset(self.masks_hq2)#.detach())
 
             space_loss = torch.mean(F.relu(1. - space_query1)) + torch.mean(F.relu(1. + space_query2))
             channel_loss = torch.mean(F.relu(1. - channel_query1)) + torch.mean(F.relu(1. + channel_query2))
