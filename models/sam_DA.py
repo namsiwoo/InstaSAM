@@ -625,11 +625,11 @@ class SAM(nn.Module):
         self.loss_G.backward()
         self.optimizer.step()  # udpate G's weights
 
-        del self.loss_G, self.pred_mask2, self.masks_hq2, self.space_query, self.channel_query
+        del self.loss_G, self.pred_mask2, self.masks_hq2
         # train discriminator....
 
         self.forward()
-        space_loss, channel_loss = self.backward_G_dis()
+        space_loss, channel_loss = self.backward_G_dis(offset_gt)
 
         if self.type == 1:
             self.loss_dis = space_loss + channel_loss
