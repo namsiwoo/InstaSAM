@@ -587,7 +587,7 @@ class SAM(nn.Module):
 
         #2
         else:
-            dis_gt = self.netD_mask(self.gt_mask)
+            dis_gt = self.netD_mask(self.gt_mask.float())
             dis_offset = self.netD_offset(offset_gt.float())
             space_query1 = self.netD_mask(self.pred_mask.detach())
             space_query2 = self.netD_mask(self.pred_mask2.detach())
