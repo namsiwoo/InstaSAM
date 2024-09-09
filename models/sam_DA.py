@@ -628,36 +628,37 @@ class SAM(nn.Module):
         del self.loss_G, self.pred_mask2, self.masks_hq2
         # train discriminator....
 
-        self.forward()
-        space_loss, channel_loss = self.backward_G_dis(offset_gt)
+        if epoch % 10 == 0:
+            self.forward()
+            space_loss, channel_loss = self.backward_G_dis(offset_gt)
 
-        if self.type == 1:
-            self.loss_dis = space_loss + channel_loss
-        elif self.type ==2:
-            self.loss_dis = space_loss
-            self.loss_dis2 = channel_loss
-        elif self.type == 3:
-            self.loss_dis = space_loss[1] + channel_loss[1]
-            self.loss_dis2 = space_loss[0]
-            self.loss_dis3 = channel_loss[0]
+            if self.type == 1:
+                self.loss_dis = space_loss + channel_loss
+            elif self.type ==2:
+                self.loss_dis = space_loss
+                self.loss_dis2 = channel_loss
+            elif self.type == 3:
+                self.loss_dis = space_loss[1] + channel_loss[1]
+                self.loss_dis2 = space_loss[0]
+                self.loss_dis3 = channel_loss[0]
 
-        # if epoch > 20:
-        self.optimizer_dis.zero_grad()
-        self.loss_dis.backward()
-        self.optimizer_dis.step()
+            # if epoch > 20:
+            self.optimizer_dis.zero_grad()
+            self.loss_dis.backward()
+            self.optimizer_dis.step()
 
-        if self.type != 1:
-            self.optimizer_dis2.zero_grad()
-            self.loss_dis2.backward()
-            self.optimizer_dis2.step()
-            if self.type == 3:
+            if self.type != 1:
                 self.optimizer_dis2.zero_grad()
-                self.loss_dis3.backward()
-                self.optimizer_dis3.step()
-                space_loss = space_loss[0]
-                channel_loss = channel_loss[0]
-                del self.loss_dis3
-        del self.input1, self.input2, self.loss_dis, self.loss_dis2, self.pred_mask2, self.masks_hq2
+                self.loss_dis2.backward()
+                self.optimizer_dis2.step()
+                if self.type == 3:
+                    self.optimizer_dis2.zero_grad()
+                    self.loss_dis3.backward()
+                    self.optimizer_dis3.step()
+                    space_loss = space_loss[0]
+                    channel_loss = channel_loss[0]
+                    del self.loss_dis3
+            del self.input1, self.input2, self.loss_dis, self.loss_dis2, self.pred_mask2, self.masks_hq2
 
         if point_prompt == None:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), space_loss.item(), channel_loss.item(), offset_gt
