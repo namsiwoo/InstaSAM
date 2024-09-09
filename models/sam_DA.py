@@ -579,7 +579,7 @@ class SAM(nn.Module):
 
         return bce_loss, offset_loss, iou_loss, offset_gt
 
-    def backward_G_dis(self):
+    def backward_G_dis(self, offset_gt):
         # 1
         if self.type == 1:
             space_loss = self.criterionBCE(self.space_query[0], torch.ones_like(self.space_query[0]).to(self.device)) + self.criterionBCE(self.space_query[1], torch.zeros_like(self.space_query[0]).to(self.device))
@@ -587,13 +587,15 @@ class SAM(nn.Module):
 
         #2
         else:
+            dis_gt = self.netD_mask(self.gt_mask)
+            dis_offset = self.netD_offset(offset_gt)
             space_query1 = self.netD_mask(self.pred_mask.detach())
             space_query2 = self.netD_mask(self.pred_mask2.detach())
             channel_query1 = self.netD_offset(self.masks_hq.detach())
             channel_query2 = self.netD_offset(self.masks_hq2.detach())
 
-            space_loss = torch.mean(F.relu(1. - space_query1)) + torch.mean(F.relu(1. + space_query2))
-            channel_loss = torch.mean(F.relu(1. - channel_query1)) + torch.mean(F.relu(1. + channel_query2))
+            space_loss = 2*torch.mean(F.relu(1. - dis_gt)) + torch.mean(F.relu(1. + space_query1)) + torch.mean(F.relu(1. + space_query2))
+            channel_loss = 2*torch.mean(F.relu(1. - dis_offset)) + torch.mean(F.relu(1. + channel_query1)) + torch.mean(F.relu(1. + channel_query2))
             if self.type == 3:
                 space_loss2 = self.criterionBCE(self.space_query[0], torch.ones_like(self.space_query[0]).to(
                     self.device)) + self.criterionBCE(self.space_query[1],
@@ -613,7 +615,7 @@ class SAM(nn.Module):
         #train Generator....
         self.forward() #point_prompt
         bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
-        space_loss, channel_loss = self.backward_G_dis()
+        space_loss, channel_loss = self.backward_G_dis(offset_gt)
         if self.type ==3:
             self.loss_G = bce_loss + iou_loss + offset_loss + space_loss[0] + space_loss[1] + channel_loss[0] + channel_loss[1]
         else:
