@@ -595,8 +595,8 @@ class SAM(nn.Module):
             channel_query1 = self.netD_offset(self.masks_hq.detach())
             channel_query2 = self.netD_offset(self.masks_hq2.detach())
 
-            real_label = torch.ones(dis_gt.shape[0]).to(self.device)
-            fake_label = torch.zeros(dis_gt.shape[0]).to(self.device)
+            real_label = torch.ones_like(dis_gt).to(self.device)
+            fake_label = torch.zeros_like(dis_gt).to(self.device)
             space_loss = self.criterionMSE(dis_gt, real_label) + 0.5 * (self.criterionMSE(space_query1, fake_label)
                                                                                          + self.criterionMSE(space_query2, fake_label))
             channel_loss = self.criterionMSE(dis_offset, real_label) + 0.5 * (self.criterionMSE(channel_query1, fake_label)
