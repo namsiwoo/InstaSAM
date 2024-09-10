@@ -83,7 +83,7 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
             return samples2
     def __getitem__(self, index):
         if self.split == 'train':
-            img_name = self.samples[1][random.randint(0, len(self.samples[1]))]
+            img_name = self.samples[1][random.randint(0, len(self.samples[1])-1)]
             img2 = Image.open(os.path.join(self.data2, self.path2, self.split, img_name)).convert('RGB')
 
             img_name = self.samples[0][index % len(self.samples[0])]
