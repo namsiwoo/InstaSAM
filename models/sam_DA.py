@@ -618,6 +618,8 @@ class SAM(nn.Module):
         space_loss, channel_loss = self.backward_G_dis(offset_gt)
         if self.type ==3:
             self.loss_G = bce_loss + iou_loss + offset_loss + space_loss[0] + space_loss[1] + channel_loss[0] + channel_loss[1]
+            space_loss = space_loss[0]
+            channel_loss = channel_loss[0]
         else:
             self.loss_G = bce_loss + iou_loss + offset_loss +space_loss + channel_loss
 
@@ -641,8 +643,7 @@ class SAM(nn.Module):
                 self.loss_dis = space_loss[1] + channel_loss[1]
                 self.loss_dis2 = space_loss[0]
                 self.loss_dis3 = channel_loss[0]
-                space_loss = space_loss[0]
-                channel_loss = channel_loss[0]
+
 
             # if epoch > 20:
             self.optimizer_dis.zero_grad()
