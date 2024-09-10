@@ -540,8 +540,8 @@ class SAM(nn.Module):
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
                 # if img_name[-5] != '7': CoNSeP
                 # print(img_name)
-                if img_name[-7:-4] == '2_3': #TNBC
-                # if img_name[-6:-4] == '_3': #MO
+                # if img_name[-7:-4] == '2_3': #TNBC
+                if img_name[-6:-4] == '_3': #MO, CPM
                     bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(self.gt_mask)
                     bce_loss_local, iou_loss_local = self.backward_G_local(epoch, self.gt_mask, global_gt)
                     if epoch< 10:
@@ -568,6 +568,38 @@ class SAM(nn.Module):
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt
         else:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local
+
+    def optimize_parameters_semi(self, point_prompt=None, img_name=None, semi=False, epoch=0):
+
+        local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+        # if img_name[-5] != '7': CoNSeP
+        # if img_name[-7:-4] == '2_3': #TNBC
+        if img_name[-6:-4] == '_3': #MO, CPM
+            bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(self.gt_mask)
+            bce_loss_local, iou_loss_local = self.backward_G_local(epoch, self.gt_mask, global_gt)
+
+            bce_loss, offset_loss, iou_loss, bce_loss_local, iou_loss_local = bce_loss*5, offset_loss*5, iou_loss*5, bce_loss_local*5, iou_loss_local*5
+
+            del self.input
+            self.loss_G = bce_loss + iou_loss + offset_loss + bce_loss_local + iou_loss_local
+            self.optimizer.zero_grad()  # set G's gradients to zero
+            self.loss_G.backward()
+            self.optimizer.step()  # udpate G's weights
+            return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local
+
+        else:
+            if epoch < 15:
+                return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq, 0, 0
+            else:
+                bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
+                bce_loss_local, iou_loss_local = 0, 0
+                self.loss_G = bce_loss + iou_loss + offset_loss + bce_loss_local + iou_loss_local
+                self.optimizer.zero_grad()  # set G's gradients to zero
+                self.loss_G.backward()
+                self.optimizer.step()  # udpate G's weights
+                return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local
+
+
 
 
     def infer(self, input, point_prompt=None):

@@ -185,7 +185,7 @@ def main(args):
                     label = batch[0][1].squeeze(1)
                     point = batch[0][2]
                     sam_model.set_input(img, label)
-                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
+                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters_semi(
                         point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)
                 else:
                     # label = batch[0][1].squeeze(1)

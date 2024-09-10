@@ -603,12 +603,10 @@ class SAM(nn.Module):
                                                                                          + self.criterionMSE(channel_query2, fake_label))
 
             if self.type == 3:
-                space_loss2 = self.criterionBCE(self.space_query[0], torch.ones_like(self.space_query[0]).to(
-                    self.device)) + self.criterionBCE(self.space_query[1],
-                                                      torch.zeros_like(self.space_query[0]).to(self.device))
-                channel_loss2 = self.criterionBCE(self.channel_query[0], torch.ones_like(self.space_query[0]).to(
-                    self.device)) + self.criterionBCE(self.channel_query[1],
-                                                      torch.zeros_like(self.space_query[0]).to(self.device))
+                real_label = torch.ones_like(self.space_query[0]).to(self.device)
+                fake_label = torch.zeros_like(self.space_query[0]).to(self.device)
+                space_loss2 = self.criterionBCE(self.space_query[0], real_label) + self.criterionBCE(self.space_query[1], fake_label)
+                channel_loss2 = self.criterionBCE(self.channel_query[0], real_label) + self.criterionBCE(self.channel_query[1], fake_label)
                 space_loss = (space_loss, space_loss2)
                 channel_loss = (channel_loss, channel_loss2)
 
