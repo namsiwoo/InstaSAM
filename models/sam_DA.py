@@ -636,7 +636,7 @@ class SAM(nn.Module):
         del self.loss_G, self.pred_mask2, self.masks_hq2
         # train discriminator....
 
-        if epoch % 10 == 0:
+        if epoch % 1 == 0:
             self.forward()
             space_loss, channel_loss = self.backward_G_dis(offset_gt)
 
