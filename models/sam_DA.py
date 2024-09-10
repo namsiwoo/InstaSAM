@@ -622,8 +622,8 @@ class SAM(nn.Module):
         space_loss, channel_loss = self.backward_G_dis(offset_gt)
         if self.type ==3:
             self.loss_G = bce_loss + iou_loss + offset_loss + space_loss[0] + space_loss[1] + channel_loss[0] + channel_loss[1]
-            space_loss = space_loss[0]
-            channel_loss = channel_loss[0]
+            # space_loss = space_loss[0]
+            # channel_loss = channel_loss[0]
         else:
             self.loss_G = bce_loss + iou_loss + offset_loss +space_loss + channel_loss
 
@@ -668,7 +668,8 @@ class SAM(nn.Module):
             del self.input1, self.input2, self.loss_dis, self.loss_dis2, self.pred_mask2, self.masks_hq2
 
         if point_prompt == None:
-            return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), space_loss.item(), channel_loss.item(), offset_gt
+            return (self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(),
+                    space_loss[0].item(), space_loss[1].item(), channel_loss[0].item(), channel_loss[1].item(), offset_gt)
         else:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local
 
