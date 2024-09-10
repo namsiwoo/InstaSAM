@@ -195,6 +195,7 @@ class SAM(nn.Module):
 
         elif self.loss_mode == 'iou':
             self.criterionBCE = torch.nn.BCEWithLogitsLoss(reduction='none') # reduction='none' ,  pos_weight=torch.tensor(5)
+            self.criterionMSE = torch.nn.MSELoss()
             self.criterionIOU = IOU()
 
         # self.pe_layer = PositionEmbeddingRandom(encoder_mode['prompt_embed_dim'] // 2)
@@ -594,8 +595,11 @@ class SAM(nn.Module):
             channel_query1 = self.netD_offset(self.masks_hq.detach())
             channel_query2 = self.netD_offset(self.masks_hq2.detach())
 
-            space_loss = 2*torch.mean(F.relu(1. - dis_gt)) + torch.mean(F.relu(1. + space_query1)) + torch.mean(F.relu(1. + space_query2))
-            channel_loss = 2*torch.mean(F.relu(1. - dis_offset)) + torch.mean(F.relu(1. + channel_query1)) + torch.mean(F.relu(1. + channel_query2))
+            space_loss = self.criterionMSE(dis_gt, torch.ones(dis_gt.shape[0])) + 0.5 * (self.criterionMSE(space_query1, torch.zeros(dis_gt.shape[0]))
+                                                                                         + self.criterionMSE(space_query2, torch.zeros(dis_gt.shape[0])))
+            channel_loss = self.criterionMSE(dis_offset, torch.ones(dis_offset.shape[0])) + 0.5 * (self.criterionMSE(channel_query1, torch.zeros(dis_offset.shape[0]))
+                                                                                         + self.criterionMSE(channel_query2, torch.zeros(dis_offset.shape[0])))
+
             if self.type == 3:
                 space_loss2 = self.criterionBCE(self.space_query[0], torch.ones_like(self.space_query[0]).to(
                     self.device)) + self.criterionBCE(self.space_query[1],
