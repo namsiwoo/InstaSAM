@@ -1,5 +1,5 @@
 import json
-import os
+import os, random
 
 import matplotlib.pyplot as plt
 import numpy as np
