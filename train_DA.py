@@ -235,7 +235,7 @@ def main(args):
             lr_scheduler.step()
             lr_scheduler_dis.step()
 
-            loss = bce_loss + iou_loss + offset_loss + bce_local_loss + iou_local_loss +space_loss+ channel_loss #sam_model.loss_G.item()
+            loss = bce_loss + iou_loss + offset_loss + bce_local_loss + iou_local_loss +space_loss1 +space_loss2+ channel_loss1+channel_loss2 #sam_model.loss_G.item()
 
             train_loss += loss / len(train_dataloader)
 
