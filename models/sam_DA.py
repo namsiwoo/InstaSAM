@@ -641,6 +641,8 @@ class SAM(nn.Module):
                 self.loss_dis = space_loss[1] + channel_loss[1]
                 self.loss_dis2 = space_loss[0]
                 self.loss_dis3 = channel_loss[0]
+                space_loss = space_loss[0]
+                channel_loss = channel_loss[0]
 
             # if epoch > 20:
             self.optimizer_dis.zero_grad()
