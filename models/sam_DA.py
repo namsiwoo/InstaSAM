@@ -664,8 +664,7 @@ class SAM(nn.Module):
                     self.optimizer_dis2.zero_grad()
                     self.loss_dis3.backward()
                     self.optimizer_dis3.step()
-                    space_loss = space_loss[0]
-                    channel_loss = channel_loss[0]
+
                     del self.loss_dis3
             del self.input1, self.input2, self.loss_dis, self.loss_dis2, self.pred_mask2, self.masks_hq2
 
