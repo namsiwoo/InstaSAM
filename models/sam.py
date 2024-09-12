@@ -573,8 +573,8 @@ class SAM(nn.Module):
 
         local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
         # if img_name[-5] != '7': CoNSeP
-        if img_name[-7:-4] == '2_3': #TNBC
-        # if img_name[-6:-4] == '_3': #MO, CPM
+        # if img_name[-7:-4] == '2_3': #TNBC
+        if img_name[-6:-4] == '_3' or img_name[-6:-4] == '11': #MO, CPM
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(self.gt_mask)
             bce_loss_local, iou_loss_local = self.backward_G_local(epoch, self.gt_mask, global_gt)
 
