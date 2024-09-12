@@ -572,7 +572,8 @@ class SAM(nn.Module):
     def optimize_parameters_semi(self, point_prompt=None, img_name=None, semi=False, epoch=0):
 
         local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
-        if img_name == 'train_4_5.png':
+        # if img_name == 'train_4_5.png': #consep 04_7_0.png
+        if img_name == '04_7_0.png': #tnbc
         # if img_name[-5] != '7': CoNSeP
         # if img_name[-7:-4] == '2_3': #TNBC
         # if img_name[-6:-4] == '_3': #MO, CPM
