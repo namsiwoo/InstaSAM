@@ -163,7 +163,7 @@ class IHC_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
         return samples
     def __getitem__(self, index):
         img_name = self.samples[index % len(self.samples)]
-        img = Image.open(os.path.join(self.root_dir, self.data, self.split, img_name)).convert('RGB')
+        img = Image.open(os.path.join(self.root_dir, self.data, self.split, img_name)).convert('L').convert('RGB')
 
         if self.split == 'train':
             if self.use_mask == True:
