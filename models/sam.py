@@ -537,7 +537,7 @@ class SAM(nn.Module):
         else:
             if semi == False:
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
-                self.backward_G_feature()
+                self.backward_G_feature(epoch)
                 bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
                 bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
                 self.loss_G = bce_loss + iou_loss + 5*offset_loss + bce_loss_local + iou_loss_local
