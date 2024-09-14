@@ -537,13 +537,13 @@ class SAM(nn.Module):
         else:
             if semi == False:
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+                self.backward_G_feature()
                 bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
                 bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
                 self.loss_G = bce_loss + iou_loss + 5*offset_loss + bce_loss_local + iou_loss_local
 
             else:
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
-                self.backward_G_feature()
                 # if img_name[-5] != '7': CoNSeP
                 # print(img_name)
                 # if img_name[-7:-4] == '2_3': #TNBC
