@@ -268,7 +268,7 @@ class SAM(nn.Module):
         # self.pred_mask = self.postprocess_masks(masks, self.inp_size, (300,300))
         # self.masks_hq = self.postprocess_masks(masks_hq, self.inp_size, (300,300))
 
-        del self.interm_embeddings, sparse_embeddings, dense_embeddings #self.features,
+        del sparse_embeddings, dense_embeddings #self.features,
 
         # Make pseudo label using prompts
         pseudo_gt_local = torch.zeros_like(points.squeeze(1)).to(self.device)  # b, w, h (points.shape, b, 1, w, h)
