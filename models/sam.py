@@ -475,6 +475,11 @@ class SAM(nn.Module):
         del l_pseudo_maks, g_pseudo_maks
         return bce_loss_local, iou_loss_local
 
+    def backward_G_feature(self, epoch):
+        for i in range(len(self.interm_embeddings)):
+            print(self.interm_embeddings[i].shape)
+        return bce_loss_local, iou_loss_local
+
     def forward(self):  # , point_prompt=None
         bs = len(self.input)
 
@@ -572,6 +577,7 @@ class SAM(nn.Module):
     def optimize_parameters_semi(self, point_prompt=None, img_name=None, semi=False, epoch=0):
 
         local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+        self.backward_G_feature()
         # if img_name == 'train_4_5.png': #consep 04_7_0.png
         if img_name == '04_7_0.png': #tnbc
         # if img_name[-5] != '7': CoNSeP
