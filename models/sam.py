@@ -478,7 +478,6 @@ class SAM(nn.Module):
 
     def backward_G_feature(self, epoch, segment_feat):
         B, H, W = segment_feat.shape
-        feature_loss = 0
         # for i in range(len(self.interm_embeddings)):
         feat_main = F.interpolate(self.features.permute(0, 3, 1, 2), size=(H, W), mode='bilinear', align_corners=False)
         feat_main = F.normalize(feat_main, dim=1)
@@ -492,12 +491,12 @@ class SAM(nn.Module):
 
         loss_ssc = F.cross_entropy(pred_ssc * 768, index_, ignore_index=0)
         if not torch.isnan(loss_ssc):
-            feature_loss += loss_ssc
+            pass
         else:
             print("loss_ssc is NaN!")
             loss_ssc = torch.zeros_like(loss_ssc)
 
-        return loss_ssc
+        return loss_ssc*2e-3
 
     def forward(self):  # , point_prompt=None
         bs = len(self.input)
