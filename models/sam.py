@@ -502,8 +502,8 @@ class SAM(nn.Module):
     def forward(self):  # , point_prompt=None
         bs = len(self.input)
 
-        self.features, self.interm_embeddings = self.image_encoder(self.input)
-        # _, self.interm_embeddings, self.features = self.image_encoder(self.input, mk_p_label=True)
+        # self.features, self.interm_embeddings = self.image_encoder(self.input)
+        self.features, self.interm_embeddings, self.x_ori = self.image_encoder(self.input, mk_p_label=True)
 
         # Embed prompts
         sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.input.device)
@@ -595,10 +595,11 @@ class SAM(nn.Module):
 
     def optimize_parameters_semi(self, point_prompt=None, img_name=None, semi=False, epoch=0, sam_mask=None):
 
-        local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
         # if img_name == 'train_4_5.png': #consep 04_7_0.png
 
         if semi == True:
+            local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+
             if img_name == '04_7_0.png': #tnbc
             # if img_name[-5] != '7': CoNSeP
             # if img_name[-7:-4] == '2_3': #TNBC
@@ -628,11 +629,20 @@ class SAM(nn.Module):
                     self.optimizer.step()  # udpate G's weights
                     return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local
         else:
+            local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+
+
             sam_mask = sam_mask.to(self.device)
-            feature_loss = self.backward_G_feature(epoch, sam_mask)
-            bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
-            bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
-            self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
+            if epoch < 1:
+                self.forward()
+                feature_loss = self.backward_G_feature(epoch, sam_mask)
+                self.loss_G = feature_loss
+            else:
+                local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+                feature_loss = self.backward_G_feature(epoch, sam_mask)
+                bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
+                bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
+                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
 
             del self.input, self.x_ori, self.features, sam_mask
             self.optimizer.zero_grad()  # set G's gradients to zero
