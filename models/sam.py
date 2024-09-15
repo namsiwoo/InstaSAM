@@ -654,7 +654,8 @@ class SAM(nn.Module):
             self.loss_G.backward()
             self.optimizer.step()
             del self.loss_G, local_gt, global_gt, self.mask_prompt_adapter
-            return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local, feature_loss.item()
+            feature_loss = feature_loss.item()
+            return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local, feature_loss
 
 
 
