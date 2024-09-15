@@ -480,6 +480,7 @@ class SAM(nn.Module):
         B, H, W = segment_feat.shape
         feature_loss = 0
         for i in range(len(self.interm_embeddings)):
+            print(self.x_ori.shape)
             print(self.x_ori[i].shape)
             feat_main = F.interpolate(self.x_ori[i].permute(0, 3, 1, 2), size=(H, W), mode='bilinear', align_corners=False)
             feat_main = F.normalize(feat_main, dim=1)
