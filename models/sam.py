@@ -628,7 +628,7 @@ class SAM(nn.Module):
                     self.optimizer.step()  # udpate G's weights
                     return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local
         else:
-            feature_loss = self.backward_G_feature(epoch, sam_mask)
+            feature_loss = self.backward_G_feature(epoch, sam_mask.to(self.device))
             bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
             bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
             self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
