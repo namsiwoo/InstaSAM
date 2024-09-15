@@ -633,21 +633,21 @@ class SAM(nn.Module):
 
 
             sam_mask = sam_mask.to(self.device)
-            if epoch < -1:
-                self.forward()
-                feature_loss = self.backward_G_feature(epoch, sam_mask)
-                self.loss_G = feature_loss*1e-16
-                self.optimizer.zero_grad()  # set G's gradients to zero
-                self.loss_G.backward()
-                self.optimizer.step()
-                del self.loss_G, local_gt, global_gt, self.mask_prompt_adapter
-                return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq, 0, 0, feature_loss.item()
-            else:
-                local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
-                feature_loss = self.backward_G_feature(epoch, sam_mask)
-                bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
-                bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
-                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
+            # if epoch < -1:
+            #     self.forward()
+            #     feature_loss = self.backward_G_feature(epoch, sam_mask)
+            #     self.loss_G = feature_loss*1e-16
+            #     self.optimizer.zero_grad()  # set G's gradients to zero
+            #     self.loss_G.backward()
+            #     self.optimizer.step()
+            #     del self.loss_G, local_gt, global_gt, self.mask_prompt_adapter
+            #     return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq, 0, 0, feature_loss.item()
+            # else:
+            local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+            feature_loss = self.backward_G_feature(epoch, sam_mask)
+            bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
+            bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
+            self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
 
             del self.input, self.features, sam_mask
             self.optimizer.zero_grad()  # set G's gradients to zero
