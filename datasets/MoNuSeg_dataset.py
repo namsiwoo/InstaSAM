@@ -11,6 +11,151 @@ from torchvision.transforms.functional import resize, to_pil_image  # type: igno
 from scipy.ndimage.morphology import binary_dilation
 import skimage.morphology, skimage.measure
 
+class SAM_gen_dataset(torch.utils.data.Dataset):
+    def __init__(self, args, split, sup=False):
+        self.args = args
+        self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
+        self.split = split
+        self.sup = sup
+        from datasets.get_transforms_ssl import get_transforms
+
+        self.mean = np.array([123.675, 116.28, 103.53])
+        self.std = np.array([58.395, 57.12, 57.375])
+
+        # Imagenet norm?
+        # self.mean = np.array([0.485,0.456,0.406])
+        # self.std = np.array([0.229,0.224,0.225])
+
+        # create image augmentation
+        if self.split == 'train':
+            self.transform = get_transforms({
+                'random_resize': [0.8, 1.25],
+                'horizontal_flip': True,
+                'random_affine': 0.3,
+                'random_rotation': 90,
+                'random_crop': 224,
+                'label_encoding': [0, 1], #new_label: 3 else 2
+                'to_tensor': 1, # number of img
+                'normalize': np.array([self.mean, self.std])
+            })
+        else:
+            self.transform = get_transforms({
+                'to_tensor': 1,
+                'normalize': np.array([self.mean, self.std])
+            })
+
+        # read samples
+        self.samples = self.read_samples(self.root_dir, self.split)
+
+        # set num samples
+        self.num_samples = len(self.samples)
+
+        print('{} dataset {} loaded'.format(self.split, self.num_samples))
+
+    def read_samples(self, root_dir, split):
+        if split == 'train':
+            samples = os.listdir(os.path.join(root_dir, 'images', split))
+
+        else:
+            root_dir = self.root_dir.split('/')
+            new_dir = ''
+            for dir in root_dir[:-2]:
+                new_dir += dir + '/'
+            with open(os.path.join(new_dir, 'train_val_test.json')) as f:
+                split_dict = json.load(f)
+            filename_list = split_dict[split]
+            samples = [os.path.join(f) for f in filename_list]
+
+        # samples = os.listdir(os.path.join(root_dir, 'images', split))
+        return samples
+
+    def __getitem__(self, index):
+        img_name = self.samples[index % len(self.samples)]
+
+        if self.split == 'train':
+            # 1) read image
+            img = Image.open(os.path.join(self.root_dir, 'images', self.split, img_name)).convert('RGB')
+
+            if self.sup == True:
+
+                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
+                # box_label = np.array(Image.open(os.path.join('/media/NAS/nas_187/siwoo/train', 'labels_instance', self.split, img_name[:-4]+'_label.png')))
+                box_label = skimage.morphology.label(box_label)
+                box_label = Image.fromarray(box_label.astype(np.uint16))
+
+                # 3) do image augmentation
+                sample = [img, box_label]  # , new_mask
+                sample = self.transform(sample)
+            else:
+                # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name)))
+                # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
+                # box_label = skimage.morphology.label(box_label)
+                # box_label = Image.fromarray(box_label.astype(np.uint16))
+
+                # box_label = Image.open(os.path.join('/media/NAS/nas_187/siwoo/2023/SAM_pseudo_label/Box_annotation', img_name))
+                # box_label = Image.open(os.path.join('/media/NAS/nas_187/siwoo/2023/SAM_pseudo_label/Box_annotation_CPM', img_name))
+
+                # try:
+                #     box_label = Image.open(os.path.join(self.root_dir, 'labels_cluster', self.split, img_name[:-4]+'_label_cluster.png'))
+                # except:
+                #     try:
+                #         box_label = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/CPM/CPM 17/via instance learning data_for_train/CPM 17', 'labels_cluster', self.split, img_name[:-4] + '_label_cluster.png'))
+                #     except:
+                #         box_label = Image.open(os.path.join('/media/NAS/nas_32/siwoo/TNBC/TNBC/via instance learning data_for_train/TNBC', 'labels_cluster', self.split, img_name[:-4] + '_label_cluster.png'))
+                #
+                #
+                # try:
+                #     point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
+                # except:
+                #     try:
+                #         point = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/CPM/CPM 17/via instance learning data_for_train/CPM 17', 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
+                #     except:
+                #         point = Image.open(os.path.join('/media/NAS/nas_32/siwoo/TNBC/TNBC/via instance learning data_for_train/TNBC', 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
+
+                # point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name)).convert('L')
+
+                point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
+                point = binary_dilation(np.array(point), iterations=2)
+                point = Image.fromarray(point)
+
+                # box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
+                # box_label = skimage.morphology.label(box_label)
+                # point = Image.fromarray(box_label.astype(np.uint16))
+
+                # cluster_label = Image.open(os.path.join(self.root_dir, 'labels_cluster', self.split, img_name[:-4]+'_label_cluster.png')).convert('RGB')
+                # voronoi_label = Image.open(os.path.join(self.root_dir, 'labels_voronoi', self.split, img_name[:-4] + '_label_vor.png')).convert('RGB')
+                # cluster_label = Image.open(os.path.join(self.root_dir, 'labels_geo_cluster', self.split, img_name[:-4]+'_label_geo_cluster.png')).convert('RGB')
+                # voronoi_label = Image.open(os.path.join(self.root_dir, 'labels_geo_voronoi', self.split, img_name[:-4] + '_label_geo_vor.png')).convert('RGB')
+
+                sample = [img, point]#, cluster_label, voronoi_label]  # , new_mask
+                sample = self.transform(sample)
+
+
+        else:
+            # mask = Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')).convert('L')
+            # mask = np.array(mask)
+            root_dir = self.root_dir.split('/')
+            new_dir = ''
+            for dir in root_dir[:-2]:
+                new_dir += dir + '/'
+
+            img = Image.open(os.path.join(new_dir, 'images', img_name)).convert('RGB')
+            mask = Image.open(os.path.join(new_dir, 'labels_instance', img_name[:-4] + '_label.png'))
+
+            # img = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch/images/val', img_name)).convert('RGB')
+            # mask = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch/labels_instance/val', img_name))
+            # img = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/MoNuSAC/MoNuSAC/images/val', img_name)).convert('RGB')
+            # mask = Image.open(os.path.join('/media/NAS/nas_70/open_dataset/MoNuSAC/MoNuSAC/labels_instance/val2', img_name))
+
+
+            sample = [img, mask]
+            sample = self.transform(sample)
+
+        return sample, str(img_name[:-4])
+
+    def __len__(self):
+        return self.num_samples
+
 class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
     def __init__(self, args, split, use_mask=False, data=('CPM', 'BC'), train_IHC=False):
         self.args = args
@@ -185,15 +330,12 @@ class IHC_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
     def __len__(self):
         return self.num_samples
 class gt_with_weak_dataset(torch.utils.data.Dataset):
-    def __init__(self, args, split, sup=False):
+    def __init__(self, args, split, semi=False):
         self.args = args
         self.root_dir = os.path.expanduser(self.args.data_path)  # /media/NAS/nas_187/PATHOLOGY_DATA/MoNuSeg
         self.split = split
-        self.sup = sup
-        if self.sup == True:
-            from datasets.get_transforms_ori import get_transforms
-        else:
-            from datasets.get_transforms_ssl import get_transforms
+        self.semi = semi
+        from datasets.get_transforms_ssl import get_transforms
 
         self.mean = np.array([123.675, 116.28, 103.53])
         self.std = np.array([58.395, 57.12, 57.375])
@@ -241,8 +383,6 @@ class gt_with_weak_dataset(torch.utils.data.Dataset):
     def read_samples(self, root_dir, split):
         if split == 'train':
             samples = os.listdir(os.path.join(root_dir, 'images', split))
-            # samples = os.listdir(os.path.join('/media/NAS/nas_70/open_dataset/MoNuSeg/MoNuSeg/via instance learning data_for_train/MoNuSeg', 'images', 'train_few_shot'))
-            # samples = os.listdir(os.path.join('/media/NAS/nas_32/siwoo/CPM/train'))
 
         else:
             root_dir = self.root_dir.split('/')
@@ -254,7 +394,6 @@ class gt_with_weak_dataset(torch.utils.data.Dataset):
             filename_list = split_dict[split]
             samples = [os.path.join(f) for f in filename_list]
 
-        # samples = os.listdir(os.path.join(root_dir, 'images', split))
         return samples
 
     def __getitem__(self, index):
@@ -264,14 +403,15 @@ class gt_with_weak_dataset(torch.utils.data.Dataset):
             # 1) read image
             img = Image.open(os.path.join(self.root_dir, 'images', self.split, img_name)).convert('RGB')
 
-            if self.sup == True:
+            if self.semi == False:
+                point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
+                point = binary_dilation(np.array(point), iterations=2)
+                point = Image.fromarray(point)
 
-                box_label = np.array(Image.open(os.path.join(self.root_dir, 'labels_instance', self.split, img_name[:-4]+'_label.png')))
-                box_label = skimage.morphology.label(box_label)
-                box_label = Image.fromarray(box_label.astype(np.uint16))
+                box_label = Image.open(os.path.join('/media/NAS/nas_70/siwoo_data/UDA_citycapes/CoNSeP/masks', img_name[:-4]+'_label.png'))
 
                 # 3) do image augmentation
-                sample = [img, box_label]  # , new_mask
+                sample = [img, box_label, point]  # , new_mask
                 sample = self.transform(sample)
             else:
                 point = Image.open(os.path.join(self.root_dir, 'labels_point', self.split, img_name[:-4] + '_label_point.png')).convert('L')
@@ -788,7 +928,6 @@ class MoNuSeg_weak_dataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return self.num_samples
-
 
 class MoNuSeg_dataset_coarse_label(torch.utils.data.Dataset):
     def __init__(self, args, split):

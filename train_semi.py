@@ -133,8 +133,8 @@ def main(args):
     #         print('********', name)
 
 
-    train_dataset = gt_with_weak_dataset(args, 'train', sup=args.sup)
-    val_dataset = gt_with_weak_dataset(args, 'val', sup=args.sup)
+    train_dataset = gt_with_weak_dataset(args, 'train', sup=args.semi)
+    val_dataset = gt_with_weak_dataset(args, 'val', sup=args.semi)
 
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
@@ -156,25 +156,19 @@ def main(args):
         for iter, batch in enumerate(train_dataloader): # batch[0]
             img = batch[0][0]
             img_name = batch[1][0]
-            if args.sup == True:
+            if args.semi == True:
                 label = batch[0][1].squeeze(1)
-                # point = batch[0][2]
+                point = batch[0][2]
                 sam_model.set_input(img, label)
-                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
-                bce_local_loss, iou_local_loss = 0, 0
+                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters_semi(
+                    point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)
             else:
-                if args.semi == True:
-                    label = batch[0][1].squeeze(1)
-                    point = batch[0][2]
-                    sam_model.set_input(img, label)
-                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters_semi(
-                        point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)
-                else:
-                    # label = batch[0][1].squeeze(1)
-                    point = batch[0][1]
-                    sam_model.set_input(img)
-                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
-                        point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)  # point, epoch, batch[1][0]
+                label = batch[0][1].squeeze(1)
+                point = batch[0][2]
+
+                sam_model.set_input(img)
+                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss, f_loss = sam_model.optimize_parameters_semi(
+                    point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch, label)  # point, epoch, batch[1][0]
             # clu_label = batch[0][3].squeeze(1)
             # vor_label = batch[0][4].squeeze(1)
 
@@ -183,18 +177,18 @@ def main(args):
             # bce_local_loss, iou_local_loss = backwards_local
             lr_scheduler.step()
 
-            loss = bce_loss + iou_loss + 5*offset_loss + bce_local_loss + iou_local_loss #sam_model.loss_G.item()
+            loss = bce_loss + iou_loss + 5*offset_loss + bce_local_loss + iou_local_loss + f_loss #sam_model.loss_G.item()
 
             train_loss += loss / len(train_dataloader)
 
             if (iter + 1) % args.print_fq == 0:
-                print('{}/{} epoch, {}/{} batch, train loss: {}, bce: {}, iou: {}, offset: {} // local bce: {} iou: {}'.format(epoch,
+                print('{}/{} epoch, {}/{} batch, train loss: {}, bce: {}, iou: {}, offset: {} // local bce: {} iou: {} // f_loss: {}'.format(epoch,
                                                                                                         args.epochs,
                                                                                                         iter + 1,
                                                                                                         len(train_dataloader),
                                                                                                         loss, bce_loss,
                                                                                                         iou_loss,
-                                                                                                        offset_loss, bce_local_loss, iou_local_loss))
+                                                                                                        offset_loss, bce_local_loss, iou_local_loss, f_loss))
 
                 if args.plt == True:
                     import matplotlib.pyplot as plt
@@ -568,7 +562,6 @@ if __name__ == '__main__':
     parser.add_argument('--resume', default=0, type=int, help='')
     parser.add_argument('--start_val', default=30, type=int)
     parser.add_argument('--plt', action='store_true')
-    parser.add_argument('--sup', action='store_true')
     parser.add_argument('--semi', action='store_true')
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--test', action='store_true')
