@@ -648,7 +648,7 @@ class SAM(nn.Module):
             bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
             self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
 
-            print(self.mask_feat.shape)
+            # print(self.mask_feat.shape)
             del self.input, self.mask_feat, sam_mask
             self.optimizer.zero_grad()  # set G's gradients to zero
             self.loss_G.backward()
