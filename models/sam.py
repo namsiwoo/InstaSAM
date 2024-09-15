@@ -483,7 +483,7 @@ class SAM(nn.Module):
         feat_main = F.interpolate(self.x_ori.permute(0, 3, 1, 2), size=(H, W), mode='bilinear', align_corners=False)
         feat_main = F.normalize(feat_main, dim=1)
         feat_main_ = feat_main.view(B, -1, H*W)  # (B,D,HW)
-        index_ = segment_feat.permute(0, 3, 1, 2).view(B, 1, -1).long()  # (B,1,HW)
+        index_ = segment_feat.view(B, 1, -1).long()  # (B,1,HW)
 
         pt = torch_scatter.scatter_mean(feat_main_.detach(), index_)  # (B,D,N)
         pt = F.normalize(pt, dim=1)
