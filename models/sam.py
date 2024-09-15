@@ -244,7 +244,7 @@ class SAM(nn.Module):
     def forward_ssl(self, points=None, img_name=None, epoch=0): #, point_prompt=None
         bs = len(self.input)
 
-        self.features, self.interm_embeddings, self.x_ori = self.image_encoder(self.input, mk_p_label=True)
+        self.features, self.interm_embeddings, x_ori = self.image_encoder(self.input, mk_p_label=True)
         # x_ori = x_ori.detach()
         # del self.input
 
@@ -311,7 +311,7 @@ class SAM(nn.Module):
 
                 else:
                     # Make mask prompt using point labels
-                    gt_local, gt_global, mask_prompt_adapter = self.make_pseudo_instance_map(b, (point_coord, point_label), self.x_ori[b].unsqueeze(0))
+                    gt_local, gt_global, mask_prompt_adapter = self.make_pseudo_instance_map(b, (point_coord, point_label), x_ori[b].unsqueeze(0))
 
 
             else:
@@ -480,7 +480,7 @@ class SAM(nn.Module):
         B, H, W = segment_feat.shape
         feature_loss = 0
         # for i in range(len(self.interm_embeddings)):
-        feat_main = F.interpolate(self.x_ori.permute(0, 3, 1, 2), size=(H, W), mode='bilinear', align_corners=False)
+        feat_main = F.interpolate(self.features.permute(0, 3, 1, 2), size=(H, W), mode='bilinear', align_corners=False)
         feat_main = F.normalize(feat_main, dim=1)
         feat_main_ = feat_main.view(B, -1, H*W)  # (B,D,HW)
         index_ = segment_feat.view(B, 1, -1).long()  # (B,1,HW)
@@ -503,7 +503,7 @@ class SAM(nn.Module):
         bs = len(self.input)
 
         # self.features, self.interm_embeddings = self.image_encoder(self.input)
-        self.features, self.interm_embeddings, self.x_ori = self.image_encoder(self.input, mk_p_label=True)
+        self.features, self.interm_embeddings, x_ori = self.image_encoder(self.input, mk_p_label=True)
 
         # Embed prompts
         sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.input.device)
@@ -633,7 +633,7 @@ class SAM(nn.Module):
 
 
             sam_mask = sam_mask.to(self.device)
-            if epoch < 1:
+            if epoch < -1:
                 self.forward()
                 feature_loss = self.backward_G_feature(epoch, sam_mask)
                 self.loss_G = feature_loss
@@ -644,7 +644,7 @@ class SAM(nn.Module):
                 bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
                 self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
 
-            del self.input, self.x_ori, self.features, sam_mask
+            del self.input, self.features, sam_mask
             self.optimizer.zero_grad()  # set G's gradients to zero
             self.loss_G.backward()
             self.optimizer.step()
