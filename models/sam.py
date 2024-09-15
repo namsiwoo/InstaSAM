@@ -633,7 +633,7 @@ class SAM(nn.Module):
 
 
             sam_mask = sam_mask.to(self.device)
-            if epoch < -1:
+            if epoch < 1:
                 self.forward()
                 feature_loss = self.backward_G_feature(epoch, sam_mask)
                 self.loss_G = feature_loss
