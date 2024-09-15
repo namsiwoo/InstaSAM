@@ -177,7 +177,7 @@ class MaskDecoder(nn.Module):
             masks = []
             iou_preds = []
             for i_batch in range(len(image_embeddings)):
-                mask, iou_pred = self.predict_masks_hq(
+                mask, iou_pred, mask_feat = self.predict_masks_hq(
                     image_embeddings=image_embeddings[i_batch].unsqueeze(0),
                     image_pe=image_pe,
                     sparse_prompt_embeddings=sparse_prompt_embeddings[i_batch].unsqueeze(0),
@@ -204,7 +204,7 @@ class MaskDecoder(nn.Module):
 
         else:
             masks_hq = masks[:, slice(self.num_mask_tokens, self.num_mask_tokens + self.num_hq_token), :, :]
-            return masks_sam, masks_hq
+            return masks_sam, masks_hq, mask_feat
 
     def predict_masks(
         self,
@@ -291,7 +291,7 @@ class MaskDecoder(nn.Module):
         sparse_prompt_embeddings: torch.Tensor,
         dense_prompt_embeddings: torch.Tensor,
         interm_embeddings: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Predicts masks. See 'forward' for more details."""
         # Concatenate output tokens
 
@@ -346,7 +346,9 @@ class MaskDecoder(nn.Module):
         # Generate mask quality predictions
         iou_pred = self.iou_prediction_head(iou_token_out)
 
-        return masks, iou_pred
+        mask_feat = upscaled_embedding.view(b, -1, h, w)
+
+        return masks, iou_pred, mask_feat
 
 
 # Lightly adapted from
