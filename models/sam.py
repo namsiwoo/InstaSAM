@@ -637,6 +637,11 @@ class SAM(nn.Module):
                 self.forward()
                 feature_loss = self.backward_G_feature(epoch, sam_mask)
                 self.loss_G = feature_loss
+                self.optimizer.zero_grad()  # set G's gradients to zero
+                self.loss_G.backward()
+                self.optimizer.step()
+                del self.loss_G, local_gt, global_gt, self.mask_prompt_adapter
+                return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq, 0, 0, feature_loss.item()
             else:
                 local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
                 feature_loss = self.backward_G_feature(epoch, sam_mask)
