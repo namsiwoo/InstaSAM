@@ -321,7 +321,7 @@ class SAM(nn.Module):
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
 
-        del mask_prompt_adapter, points, x_ori#ignored_map
+        del mask_prompt_adapter, points#ignored_map
 
         if epoch>500:
             from utils.utils import accuracy_object_level, AJI_fast, save_checkpoint, load_checkpoint, mk_colored
