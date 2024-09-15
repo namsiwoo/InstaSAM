@@ -636,7 +636,7 @@ class SAM(nn.Module):
             if epoch < 1:
                 self.forward()
                 feature_loss = self.backward_G_feature(epoch, sam_mask)
-                self.loss_G = feature_loss*1e-6
+                self.loss_G = feature_loss*1e-16
                 self.optimizer.zero_grad()  # set G's gradients to zero
                 self.loss_G.backward()
                 self.optimizer.step()
