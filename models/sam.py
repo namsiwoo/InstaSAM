@@ -495,7 +495,7 @@ class SAM(nn.Module):
             feature_loss += loss_ssc
         else:
             print("loss_ssc is NaN!")
-            loss_ssc = torch.zeros_like(index_)
+            loss_ssc = torch.zeros_like(loss_ssc)
 
         return loss_ssc
 
