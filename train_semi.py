@@ -133,8 +133,8 @@ def main(args):
     #         print('********', name)
 
 
-    train_dataset = gt_with_weak_dataset(args, 'train', sup=args.semi)
-    val_dataset = gt_with_weak_dataset(args, 'val', sup=args.semi)
+    train_dataset = gt_with_weak_dataset(args, 'train', semi=args.semi)
+    val_dataset = gt_with_weak_dataset(args, 'val', semi=args.semi)
 
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
@@ -429,20 +429,9 @@ def test(args, device):
     sam_model = load_checkpoint(sam_model, os.path.join(args.result, 'model', 'Aji_best_model.pth'))
     # sam_model = load_checkpoint(sam_model, os.path.join(args.model, 'Dice_best_model.pth'))
 
-    if args.data_type == 'crop':
-        test_dataseet = Crop_dataset(args, 'test', use_mask=args.sup, data=args.data)
-    elif args.data_type == 'npy_c':
-        test_dataseet = DeepCell_dataset(args, 'test', use_mask=args.sup, data='cell')
-    elif args.data_type == 'npy_n':
-        test_dataseet = DeepCell_dataset(args, 'test', use_mask=args.sup, data='nuclei')
-    elif args.data_type == 'gal':
-        test_dataseet = Galaxy_dataset(args, 'test_real', use_mask=args.sup, data='nuclei')
-    elif args.data == 'DeepLIIF' or args.data == 'DeepLIIF_BC':
-        test_dataseet = IHC_dataset(args, 'test', use_mask=args.sup, data=args.data_type)
-    else:
-        test_dataseet = MoNuSeg_weak_dataset(args, 'test', sup=args.sup)
+    test_dataset = gt_with_weak_dataset(args, 'test', semi=args.semi)
 
-    test_dataloader = DataLoader(test_dataseet)
+    test_dataloader = DataLoader(test_dataset)
     if args.test_name == "None":
         args.test_name == 'test'
     else:
