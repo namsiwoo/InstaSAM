@@ -479,25 +479,23 @@ class SAM(nn.Module):
     def backward_G_feature(self, epoch, segment_feat):
         B, H, W = segment_feat.shape
         feature_loss = 0
-        for i in range(len(self.interm_embeddings)):
-            print(self.x_ori.shape)
-            print(self.x_ori[i].shape)
-            feat_main = F.interpolate(self.x_ori[i].permute(0, 3, 1, 2), size=(H, W), mode='bilinear', align_corners=False)
-            feat_main = F.normalize(feat_main, dim=1)
-            feat_main_ = feat_main.view(B, -1, H*W)  # (B,D,HW)
-            index_ = segment_feat[i].permute(0, 3, 1, 2).view(B, 1, -1).long()  # (B,1,HW)
+        # for i in range(len(self.interm_embeddings)):
+        feat_main = F.interpolate(self.x_ori.permute(0, 3, 1, 2), size=(H, W), mode='bilinear', align_corners=False)
+        feat_main = F.normalize(feat_main, dim=1)
+        feat_main_ = feat_main.view(B, -1, H*W)  # (B,D,HW)
+        index_ = segment_feat.permute(0, 3, 1, 2).view(B, 1, -1).long()  # (B,1,HW)
 
-            pt = torch_scatter.scatter_mean(feat_main_.detach(), index_)  # (B,D,N)
-            pt = F.normalize(pt, dim=1)
-            index_ = index_.squeeze(1)
-            pred_ssc = torch.bmm(pt.permute(0, 2, 1), feat_main_)  # (B,N,HW)
+        pt = torch_scatter.scatter_mean(feat_main_.detach(), index_)  # (B,D,N)
+        pt = F.normalize(pt, dim=1)
+        index_ = index_.squeeze(1)
+        pred_ssc = torch.bmm(pt.permute(0, 2, 1), feat_main_)  # (B,N,HW)
 
-            loss_ssc = F.cross_entropy(pred_ssc * 768, index_, ignore_index=0)
-            if not torch.isnan(loss_ssc):
-                feature_loss += loss_ssc
-            else:
-                print("loss_ssc is NaN!")
-                loss_ssc = torch.zeros_like(feature_loss)
+        loss_ssc = F.cross_entropy(pred_ssc * 768, index_, ignore_index=0)
+        if not torch.isnan(loss_ssc):
+            feature_loss += loss_ssc
+        else:
+            print("loss_ssc is NaN!")
+            loss_ssc = torch.zeros_like(feature_loss)
 
         return loss_ssc
 
