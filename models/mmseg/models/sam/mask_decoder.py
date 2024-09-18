@@ -346,7 +346,7 @@ class MaskDecoder(nn.Module):
         # Generate mask quality predictions
         iou_pred = self.iou_prediction_head(iou_token_out)
 
-        print(image_embeddings.shape)
+        print(image_embeddings.shape,  image_embeddings.transpose(1, 2).shape)
         mask_feat = image_embeddings.transpose(1, 2).view(b, c, h, w)
         return masks, iou_pred, mask_feat
 
