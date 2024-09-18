@@ -309,15 +309,15 @@ class MaskDecoder(nn.Module):
         b, c, h, w = src.shape
 
         # Run the transformer
-        hs, src = self.transformer(src, pos_src, tokens)
+        hs, src1 = self.transformer(src, pos_src, tokens)
         # hs, src = self.HQ_transformer(src, pos_src, tokens)
 
         iou_token_out = hs[:, 0, :]
         mask_tokens_out = hs[:, 1: (1 + self.num_mask_tokens+self.num_hq_token), :]
 
         # Upscale mask embeddings and predict masks using the mask tokens
-        src = src.transpose(1, 2).view(b, c, h, w)
-        upscaled_embedding = self.output_upscaling(src)
+        src1 = src1.transpose(1, 2).view(b, c, h, w)
+        upscaled_embedding = self.output_upscaling(src1)
         # upscaled_embedding = self.output_upscaling_mask(src)
 
         # vit_features = interm_embeddings.permute(0, 3, 1, 2) # early-layer ViT feature, after 1st global attention block in ViT
@@ -346,7 +346,8 @@ class MaskDecoder(nn.Module):
         # Generate mask quality predictions
         iou_pred = self.iou_prediction_head(iou_token_out)
 
-        return masks, iou_pred, src
+        mask_feat = src.transpose(1, 2).view(b, c, h, w)
+        return masks, iou_pred, mask_feat
 
 
 # Lightly adapted from
