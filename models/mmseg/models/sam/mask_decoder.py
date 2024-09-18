@@ -316,7 +316,9 @@ class MaskDecoder(nn.Module):
         mask_tokens_out = hs[:, 1: (1 + self.num_mask_tokens+self.num_hq_token), :]
 
         # Upscale mask embeddings and predict masks using the mask tokens
+        print(src.shape)
         src = src.transpose(1, 2).view(b, c, h, w)
+        print(src.shape)
         upscaled_embedding = self.output_upscaling(src)
         # upscaled_embedding = self.output_upscaling_mask(src)
 
