@@ -254,7 +254,7 @@ class SAM(nn.Module):
             bs, -1, self.image_embedding_size, self.image_embedding_size
         )
 
-        masks, masks_hq, self.mask_feat = self.mask_decoder(
+        masks, masks_hq = self.mask_decoder(
             image_embeddings=self.features,
             image_pe=self.prompt_encoder.get_dense_pe(),
             sparse_prompt_embeddings=sparse_embeddings,
@@ -406,7 +406,7 @@ class SAM(nn.Module):
                 masks=None,
             )
 
-        mask_prompt, iou_preds = self.mask_decoder(
+        mask_prompt, iou_preds, self.mask_feat = self.mask_decoder(
             image_embeddings=self.features[batch].unsqueeze(0),  # self.features[b].unsqueeze(0)
             image_pe=self.prompt_encoder.get_dense_pe(),
             sparse_prompt_embeddings=sparse_embeddings,
@@ -420,7 +420,7 @@ class SAM(nn.Module):
 
         if ori_feature != None:
             with torch.no_grad():
-                mask_prompt, iou_preds = self.mask_decoder(
+                mask_prompt, iou_preds, _ = self.mask_decoder(
                     image_embeddings=ori_feature,  # self.features[b].unsqueeze(0)
                     image_pe=self.prompt_encoder.get_dense_pe(),
                     sparse_prompt_embeddings=sparse_embeddings,
