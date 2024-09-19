@@ -654,7 +654,7 @@ class SAM(nn.Module):
                 del self.input, self.mask_feat, sam_mask
                 # set G's gradients to zero
                 self.optimizer.zero_grad()
-                self.scaler.scale(self.loss_G)
+                self.scaler.scale(self.loss_G).backward()
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
                 del self.loss_G, local_gt, global_gt, self.mask_prompt_adapter
