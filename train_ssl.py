@@ -158,7 +158,7 @@ def main(args):
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
     val_dataloader = DataLoader(val_dataset)
 
-    max_Dice, max_Aji = 0, 0
+    max_Dice, max_Aji, best_epoch = 0, 0, 0
     total_train_loss = []
     for epoch in range(args.epochs):
         if args.resume != 0:
@@ -394,20 +394,23 @@ def main(args):
 
                     del binary_map, instance_map, marker, pred_flow_vis, mask, input
 
-                f = open(os.path.join(args.result, 'img', str(epoch), "result.txt"), 'w')
-                f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
-                        '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
-                f.close()
-
                 if max_Dice < mean_dice:
                     print('save {} epoch!!--Dice: {}'.format(str(epoch), mean_dice))
                     save_checkpoint(os.path.join(args.result, 'model', 'Dice_best_model.pth'), sam_model, epoch)
                     max_Dice = mean_dice
 
                 if max_Aji < mean_aji:
+                    best_epoch = epoch
                     print('save {} epoch!!--Aji: {}'.format(str(epoch), mean_aji))
                     save_checkpoint(os.path.join(args.result, 'model', 'Aji_best_model.pth'), sam_model, epoch)
                     max_Aji = mean_aji
+
+                f = open(os.path.join(args.result, 'img', str(epoch), "result.txt"), 'w')
+                f.write('***test result_mask*** Average- Dice\tIOU\tAJI: '
+                        '\t\t{:.4f}\t{:.4f}\t{:.4f}'.format(mean_dice, mean_iou, mean_aji))
+                f.write('***test result_mask*** Best val- Dice\tAJI\tepoch: '
+                        '\t\t{:.4f}\t{:.4f}\t{}'.format(max_Dice, max_Aji, best_epoch))
+                f.close()
 
                 print(epoch, ': Average- Dice\tIOU\tAJI: '
                              '\t\t{:.4f}\t{:.4f}\t{:.4f} (b Dice: {}, b Aji: {})'.format(mean_dice, mean_iou,
