@@ -496,7 +496,7 @@ class SAM(nn.Module):
             print("loss_ssc is NaN!")
             loss_ssc = torch.zeros_like(loss_ssc)
 
-        return loss_ssc#*2e-3
+        return loss_ssc*2e-3
 
     def forward(self):  # , point_prompt=None
         bs = len(self.input)
