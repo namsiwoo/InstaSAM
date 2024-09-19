@@ -420,7 +420,7 @@ class SAM(nn.Module):
 
         if ori_feature != None:
             with torch.no_grad():
-                mask_prompt, iou_preds = self.mask_decoder(
+                mask_prompt, iou_preds, _ = self.mask_decoder(
                     image_embeddings=ori_feature,  # self.features[b].unsqueeze(0)
                     image_pe=self.prompt_encoder.get_dense_pe(),
                     sparse_prompt_embeddings=sparse_embeddings,
