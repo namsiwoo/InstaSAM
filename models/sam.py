@@ -321,7 +321,7 @@ class SAM(nn.Module):
             pseudo_gt_local[b] = gt_local
             pseudo_gt_global[b] = gt_global
 
-        del mask_prompt_adapter, points, self.features#ignored_map
+        del mask_prompt_adapter, points#, self.features#ignored_map
 
         if epoch>500:
             from utils.utils import accuracy_object_level, AJI_fast, save_checkpoint, load_checkpoint, mk_colored
@@ -479,7 +479,7 @@ class SAM(nn.Module):
     def backward_G_feature(self, epoch, segment_feat):
         B, H, W = segment_feat.shape
         # for i in range(len(self.interm_embeddings)):
-        feat_main = F.interpolate(self.mask_feat, size=(H, W), mode='bilinear', align_corners=False)
+        feat_main = F.interpolate(self.features, size=(H, W), mode='bilinear', align_corners=False)
         feat_main = F.normalize(feat_main, dim=1)
         feat_main_ = feat_main.view(B, -1, H*W)  # (B,D,HW)
         index_ = segment_feat.view(B, 1, -1).long()  # (B,1,HW)
