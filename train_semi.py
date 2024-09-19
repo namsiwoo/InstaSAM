@@ -99,6 +99,8 @@ def main(args):
 
     sam_model = models.sam.SAM(inp_size=1024, encoder_mode=encoder_mode, loss='iou', device=device)
     sam_model.optimizer = torch.optim.AdamW(sam_model.parameters(), lr=args.lr)
+    if args.auto_cast:
+        sam_model.scaler = torch.cuda.amp.GradScaler()
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(sam_model.optimizer, 20, eta_min=1.0e-7)
     sam_model = load_checkpoint(sam_model, sam_checkpoint)
 
@@ -136,7 +138,6 @@ def main(args):
     train_dataset = gt_with_weak_dataset(args, 'train', semi=args.semi)
     val_dataset = gt_with_weak_dataset(args, 'val', semi=args.semi)
 
-
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
     val_dataloader = DataLoader(val_dataset)
 
@@ -161,14 +162,14 @@ def main(args):
                 point = batch[0][2]
                 sam_model.set_input(img, label)
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters_semi(
-                    point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)
+                    point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch, args.auto_cast)
             else:
                 label = batch[0][1].squeeze(1)
                 point = batch[0][2]
 
                 sam_model.set_input(img)
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss, f_loss = sam_model.optimize_parameters_semi(
-                    point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch, label)  # point, epoch, batch[1][0]
+                    point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch, label, args.auto_cast)  # point, epoch, batch[1][0]
             # clu_label = batch[0][3].squeeze(1)
             # vor_label = batch[0][4].squeeze(1)
 
@@ -555,6 +556,7 @@ if __name__ == '__main__':
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--test', action='store_true')
     parser.add_argument('--adapter2',action='store_true')
+    parser.add_argument('--auto_cast',action='store_true')
 
     parser.add_argument('--data_type',default='crop', type=str ,help='crop, patch')
     parser.add_argument('--data',default='MoNuSeg',help='MoNuSeg, CPM 17, CoNSeP, TNBC')

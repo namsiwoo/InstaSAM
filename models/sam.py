@@ -592,7 +592,7 @@ class SAM(nn.Module):
         else:
             return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local
 
-    def optimize_parameters_semi(self, point_prompt=None, img_name=None, semi=False, epoch=0, sam_mask=None):
+    def optimize_parameters_semi(self, point_prompt=None, img_name=None, semi=False, epoch=0, sam_mask=None, auto_cast=False):
 
         # if img_name == 'train_4_5.png': #consep 04_7_0.png
 
@@ -628,11 +628,12 @@ class SAM(nn.Module):
                     self.optimizer.step()  # udpate G's weights
                     return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local
         else:
-            local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+
 
 
             sam_mask = sam_mask.to(self.device)
             # if epoch < -1:
+            #     local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
             #     self.forward()
             #     feature_loss = self.backward_G_feature(epoch, sam_mask)
             #     self.loss_G = feature_loss*1e-16
@@ -642,20 +643,38 @@ class SAM(nn.Module):
             #     del self.loss_G, local_gt, global_gt, self.mask_prompt_adapter
             #     return self.pred_mask, self.masks_hq, 0, 0, 0, self.masks_hq, 0, 0, feature_loss.item()
             # else:
-            local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
-            feature_loss = self.backward_G_feature(epoch, sam_mask)
-            bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
-            bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
-            self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
+            if auto_cast:
+                with torch.cuda.amp.autocast(dtype=torch.float16):
+                    local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+                    feature_loss = self.backward_G_feature(epoch, sam_mask)
+                    bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
+                    bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
+                    self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
+
+                del self.input, self.mask_feat, sam_mask
+                # set G's gradients to zero
+                self.optimizer.zero_grad()
+                self.scaler.scale(self.loss_G)
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+                del self.loss_G, local_gt, global_gt, self.mask_prompt_adapter
+                feature_loss = feature_loss.item()
+                return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local, feature_loss
+            else:
+                local_gt, global_gt = self.forward_ssl(point_prompt, img_name, epoch)
+                feature_loss = self.backward_G_feature(epoch, sam_mask)
+                bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
+                bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
+                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
 
             # print(self.mask_feat.shape)
-            del self.input, self.mask_feat, sam_mask
-            self.optimizer.zero_grad()  # set G's gradients to zero
-            self.loss_G.backward()
-            self.optimizer.step()
-            del self.loss_G, local_gt, global_gt, self.mask_prompt_adapter
-            feature_loss = feature_loss.item()
-            return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local, feature_loss
+                del self.input, self.mask_feat, sam_mask
+                self.optimizer.zero_grad()  # set G's gradients to zero
+                self.loss_G.backward()
+                self.optimizer.step()
+                del self.loss_G, local_gt, global_gt, self.mask_prompt_adapter
+                feature_loss = feature_loss.item()
+                return self.pred_mask, self.masks_hq, bce_loss.item(), offset_loss.item(), iou_loss.item(), offset_gt, bce_loss_local, iou_loss_local, feature_loss
 
 
 
