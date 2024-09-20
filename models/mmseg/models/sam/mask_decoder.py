@@ -73,8 +73,9 @@ class MaskDecoder(nn.Module):
     def make_HQ_module(self, model_type, transformer_dim, num_token=1, HQ_transformer=None, local_transformer=None):
         vit_dim_dict = {"vit_b": 768, "medsam": 768, "vit_l": 1024, "vit_h": 1280}
         vit_dim = vit_dim_dict[model_type]
-        # self.HQ_transformer = HQ_transformer
-        # self.HQ_transformer = copy.deepcopy(self.transformer)
+
+        self.HQ_transformer = copy.deepcopy(self.transformer)
+        self.HQ_transformer.requires_grad_(False)
 
         self.mask_tokens2 = copy.deepcopy(self.mask_tokens)
         self.mask_tokens2.requires_grad_(True)
@@ -93,7 +94,6 @@ class MaskDecoder(nn.Module):
 
         self.mask_mlp.requires_grad_(True)
         self.output_upscaling_mask.requires_grad_(True)
-
 
         self.num_hq_token = num_token
 
@@ -315,7 +315,7 @@ class MaskDecoder(nn.Module):
         b, c, h, w = src.shape
 
         # Run the transformer
-        hs, src = self.transformer(src, pos_src, tokens)
+        hs, src = self.HQ_transformer(src, pos_src, tokens)
         # hs, src = self.HQ_transformer(src, pos_src, tokens)
 
         iou_token_out = hs[:, 0, :]
