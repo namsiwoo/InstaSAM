@@ -130,10 +130,9 @@ def main(args):
     print('model_grad_params:' + str(model_grad_params), '\nmodel_total_params:' + str(model_total_params))
     for name, p in sam_model.named_parameters():
         if p.requires_grad:
-            # print('========', name)
-            pass
-        else:
-            print('********', name)
+            print('========', name)
+        # else:
+        #     print('********', name)
 
 
     train_dataset = gt_with_weak_dataset(args, 'train', semi=args.semi)
