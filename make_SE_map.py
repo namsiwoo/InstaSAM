@@ -72,26 +72,21 @@ def main(data_root, save_root):
             "See e.g. https://github.com/pytorch/pytorch/issues/84936 for a discussion."
         )
 
-    sam2_checkpoint = "/media/NAS/nas_70/siwoo_data/UDA_citycapes/sam2_hiera_large.pt"
-    model_cfg = "sam2_hiera_l.yaml"
+    sam_checkpoint = '/media/NAS/nas_187/siwoo/2023/SAM model/SAM-Adapter-PyTorch-main/sam_vit_h_4b8939.pth'
 
-    sam2 = build_sam(model_cfg, sam2_checkpoint, device=device, apply_postprocessing=False)
+    sam = build_sam(sam_checkpoint)
 
 
     # mask_generator = SAM2AutomaticMaskGenerator(sam2)
 
     mask_generator = SamAutomaticMaskGenerator(
-        model=sam2,
-        points_per_side=64,
-        points_per_batch=128,
-        pred_iou_thresh=0.7,
+        model=sam,
+        points_per_side=32,
+        pred_iou_thresh=0.86,
         stability_score_thresh=0.92,
-        stability_score_offset=0.7,
         crop_n_layers=1,
-        box_nms_thresh=0.7,
         crop_n_points_downscale_factor=2,
-        min_mask_region_area=25.0,
-        use_m2m=True,
+        min_mask_region_area=100,  # Requires open-cv to run post-processing
     )
 
     img_list = os.listdir(os.path.join(data_root, img_folder))
@@ -113,7 +108,7 @@ if __name__ == '__main__':
     # data_root = '/media/NAS/nas_187/datasets/synthia/RAND_CITYSCAPES'
     # save_root = '/media/NAS/nas_70/siwoo_data/UDA_citycapes/synthia'
     data_root = '/media/NAS/nas_70/open_dataset/TNBC/TNBC/via instance learning data_for_train/TNBC'
-    save_root = '/media/NAS/nas_70/siwoo_data/UDA_citycapes/TNBC'
+    save_root = '/media/NAS/nas_70/siwoo_data/UDA_citycapes/TNBC_sam'
     # make_split(data_root, save_root)
     main(data_root, save_root)
 
