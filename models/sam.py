@@ -664,7 +664,7 @@ class SAM(nn.Module):
                 feature_loss = self.backward_G_feature(epoch, sam_mask)
                 bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
                 bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
-                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local#+ feature_loss
+                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local+ feature_loss
 
             # print(self.mask_feat.shape)
                 del self.input, self.mask_feat, sam_mask
