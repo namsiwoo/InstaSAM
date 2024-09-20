@@ -271,16 +271,16 @@ class MaskDecoder(nn.Module):
         b, c, h, w = src.shape
 
         # Run the transformer
-        hs, src = self.local_transformer(src, pos_src, tokens)
+        hs, src = self.local_transformer(src, pos_src, tokens) ##############
         iou_token_out = hs[:, 0, :]
         mask_tokens_out = hs[:, 1 : (1 + self.num_mask_tokens), :]
 
         # Upscale mask embeddings and predict masks using the mask tokens
         src = src.transpose(1, 2).view(b, c, h, w)
-        upscaled_embedding = self.local_output_upscaling(src)
+        upscaled_embedding = self.local_output_upscaling(src) ############
         hyper_in_list: List[torch.Tensor] = []
         for i in range(self.num_mask_tokens):
-            hyper_in_list.append(self.local_mlp[i](mask_tokens_out[:, i, :]))
+            hyper_in_list.append(self.local_mlp[i](mask_tokens_out[:, i, :])) ###########
         hyper_in = torch.stack(hyper_in_list, dim=1)
         b, c, h, w = upscaled_embedding.shape
         masks = (hyper_in @ upscaled_embedding.view(b, c, h * w)).view(b, -1, h, w)
