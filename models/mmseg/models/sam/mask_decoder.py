@@ -75,7 +75,7 @@ class MaskDecoder(nn.Module):
         vit_dim = vit_dim_dict[model_type]
 
         self.HQ_transformer = copy.deepcopy(self.transformer)
-        self.HQ_transformer.requires_grad_(False)
+        self.HQ_transformer.requires_grad_(True)
 
         self.mask_tokens2 = copy.deepcopy(self.mask_tokens)
         self.mask_tokens2.requires_grad_(True)
