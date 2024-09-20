@@ -480,7 +480,8 @@ class SAM(nn.Module):
     def backward_G_feature(self, epoch, segment_feat):
         B, H, W = segment_feat.shape
         # for i in range(len(self.interm_embeddings)):
-        feat_main = F.interpolate(self.mask_feat, size=(H, W), mode='bilinear', align_corners=False) #self.feature or self.mask_feat
+        feat_main = F.interpolate(self.features, size=(H, W), mode='bilinear', align_corners=False) #self.feature or self.mask_feat
+        # feat_main = F.interpolate(self.mask_feat, size=(H, W), mode='bilinear', align_corners=False) #self.feature or self.mask_feat
         feat_main = F.normalize(feat_main, dim=1)
         feat_main_ = feat_main.view(B, -1, H*W)  # (B,D,HW)
         index_ = segment_feat.view(B, 1, -1).long()  # (B,1,HW)
