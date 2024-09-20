@@ -215,13 +215,13 @@ class SAM(nn.Module):
             num_heads=8,
         ),)
 
-        self.mask_decoder.make_local_module(model_type, self.prompt_embed_dim,
-                                            local_transformer=TwoWayTransformer(
-                                            depth=2,
-                                            embedding_dim=self.prompt_embed_dim,
-                                            mlp_dim=2048,
-                                            num_heads=8,
-                                            ), )
+        # self.mask_decoder.make_local_module(model_type, self.prompt_embed_dim,
+        #                                     local_transformer=TwoWayTransformer(
+        #                                     depth=2,
+        #                                     embedding_dim=self.prompt_embed_dim,
+        #                                     mlp_dim=2048,
+        #                                     num_heads=8,
+        #                                     ), )
 
 
         if num_token == 2:
