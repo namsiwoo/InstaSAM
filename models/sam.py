@@ -480,8 +480,8 @@ class SAM(nn.Module):
     def backward_G_feature(self, epoch, segment_feat):
         B, H, W = segment_feat.shape
         # for i in range(len(self.interm_embeddings)):
-        # feat_main = F.interpolate(self.features, size=(H, W), mode='bilinear', align_corners=False) #self.feature or self.mask_feat
-        feat_main = F.interpolate(self.mask_feat, size=(H, W), mode='bilinear', align_corners=False) #self.feature or self.mask_feat
+        feat_main = F.interpolate(self.features, size=(H, W), mode='bilinear', align_corners=False) #self.feature or self.mask_feat
+        # feat_main = F.interpolate(self.mask_feat, size=(H, W), mode='bilinear', align_corners=False) #self.feature or self.mask_feat
         feat_main = F.normalize(feat_main, dim=1)
         feat_main_ = feat_main.view(B, -1, H*W)  # (B,D,HW)
         index_ = segment_feat.view(B, 1, -1).long()  # (B,1,HW)
@@ -664,7 +664,7 @@ class SAM(nn.Module):
                 feature_loss = self.backward_G_feature(epoch, sam_mask)
                 bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G_ssl(global_gt)
                 bce_loss_local, iou_loss_local = self.backward_G_local(epoch, local_gt, global_gt)
-                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local + feature_loss
+                self.loss_G = bce_loss + iou_loss + 5 * offset_loss + bce_loss_local + iou_loss_local# + feature_loss
 
             # print(self.mask_feat.shape)
                 del self.input, self.mask_feat, sam_mask
