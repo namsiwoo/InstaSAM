@@ -161,14 +161,14 @@ class MaskDecoder(nn.Module):
         """
 
         if mask_token_only == True:
-            if local_path == True:
-                masks, iou_preds = self.predict_masks_local( #, mask_feat
-                    image_embeddings=image_embeddings,
-                    image_pe=image_pe,
-                    sparse_prompt_embeddings=sparse_prompt_embeddings,
-                    dense_prompt_embeddings=dense_prompt_embeddings,
-                )
-            else:
+            # if local_path == True:
+            #     masks, iou_preds = self.predict_masks_local( #, mask_feat
+            #         image_embeddings=image_embeddings,
+            #         image_pe=image_pe,
+            #         sparse_prompt_embeddings=sparse_prompt_embeddings,
+            #         dense_prompt_embeddings=dense_prompt_embeddings,
+            #     )
+            # else:
                 masks, iou_preds = self.predict_masks(
                     image_embeddings=image_embeddings,
                     image_pe=image_pe,
