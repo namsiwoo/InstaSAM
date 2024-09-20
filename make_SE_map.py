@@ -112,4 +112,4 @@ if __name__ == '__main__':
     # make_split(data_root, save_root)
     main(data_root, save_root)
 
-    #CUDA_VISIBLE_DEVICES=0 python make_segment.py
+    #CUDA_VISIBLE_DEVICES=0 python make_SE_map.py
