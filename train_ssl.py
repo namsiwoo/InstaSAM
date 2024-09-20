@@ -126,11 +126,12 @@ def main(args):
     model_total_params = sum(p.numel() for p in sam_model.parameters())
     model_grad_params = sum(p.numel() for p in sam_model.parameters() if p.requires_grad)
     print('model_grad_params:' + str(model_grad_params), '\nmodel_total_params:' + str(model_total_params))
-    # for name, p in sam_model.named_parameters():
-    #     if p.requires_grad:
-    #         print('========', name)
-    #     else:
-    #         print('********', name)
+    for name, p in sam_model.named_parameters():
+        if p.requires_grad:
+            # print('========', name)
+            pass
+        else:
+            print('********', name)
 
     if args.data_type == 'crop':
         train_dataset = Crop_dataset(args, 'train', use_mask=args.sup, data=args.data)
