@@ -75,7 +75,7 @@ class MaskDecoder(nn.Module):
         vit_dim = vit_dim_dict[model_type]
 
         self.HQ_transformer = HQ_transformer
-        self.HQ_transformer.weight = self.transformer.weight
+        self.HQ_transformer.layer.weight = self.transformer.layer.weight
         # self.HQ_transformer.requires_grad_(True)
 
         self.mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
