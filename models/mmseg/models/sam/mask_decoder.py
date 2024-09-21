@@ -80,7 +80,8 @@ class MaskDecoder(nn.Module):
         self.mask_tokens2 = copy.deepcopy(self.mask_tokens)
         self.mask_tokens2.requires_grad_(True)
 
-        self.hf_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings: 1
+        self.hf_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings:
+        self.hf_token.requires_grad_(True)
 
         self.hf_mlp = nn.ModuleList(
             [
@@ -88,11 +89,12 @@ class MaskDecoder(nn.Module):
                 for i in range(num_token)
             ]
         )
+        self.hf_mlp.requires_grad_(True)
 
         self.mask_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
-        self.output_upscaling_mask = copy.deepcopy(self.output_upscaling)
-
         self.mask_mlp.requires_grad_(True)
+
+        self.output_upscaling_mask = copy.deepcopy(self.output_upscaling)
         self.output_upscaling_mask.requires_grad_(True)
 
         self.num_hq_token = num_token
@@ -161,14 +163,14 @@ class MaskDecoder(nn.Module):
         """
 
         if mask_token_only == True:
-            # if local_path == True:
-            #     masks, iou_preds = self.predict_masks_local( #, mask_feat
-            #         image_embeddings=image_embeddings,
-            #         image_pe=image_pe,
-            #         sparse_prompt_embeddings=sparse_prompt_embeddings,
-            #         dense_prompt_embeddings=dense_prompt_embeddings,
-            #     )
-            # else:
+            if local_path == True:
+                masks, iou_preds = self.predict_masks_local( #, mask_feat
+                    image_embeddings=image_embeddings,
+                    image_pe=image_pe,
+                    sparse_prompt_embeddings=sparse_prompt_embeddings,
+                    dense_prompt_embeddings=dense_prompt_embeddings,
+                )
+            else:
                 masks, iou_preds = self.predict_masks(
                     image_embeddings=image_embeddings,
                     image_pe=image_pe,
