@@ -74,14 +74,14 @@ class MaskDecoder(nn.Module):
         vit_dim_dict = {"vit_b": 768, "medsam": 768, "vit_l": 1024, "vit_h": 1280}
         vit_dim = vit_dim_dict[model_type]
 
-        self.HQ_transformer = copy.deepcopy(self.transformer)
-        self.HQ_transformer.requires_grad_(True)
+        self.HQ_transformer = HQ_transformer
+        # self.HQ_transformer.requires_grad_(True)
 
-        self.mask_tokens2 = copy.deepcopy(self.mask_tokens)
-        self.mask_tokens2.requires_grad_(True)
+        self.mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
+        # self.mask_tokens2.requires_grad_(True)
 
         self.hf_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings:
-        self.hf_token.requires_grad_(True)
+        # self.hf_token.requires_grad_(True)
 
         self.hf_mlp = nn.ModuleList(
             [
@@ -89,13 +89,24 @@ class MaskDecoder(nn.Module):
                 for i in range(num_token)
             ]
         )
-        self.hf_mlp.requires_grad_(True)
+        # self.hf_mlp.requires_grad_(True)
 
-        self.mask_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
-        self.mask_mlp.requires_grad_(True)
+        self.mask_mlp = nn.ModuleList(
+            [
+                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+                for i in range(self.num_mask_tokens)
+            ]
+        )
+        # self.mask_mlp.requires_grad_(True)
 
-        self.output_upscaling_mask = copy.deepcopy(self.output_upscaling)
-        self.output_upscaling_mask.requires_grad_(True)
+        self.output_upscaling_mask = nn.Sequential(
+            nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
+            LayerNorm2d(transformer_dim // 4),
+            nn.GELU(),
+            nn.ConvTranspose2d(transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2),
+            nn.GELU(),
+        )
+        # self.output_upscaling_mask.requires_grad_(True)
 
         self.num_hq_token = num_token
 
@@ -317,16 +328,16 @@ class MaskDecoder(nn.Module):
         b, c, h, w = src.shape
 
         # Run the transformer
-        hs, src = self.transformer(src, pos_src, tokens)
-        # hs, src = self.HQ_transformer(src, pos_src, tokens)
+        # hs, src = self.transformer(src, pos_src, tokens)
+        hs, src = self.HQ_transformer(src, pos_src, tokens)
 
         iou_token_out = hs[:, 0, :]
         mask_tokens_out = hs[:, 1: (1 + self.num_mask_tokens+self.num_hq_token), :]
 
         # Upscale mask embeddings and predict masks using the mask tokens
         src = src.transpose(1, 2).view(b, c, h, w)
-        upscaled_embedding = self.output_upscaling(src)
-        # upscaled_embedding = self.output_upscaling_mask(src)
+        # upscaled_embedding = self.output_upscaling(src)
+        upscaled_embedding = self.output_upscaling_mask(src)
 
         # vit_features = interm_embeddings.permute(0, 3, 1, 2) # early-layer ViT feature, after 1st global attention block in ViT
         # hq_feature = self.embedding_encoder(image_embeddings) + self.compress_vit_feat(vit_features)
