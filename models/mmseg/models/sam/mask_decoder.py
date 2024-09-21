@@ -99,41 +99,26 @@ class MaskDecoder(nn.Module):
         vit_dim_dict = {"vit_b": 768, "medsam": 768, "vit_l": 1024, "vit_h": 1280}
         vit_dim = vit_dim_dict[model_type]
 
-        self.HQ_transformer = HQ_transformer
+
+        self.HQ_transformer = copy.deepcopy(self.transformer)
         self.HQ_transformer.requires_grad_(True)
 
-        self.mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
-        self.mask_tokens2.weight = self.mask_tokens.weight
-        self.mask_tokens2.requires_grad_(True)
+        self.HQ_mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
+        self.HQ_mask_tokens2.weight = self.mask_tokens.weight
+        self.HQ_mask_tokens2.requires_grad_(True)
 
-        self.hf_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings:
-        self.hf_token.weight = self.mask_tokens.weight
-        self.hf_token.requires_grad_(True)
+        self.HQ_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings:
+        self.HQ_token.weight = self.mask_tokens.weight
+        self.HQ_token.requires_grad_(True)
 
-        self.hf_mlp = nn.ModuleList(
-            [
-                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-                for i in range(num_token)
-            ]
-        )
-        self.hf_mlp.requires_grad_(True)
+        self.HQ_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
+        self.HQ_mlp.requires_grad_(True)
 
-        self.mask_mlp = nn.ModuleList(
-            [
-                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-                for i in range(self.num_mask_tokens)
-            ]
-        )
-        self.mask_mlp.requires_grad_(True)
+        self.HQ_mask_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
+        self.HQ_mask_mlp.requires_grad_(True)
 
-        self.output_upscaling_mask = nn.Sequential(
-            nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
-            LayerNorm2d(transformer_dim // 4),
-            nn.GELU(),
-            nn.ConvTranspose2d(transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2),
-            nn.GELU(),
-        )
-        self.output_upscaling_mask.requires_grad_(True)
+        self.HQ_output_upscaling_mask = copy.deepcopy(self.output_upscaling)
+        self.HQ_output_upscaling_mask.requires_grad_(True)
 
         self.num_hq_token = num_token
 
