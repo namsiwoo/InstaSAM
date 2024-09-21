@@ -69,6 +69,31 @@ class MaskDecoder(nn.Module):
             transformer_dim, iou_head_hidden_dim, self.num_mask_tokens, iou_head_depth
         )
 
+        self.num_hq_token = 2
+        self.HQ_transformer = transformer
+        self.HQ_mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
+        self.HQ_token = nn.Embedding(self.num_hq_token, transformer_dim)
+        self.HQ_mlp = nn.ModuleList(
+            [
+                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+                for i in range(self.num_hq_token)
+            ]
+        )
+        self.HQ_mask_mlp = nn.ModuleList(
+            [
+                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+                for i in range(self.num_mask_tokens)
+            ]
+        )
+
+        self.HQ_output_upscaling_mask = nn.Sequential(
+            nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
+            LayerNorm2d(transformer_dim // 4),
+            nn.GELU(),
+            nn.ConvTranspose2d(transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2),
+            nn.GELU(),
+        )
+
         #for HQ SAM
     def make_HQ_module(self, model_type, transformer_dim, num_token=1, HQ_transformer=None, local_transformer=None):
         vit_dim_dict = {"vit_b": 768, "medsam": 768, "vit_l": 1024, "vit_h": 1280}
@@ -318,7 +343,7 @@ class MaskDecoder(nn.Module):
 
        # print(image_embeddings.shape, image_pe.shape, sparse_prompt_embeddings.shape, dense_prompt_embeddings.shape)
 
-        output_tokens = torch.cat([self.iou_token.weight, self.mask_tokens2.weight, self.hf_token.weight], dim=0)
+        output_tokens = torch.cat([self.iou_token.weight, self.HQ_mask_tokens2.weight, self.HQ_token.weight], dim=0)
         output_tokens = output_tokens.unsqueeze(0).expand(sparse_prompt_embeddings.size(0), -1, -1)
         tokens = torch.cat((output_tokens, sparse_prompt_embeddings), dim=1)
 
@@ -339,7 +364,7 @@ class MaskDecoder(nn.Module):
         # Upscale mask embeddings and predict masks using the mask tokens
         src = src.transpose(1, 2).view(b, c, h, w)
         # upscaled_embedding = self.output_upscaling(src)
-        upscaled_embedding = self.output_upscaling_mask(src)
+        upscaled_embedding = self.HQ_output_upscaling_mask(src)
 
         # vit_features = interm_embeddings.permute(0, 3, 1, 2) # early-layer ViT feature, after 1st global attention block in ViT
         # hq_feature = self.embedding_encoder(image_embeddings) + self.compress_vit_feat(vit_features)
@@ -349,9 +374,9 @@ class MaskDecoder(nn.Module):
         hyper_in_list: List[torch.Tensor] = []
         for i in range(self.num_mask_tokens+self.num_hq_token):
             if i<4:
-                hyper_in_list.append(self.mask_mlp[i](mask_tokens_out[:, i, :]))
+                hyper_in_list.append(self.HQ_mask_mlp[i](mask_tokens_out[:, i, :]))
             else:
-                hyper_in_list.append(self.hf_mlp[i-4](mask_tokens_out[:, i, :]))
+                hyper_in_list.append(self.HQ_mlp[i-4](mask_tokens_out[:, i, :]))
 
         hyper_in = torch.stack(hyper_in_list, dim=1)
         b, c, h, w = upscaled_embedding.shape
