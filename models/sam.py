@@ -202,6 +202,7 @@ class SAM(nn.Module):
         self.image_embedding_size = inp_size // encoder_mode['patch_size']
         self.no_mask_embed = nn.Embedding(1, encoder_mode['prompt_embed_dim'])
 
+        self.criterionOFFSET = offset_Loss(224, 224)
         # self.HQ_model = MaskDecoderHQ('vit_h')
 
         # HQ_module = self.HQ_model.modules
