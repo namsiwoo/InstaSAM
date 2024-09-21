@@ -75,16 +75,15 @@ class MaskDecoder(nn.Module):
         vit_dim = vit_dim_dict[model_type]
 
         self.HQ_transformer = HQ_transformer
-        self.HQ_transformer.copy_(self.transformer)
-        # self.HQ_transformer.requires_grad_(True)
+        self.HQ_transformer.requires_grad_(True)
 
         self.mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
         self.mask_tokens2.weight = self.mask_tokens.weight
-        # self.mask_tokens2.requires_grad_(True)
+        self.mask_tokens2.requires_grad_(True)
 
         self.hf_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings:
         self.hf_token.weight = self.mask_tokens.weight
-        # self.hf_token.requires_grad_(True)
+        self.hf_token.requires_grad_(True)
 
         self.hf_mlp = nn.ModuleList(
             [
@@ -92,8 +91,7 @@ class MaskDecoder(nn.Module):
                 for i in range(num_token)
             ]
         )
-        self.hf_mlp.copy_(self.output_hypernetworks_mlps.weight)
-        # self.hf_mlp.requires_grad_(True)
+        self.hf_mlp.requires_grad_(True)
 
         self.mask_mlp = nn.ModuleList(
             [
@@ -101,8 +99,7 @@ class MaskDecoder(nn.Module):
                 for i in range(self.num_mask_tokens)
             ]
         )
-        self.mask_mlp.copy_(self.output_hypernetworks_mlps.weight)
-        # self.mask_mlp.requires_grad_(True)
+        self.mask_mlp.requires_grad_(True)
 
         self.output_upscaling_mask = nn.Sequential(
             nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
@@ -111,8 +108,7 @@ class MaskDecoder(nn.Module):
             nn.ConvTranspose2d(transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2),
             nn.GELU(),
         )
-        self.output_upscaling_mask.copy_(self.output_upscaling.weight)
-        # self.output_upscaling_mask.requires_grad_(True)
+        self.output_upscaling_mask.requires_grad_(True)
 
         self.num_hq_token = num_token
 
