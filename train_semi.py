@@ -109,8 +109,8 @@ def main(args):
             para.requires_grad_(False)
         if "prompt_encoder" in name:
             para.requires_grad_(False)
-        if "mask_decoder" in name and 'HQ' not in name:
-            para.requires_grad_(False)
+        # if "mask_decoder" in name and 'HQ' not in name:
+        #     para.requires_grad_(False)
 
     # sam_model.make_HQ_model(model_type=args.model_type, num_token=args.num_hq_token)
     if args.adapter2:
@@ -119,6 +119,9 @@ def main(args):
         sam_model = load_checkpoint(sam_model, os.path.join(args.result, 'model', str(args.resume)+'_model.pth'))
     if args.ck_point is not None:
         sam_model = load_checkpoint(sam_model, args.ck_point)
+
+    sam_model.HQ_mask_tokens2.weight = sam_model.mask_tokens.weight
+    sam_model.HQ_token.weight = sam_model.mask_tokens.weight
 
     sam_model = sam_model.cuda()
 

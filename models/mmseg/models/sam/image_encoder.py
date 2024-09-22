@@ -134,13 +134,14 @@ class ImageEncoderViT(nn.Module):
         self.num_stages = self.depth
         self.out_indices = tuple(range(self.num_stages))
         self.adapter2 = False
-
-    def make_adapter2(self):
         self.prompt_generator2 = PromptGenerator(self.scale_factor, self.prompt_type, self.embed_dim,
                                                 self.tuning_stage, self.depth,
                                                 self.input_type, self.freq_nums,
                                                 self.handcrafted_tune, self.embedding_tune, self.adaptor,
                                                 self.img_size, self.patch_size)
+
+    def make_adapter2(self):
+
         self.adapter2 = True
     def forward(self, x: torch.Tensor, mk_p_label=False):
         inp = x
