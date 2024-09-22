@@ -76,20 +76,18 @@ class MaskDecoder(nn.Module):
         self.HQ_token.weight = self.mask_tokens.weight
 
     #     self.HQ_transformer = transformer
-
-
-    #     self.HQ_mlp = nn.ModuleList(
-    #         [
-    #             MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-    #             for i in range(self.num_hq_token)
-    #         ]
-    #     )
-    #     self.HQ_mask_mlp = nn.ModuleList(
-    #         [
-    #             MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-    #             for i in range(self.num_mask_tokens)
-    #         ]
-    #     )
+        self.HQ_mlp = nn.ModuleList(
+            [
+                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+                for i in range(self.num_hq_token)
+            ]
+        )
+        self.HQ_mask_mlp = nn.ModuleList(
+            [
+                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+                for i in range(self.num_mask_tokens)
+            ]
+        )
     #
     #     self.HQ_output_upscaling_mask = nn.Sequential(
     #         nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
@@ -345,16 +343,16 @@ class MaskDecoder(nn.Module):
         b, c, h, w = src.shape
 
         # Run the transformer
-        # hs, src = self.transformer(src, pos_src, tokens)
-        hs, src = self.HQ_transformer(src, pos_src, tokens)
+        hs, src = self.transformer(src, pos_src, tokens)
+        # hs, src = self.HQ_transformer(src, pos_src, tokens)
 
         iou_token_out = hs[:, 0, :]
         mask_tokens_out = hs[:, 1: (1 + self.num_mask_tokens+self.num_hq_token), :]
 
         # Upscale mask embeddings and predict masks using the mask tokens
         src = src.transpose(1, 2).view(b, c, h, w)
-        # upscaled_embedding = self.output_upscaling(src)
-        upscaled_embedding = self.HQ_output_upscaling_mask(src)
+        upscaled_embedding = self.output_upscaling(src)
+        # upscaled_embedding = self.HQ_output_upscaling_mask(src)
 
         # vit_features = interm_embeddings.permute(0, 3, 1, 2) # early-layer ViT feature, after 1st global attention block in ViT
         # hq_feature = self.embedding_encoder(image_embeddings) + self.compress_vit_feat(vit_features)
