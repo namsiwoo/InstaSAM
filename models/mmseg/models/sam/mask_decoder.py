@@ -95,29 +95,40 @@ class MaskDecoder(nn.Module):
         )
 
         #for HQ SAM
+
+    def copy_param(self, ori, new):
+        mp = list(new.parameters())
+        mcp = list(ori.parameters())
+        n = len(mp)
+        for i in range(0, n):
+            mp[i].data[:] = mcp[i].data[:]
     def make_HQ_module(self, model_type, transformer_dim, num_token=1, HQ_transformer=None, local_transformer=None):
         vit_dim_dict = {"vit_b": 768, "medsam": 768, "vit_l": 1024, "vit_h": 1280}
         vit_dim = vit_dim_dict[model_type]
 
 
-        self.HQ_transformer = copy.deepcopy(self.transformer)
+        # self.HQ_transformer = copy.deepcopy(self.transformer)
+        self.copy_param(self.transformer, self.HQ_transformer)
         self.HQ_transformer.requires_grad_(True)
 
-        self.HQ_mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
+        # self.HQ_mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
         self.HQ_mask_tokens2.weight = self.mask_tokens.weight
         self.HQ_mask_tokens2.requires_grad_(True)
 
-        self.HQ_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings:
+        # self.HQ_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings:
         self.HQ_token.weight = self.mask_tokens.weight
         self.HQ_token.requires_grad_(True)
 
-        self.HQ_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
+        # self.HQ_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
+        self.copy_param(self.output_hypernetworks_mlps, self.HQ_mlp)
         self.HQ_mlp.requires_grad_(True)
 
-        self.HQ_mask_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
+        # self.HQ_mask_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
+        self.copy_param(self.output_hypernetworks_mlps, self.HQ_mask_mlp)
         self.HQ_mask_mlp.requires_grad_(True)
 
-        self.HQ_output_upscaling_mask = copy.deepcopy(self.output_upscaling)
+        # self.HQ_output_upscaling_mask = copy.deepcopy(self.output_upscaling)
+        self.copy_param(self.output_upscaling, self.HQ_output_upscaling_mask)
         self.HQ_output_upscaling_mask.requires_grad_(True)
 
         self.num_hq_token = num_token
