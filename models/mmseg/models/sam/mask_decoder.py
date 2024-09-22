@@ -72,8 +72,8 @@ class MaskDecoder(nn.Module):
         self.num_hq_token = 2
         self.HQ_mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
         self.HQ_token = nn.Embedding(self.num_hq_token, transformer_dim)
-        self.HQ_mask_tokens2.weight = self.mask_tokens.weight
-        self.HQ_token.weight = self.mask_tokens.weight
+        # self.HQ_mask_tokens2.weight = self.mask_tokens.weight
+        # self.HQ_token.weight = self.mask_tokens.weight
 
     #     self.HQ_transformer = transformer
         self.HQ_mlp = nn.ModuleList(
