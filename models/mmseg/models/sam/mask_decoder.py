@@ -76,18 +76,18 @@ class MaskDecoder(nn.Module):
         self.HQ_token.weight = self.mask_tokens.weight
 
     #     self.HQ_transformer = transformer
-    #     self.HQ_mlp = nn.ModuleList(
-    #         [
-    #             MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-    #             for i in range(self.num_hq_token)
-    #         ]
-    #     )
-    #     self.HQ_mask_mlp = nn.ModuleList(
-    #         [
-    #             MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-    #             for i in range(self.num_mask_tokens)
-    #         ]
-    #     )
+        self.HQ_mlp = nn.ModuleList(
+            [
+                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+                for i in range(self.num_hq_token)
+            ]
+        )
+        self.HQ_mask_mlp = nn.ModuleList(
+            [
+                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+                for i in range(self.num_mask_tokens)
+            ]
+        )
     #
     #     self.HQ_output_upscaling_mask = nn.Sequential(
     #         nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
