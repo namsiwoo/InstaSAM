@@ -207,29 +207,29 @@ class SAM(nn.Module):
 
         # HQ_module = self.HQ_model.modules
         # HQ_module.load_state_dict('pppp.pth')
-    def make_HQ_model(self, model_type, num_token):
-        self.mask_decoder.make_HQ_module(model_type, self.prompt_embed_dim, num_token=num_token, #)
-        HQ_transformer = TwoWayTransformer(
-            depth=2,
-            embedding_dim=self.prompt_embed_dim,
-            mlp_dim=2048,
-            num_heads=8,
-        ),)
-
-        self.mask_decoder.make_local_module(model_type, self.prompt_embed_dim,
-                                            local_transformer=TwoWayTransformer(
-                                            depth=2,
-                                            embedding_dim=self.prompt_embed_dim,
-                                            mlp_dim=2048,
-                                            num_heads=8,
-                                            ), )
-
-
-        if num_token == 2:
-            self.criterionOFFSET = offset_Loss(224, 224)
-            # self.criterionOFFSET = offset_Loss(300, 300)
-        else:
-            self.criterionOFFSET = offset_Loss_sonnet(224, 224)
+    # def make_HQ_model(self, model_type, num_token):
+    #     self.mask_decoder.make_HQ_module(model_type, self.prompt_embed_dim, num_token=num_token, #)
+    #     HQ_transformer = TwoWayTransformer(
+    #         depth=2,
+    #         embedding_dim=self.prompt_embed_dim,
+    #         mlp_dim=2048,
+    #         num_heads=8,
+    #     ),)
+    #
+    #     self.mask_decoder.make_local_module(model_type, self.prompt_embed_dim,
+    #                                         local_transformer=TwoWayTransformer(
+    #                                         depth=2,
+    #                                         embedding_dim=self.prompt_embed_dim,
+    #                                         mlp_dim=2048,
+    #                                         num_heads=8,
+    #                                         ), )
+    #
+    #
+    #     if num_token == 2:
+    #         self.criterionOFFSET = offset_Loss(224, 224)
+    #         # self.criterionOFFSET = offset_Loss(300, 300)
+    #     else:
+    #         self.criterionOFFSET = offset_Loss_sonnet(224, 224)
     def make_adapter2(self):
         self.image_encoder.make_adapter2()
 
