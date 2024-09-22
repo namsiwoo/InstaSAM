@@ -70,87 +70,92 @@ class MaskDecoder(nn.Module):
         )
 
         self.num_hq_token = 2
-        self.HQ_transformer = transformer
         self.HQ_mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
         self.HQ_token = nn.Embedding(self.num_hq_token, transformer_dim)
-        self.HQ_mlp = nn.ModuleList(
-            [
-                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-                for i in range(self.num_hq_token)
-            ]
-        )
-        self.HQ_mask_mlp = nn.ModuleList(
-            [
-                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-                for i in range(self.num_mask_tokens)
-            ]
-        )
-
-        self.HQ_output_upscaling_mask = nn.Sequential(
-            nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
-            LayerNorm2d(transformer_dim // 4),
-            nn.GELU(),
-            nn.ConvTranspose2d(transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2),
-            nn.GELU(),
-        )
-
-        #for HQ SAM
-
-    def copy_param(self, ori, new):
-        mp = list(new.parameters())
-        mcp = list(ori.parameters())
-        n = len(mp)
-        for i in range(0, n):
-            mp[i].data[:] = mcp[i].data[:]
-    def make_HQ_module(self, model_type, transformer_dim, num_token=1, HQ_transformer=None, local_transformer=None):
-        vit_dim_dict = {"vit_b": 768, "medsam": 768, "vit_l": 1024, "vit_h": 1280}
-        vit_dim = vit_dim_dict[model_type]
-
-
-        # self.HQ_transformer = copy.deepcopy(self.transformer)
-        self.copy_param(self.transformer, self.HQ_transformer)
-        self.HQ_transformer.requires_grad_(True)
-
-        # self.HQ_mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
         self.HQ_mask_tokens2.weight = self.mask_tokens.weight
-        self.HQ_mask_tokens2.requires_grad_(True)
-
-        # self.HQ_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings:
         self.HQ_token.weight = self.mask_tokens.weight
-        self.HQ_token.requires_grad_(True)
 
-        # self.HQ_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
-        self.copy_param(self.output_hypernetworks_mlps, self.HQ_mlp)
-        self.HQ_mlp.requires_grad_(True)
+    #     self.HQ_transformer = transformer
 
-        # self.HQ_mask_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
-        self.copy_param(self.output_hypernetworks_mlps, self.HQ_mask_mlp)
-        self.HQ_mask_mlp.requires_grad_(True)
 
-        # self.HQ_output_upscaling_mask = copy.deepcopy(self.output_upscaling)
-        self.copy_param(self.output_upscaling, self.HQ_output_upscaling_mask)
-        self.HQ_output_upscaling_mask.requires_grad_(True)
-
-        self.num_hq_token = num_token
-
-        # self.compress_vit_feat = nn.Sequential(
-        #     nn.ConvTranspose2d(vit_dim, transformer_dim, kernel_size=2, stride=2),
-        #     LayerNorm2d(transformer_dim),
-        #     nn.GELU(),
-        #     nn.ConvTranspose2d(transformer_dim, transformer_dim // 8, kernel_size=2, stride=2))
-        #
-        # self.embedding_encoder = nn.Sequential(
-        #     nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
-        #     LayerNorm2d(transformer_dim // 4),
-        #     nn.GELU(),
-        #     nn.ConvTranspose2d(transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2),
-        # )
-        #
-        # self.embedding_maskfeature = nn.Sequential(
-        #     nn.Conv2d(transformer_dim // 8, transformer_dim // 4, 3, 1, 1),
-        #     LayerNorm2d(transformer_dim // 4),
-        #     nn.GELU(),
-        #     nn.Conv2d(transformer_dim // 4, transformer_dim // 8, 3, 1, 1))
+    #     self.HQ_mlp = nn.ModuleList(
+    #         [
+    #             MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+    #             for i in range(self.num_hq_token)
+    #         ]
+    #     )
+    #     self.HQ_mask_mlp = nn.ModuleList(
+    #         [
+    #             MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
+    #             for i in range(self.num_mask_tokens)
+    #         ]
+    #     )
+    #
+    #     self.HQ_output_upscaling_mask = nn.Sequential(
+    #         nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
+    #         LayerNorm2d(transformer_dim // 4),
+    #         nn.GELU(),
+    #         nn.ConvTranspose2d(transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2),
+    #         nn.GELU(),
+    #     )
+    #
+    #     #for HQ SAM
+    #
+    # def copy_param(self, ori, new):
+    #     mp = list(new.parameters())
+    #     mcp = list(ori.parameters())
+    #     n = len(mp)
+    #     for i in range(0, n):
+    #         mp[i].data[:] = mcp[i].data[:]
+    # def make_HQ_module(self, model_type, transformer_dim, num_token=1, HQ_transformer=None, local_transformer=None):
+    #     vit_dim_dict = {"vit_b": 768, "medsam": 768, "vit_l": 1024, "vit_h": 1280}
+    #     vit_dim = vit_dim_dict[model_type]
+    #
+    #
+    #     # self.HQ_transformer = copy.deepcopy(self.transformer)
+    #     self.copy_param(self.transformer, self.HQ_transformer)
+    #     self.HQ_transformer.requires_grad_(True)
+    #
+    #     # self.HQ_mask_tokens2 = nn.Embedding(self.num_mask_tokens, transformer_dim)
+    #     self.HQ_mask_tokens2.weight = self.mask_tokens.weight
+    #     self.HQ_mask_tokens2.requires_grad_(True)
+    #
+    #     # self.HQ_token = nn.Embedding(num_token, transformer_dim)  # num_embeddings:
+    #     self.HQ_token.weight = self.mask_tokens.weight
+    #     self.HQ_token.requires_grad_(True)
+    #
+    #     # self.HQ_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
+    #     self.copy_param(self.output_hypernetworks_mlps, self.HQ_mlp)
+    #     self.HQ_mlp.requires_grad_(True)
+    #
+    #     # self.HQ_mask_mlp = copy.deepcopy(self.output_hypernetworks_mlps)
+    #     self.copy_param(self.output_hypernetworks_mlps, self.HQ_mask_mlp)
+    #     self.HQ_mask_mlp.requires_grad_(True)
+    #
+    #     # self.HQ_output_upscaling_mask = copy.deepcopy(self.output_upscaling)
+    #     self.copy_param(self.output_upscaling, self.HQ_output_upscaling_mask)
+    #     self.HQ_output_upscaling_mask.requires_grad_(True)
+    #
+    #     self.num_hq_token = num_token
+    #
+    #     # self.compress_vit_feat = nn.Sequential(
+    #     #     nn.ConvTranspose2d(vit_dim, transformer_dim, kernel_size=2, stride=2),
+    #     #     LayerNorm2d(transformer_dim),
+    #     #     nn.GELU(),
+    #     #     nn.ConvTranspose2d(transformer_dim, transformer_dim // 8, kernel_size=2, stride=2))
+    #     #
+    #     # self.embedding_encoder = nn.Sequential(
+    #     #     nn.ConvTranspose2d(transformer_dim, transformer_dim // 4, kernel_size=2, stride=2),
+    #     #     LayerNorm2d(transformer_dim // 4),
+    #     #     nn.GELU(),
+    #     #     nn.ConvTranspose2d(transformer_dim // 4, transformer_dim // 8, kernel_size=2, stride=2),
+    #     # )
+    #     #
+    #     # self.embedding_maskfeature = nn.Sequential(
+    #     #     nn.Conv2d(transformer_dim // 8, transformer_dim // 4, 3, 1, 1),
+    #     #     LayerNorm2d(transformer_dim // 4),
+    #     #     nn.GELU(),
+    #     #     nn.Conv2d(transformer_dim // 4, transformer_dim // 8, 3, 1, 1))
 
     def make_local_module(self, model_type, transformer_dim, local_transformer=None):
         import copy
@@ -197,15 +202,8 @@ class MaskDecoder(nn.Module):
         """
 
         if mask_token_only == True:
-            # if local_path == True:
-            #     masks, iou_preds = self.predict_masks_local( #, mask_feat
-            #         image_embeddings=image_embeddings,
-            #         image_pe=image_pe,
-            #         sparse_prompt_embeddings=sparse_prompt_embeddings,
-            #         dense_prompt_embeddings=dense_prompt_embeddings,
-            #     )
-            # else:
-                masks, iou_preds = self.predict_masks(
+            if local_path == True:
+                masks, iou_preds = self.predict_masks_local( #, mask_feat
                     image_embeddings=image_embeddings,
                     image_pe=image_pe,
                     sparse_prompt_embeddings=sparse_prompt_embeddings,
@@ -238,54 +236,50 @@ class MaskDecoder(nn.Module):
         iou_preds = iou_preds[:, mask_slice]
         if mask_token_only == True:
             if local_path == True:
-            # Prepare output
                 return masks_sam, iou_preds#, mask_feat
-            else:
-                return masks_sam, iou_preds
-
 
         else:
             masks_hq = masks[:, slice(self.num_mask_tokens, self.num_mask_tokens + self.num_hq_token), :, :]
             return masks_sam, masks_hq, mask_feat
 
-    def predict_masks(
-        self,
-        image_embeddings: torch.Tensor,
-        image_pe: torch.Tensor,
-        sparse_prompt_embeddings: torch.Tensor,
-        dense_prompt_embeddings: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Predicts masks. See 'forward' for more details."""
-        # Concatenate output tokens
-        output_tokens = torch.cat([self.iou_token.weight, self.mask_tokens.weight], dim=0)
-        output_tokens = output_tokens.unsqueeze(0).expand(sparse_prompt_embeddings.size(0), -1, -1)
-        tokens = torch.cat((output_tokens, sparse_prompt_embeddings), dim=1)
-
-        # Expand per-image data in batch direction to be per-mask
-        src = torch.repeat_interleave(image_embeddings, tokens.shape[0], dim=0)
-        src = src + dense_prompt_embeddings
-        pos_src = torch.repeat_interleave(image_pe, tokens.shape[0], dim=0)
-        b, c, h, w = src.shape
-
-        # Run the transformer
-        hs, src = self.transformer(src, pos_src, tokens)
-        iou_token_out = hs[:, 0, :]
-        mask_tokens_out = hs[:, 1 : (1 + self.num_mask_tokens), :]
-
-        # Upscale mask embeddings and predict masks using the mask tokens
-        src = src.transpose(1, 2).view(b, c, h, w)
-        upscaled_embedding = self.output_upscaling(src)
-        hyper_in_list: List[torch.Tensor] = []
-        for i in range(self.num_mask_tokens):
-            hyper_in_list.append(self.output_hypernetworks_mlps[i](mask_tokens_out[:, i, :]))
-        hyper_in = torch.stack(hyper_in_list, dim=1)
-        b, c, h, w = upscaled_embedding.shape
-        masks = (hyper_in @ upscaled_embedding.view(b, c, h * w)).view(b, -1, h, w)
-
-        # Generate mask quality predictions
-        iou_pred = self.iou_prediction_head(iou_token_out)
-
-        return masks, iou_pred
+    # def predict_masks(
+    #     self,
+    #     image_embeddings: torch.Tensor,
+    #     image_pe: torch.Tensor,
+    #     sparse_prompt_embeddings: torch.Tensor,
+    #     dense_prompt_embeddings: torch.Tensor,
+    # ) -> Tuple[torch.Tensor, torch.Tensor]:
+    #     """Predicts masks. See 'forward' for more details."""
+    #     # Concatenate output tokens
+    #     output_tokens = torch.cat([self.iou_token.weight, self.mask_tokens.weight], dim=0)
+    #     output_tokens = output_tokens.unsqueeze(0).expand(sparse_prompt_embeddings.size(0), -1, -1)
+    #     tokens = torch.cat((output_tokens, sparse_prompt_embeddings), dim=1)
+    #
+    #     # Expand per-image data in batch direction to be per-mask
+    #     src = torch.repeat_interleave(image_embeddings, tokens.shape[0], dim=0)
+    #     src = src + dense_prompt_embeddings
+    #     pos_src = torch.repeat_interleave(image_pe, tokens.shape[0], dim=0)
+    #     b, c, h, w = src.shape
+    #
+    #     # Run the transformer
+    #     hs, src = self.transformer(src, pos_src, tokens)
+    #     iou_token_out = hs[:, 0, :]
+    #     mask_tokens_out = hs[:, 1 : (1 + self.num_mask_tokens), :]
+    #
+    #     # Upscale mask embeddings and predict masks using the mask tokens
+    #     src = src.transpose(1, 2).view(b, c, h, w)
+    #     upscaled_embedding = self.output_upscaling(src)
+    #     hyper_in_list: List[torch.Tensor] = []
+    #     for i in range(self.num_mask_tokens):
+    #         hyper_in_list.append(self.output_hypernetworks_mlps[i](mask_tokens_out[:, i, :]))
+    #     hyper_in = torch.stack(hyper_in_list, dim=1)
+    #     b, c, h, w = upscaled_embedding.shape
+    #     masks = (hyper_in @ upscaled_embedding.view(b, c, h * w)).view(b, -1, h, w)
+    #
+    #     # Generate mask quality predictions
+    #     iou_pred = self.iou_prediction_head(iou_token_out)
+    #
+    #     return masks, iou_pred
 
     def predict_masks_local(
         self,
