@@ -555,7 +555,7 @@ class SAM(nn.Module):
             if self.type == 3:
                 self.space_query, self.channel_query = self.discriminator(interm_embeddings, interm_embeddings2)
 
-
+        del interm_embeddings, interm_embeddings2, features2, features
         # self.pred_mask = self.postprocess_masks(masks, self.inp_size, (300, 300))
         # self.masks_hq = self.postprocess_masks(masks_hq, self.inp_size, (300, 300))
 
