@@ -229,10 +229,10 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
     def __getitem__(self, index):
         if self.split == 'train':
             img_name = self.samples[1][random.randint(0, len(self.samples[1])-1)]
-            img2 = Image.open(os.path.join(self.data2, self.path2, self.split, img_name)).convert('L').convert('RGB') #'RGB'
+            img2 = Image.open(os.path.join(self.data2, self.path2, self.split, img_name)).convert('RGB') #'RGB' #.convert('L')
 
             img_name = self.samples[0][index % len(self.samples[0])]
-            img1 = Image.open(os.path.join(self.data1, self.path1, self.split, img_name)).convert('L').convert('RGB') #'RGB'
+            img1 = Image.open(os.path.join(self.data1, self.path1, self.split, img_name)).convert('RGB') #'RGB'
             if self.use_mask == True:
                 box_label = np.array(Image.open(os.path.join(self.data1, 'labels_instance', self.split, img_name[:-4]+self.ext1)))
                 box_label = skimage.morphology.label(box_label)
@@ -245,7 +245,7 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 sample = [img1, img2, point]
         else:
             img_name = self.samples[index % len(self.samples)]
-            img2 = Image.open(os.path.join(self.data2, self.path2, self.split, img_name)).convert('L').convert('RGB') #'RGB'
+            img2 = Image.open(os.path.join(self.data2, self.path2, self.split, img_name)).convert('RGB') #'RGB'
 
             mask = Image.open(os.path.join(self.data2, 'labels_instance', self.split, img_name[:-4]+self.ext2))
             sample = [img2, mask]
