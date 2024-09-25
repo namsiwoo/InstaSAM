@@ -519,7 +519,7 @@ class SAM(nn.Module):
             bs, -1, self.image_embedding_size, self.image_embedding_size
         )
 
-        masks, masks_hq = self.mask_decoder(
+        masks, masks_hq, _ = self.mask_decoder(
             image_embeddings=features,
             image_pe=self.prompt_encoder.get_dense_pe(),
             sparse_prompt_embeddings=sparse_embeddings,
@@ -539,7 +539,7 @@ class SAM(nn.Module):
 
         # 2
         else:
-            masks, masks_hq = self.mask_decoder(
+            masks, masks_hq, _ = self.mask_decoder(
                 image_embeddings=features2,
                 image_pe=self.prompt_encoder.get_dense_pe(),
                 sparse_prompt_embeddings=sparse_embeddings,
