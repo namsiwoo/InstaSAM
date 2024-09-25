@@ -141,7 +141,6 @@ class ImageEncoderViT(nn.Module):
                                                 self.img_size, self.patch_size)
 
     def make_adapter2(self):
-
         self.adapter2 = True
     def forward(self, x: torch.Tensor, mk_p_label=False):
         inp = x

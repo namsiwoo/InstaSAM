@@ -20,12 +20,14 @@ def show_anns(anns, borders=True):
 
     img = np.zeros((sorted_anns[0]['segmentation'].shape[0], sorted_anns[0]['segmentation'].shape[1], 3))
     mask = np.zeros((sorted_anns[0]['segmentation'].shape[0], sorted_anns[0]['segmentation'].shape[1]))
+    mask_prob = np.zeros((len(sorted_anns), sorted_anns[0]['segmentation'].shape[0], sorted_anns[0]['segmentation'].shape[1]))
 
     for i, ann in enumerate(sorted_anns):
         m = ann['segmentation']
         color_mask = np.concatenate([np.random.random(3)])
         img[m] = color_mask
         mask[m] = i+1
+        mask_prob[i] = ann['']
 
     return img, mask
 
@@ -96,6 +98,7 @@ def main(data_root, save_root):
         img = np.array(Image.open(img_path).convert('RGB'))
         mask = mask_generator.generate(img)
         img, mask = show_anns(mask)
+        entropy = -torch.sum(mask * torch.log(mask + 1e-10), dim=0)
 
         img = Image.fromarray((img*255).astype(np.uint8))
         img.save(os.path.join(save_root, 'vis', img_name))

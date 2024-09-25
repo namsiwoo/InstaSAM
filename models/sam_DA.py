@@ -510,8 +510,8 @@ class SAM(nn.Module):
 
     def forward(self):  # , point_prompt=None
         bs = len(self.input1)
-        features, interm_embeddings = self.image_encoder(self.input1)
-        features2, interm_embeddings2 = self.image_encoder(self.input2)
+        _, interm_embeddings, features = self.image_encoder(self.input1, mk_p_label=True)
+        features2, interm_embeddings2, _ = self.image_encoder(self.input2, mk_p_label=True)
 
         # Embed prompts
         sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.input1.device)
