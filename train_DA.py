@@ -606,6 +606,7 @@ if __name__ == '__main__':
     parser.add_argument('--semi', action='store_true')
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--test', action='store_true')
+    parser.add_argument('--adapter2',action='store_true')
 
     parser.add_argument('--data1',default='MoNuSeg',help='MoNuSeg, CPM 17, CoNSeP, TNBC')
     parser.add_argument('--data2',default='MoNuSeg',help='MoNuSeg, CPM 17, CoNSeP, TNBC')
