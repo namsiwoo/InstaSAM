@@ -161,7 +161,7 @@ class ImageEncoderViT(nn.Module):
 
         B, H, W = x.shape[0], x.shape[1], x.shape[2]
         interm_embeddings = []
-        outs = []
+        # outs = []
         for i, blk in enumerate(self.blocks):
             x = prompt[i].reshape(B, H, W, -1) + x
             x = blk(x)
@@ -178,8 +178,8 @@ class ImageEncoderViT(nn.Module):
             if mk_p_label == True:
                 x_ori=blk(x_ori)
 
-            if i in self.out_indices:
-                outs.append(x)
+            # if i in self.out_indices:
+            #     outs.append(x)
 
         x = self.neck(x.permute(0, 3, 1, 2))
 
