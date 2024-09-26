@@ -204,6 +204,8 @@ class SAM(nn.Module):
         self.no_mask_embed = nn.Embedding(1, encoder_mode['prompt_embed_dim'])
 
         self.embed_dim = encoder_mode['embed_dim']
+
+        self.adapter2=False
         # self.HQ_model = MaskDecoderHQ('vit_h')
 
         # HQ_module = self.HQ_model.modules
