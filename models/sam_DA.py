@@ -233,6 +233,7 @@ class SAM(nn.Module):
             self.criterionOFFSET = offset_Loss_sonnet(224, 224)
     def make_adapter2(self):
         self.image_encoder.make_adapter2()
+        self.adapter2 = True
 
     def set_input(self, input1, input2, gt_mask=None, clu=None, vor=None):
         self.input1 = input1.to(self.device)
@@ -510,8 +511,13 @@ class SAM(nn.Module):
 
     def forward(self):  # , point_prompt=None
         bs = len(self.input1)
-        _, interm_embeddings, features = self.image_encoder(self.input1, mk_p_label=True)
-        features2, interm_embeddings2, _ = self.image_encoder(self.input2, mk_p_label=True)
+
+        if self.adapter2:
+            _, interm_embeddings, features = self.image_encoder(self.input1, mk_p_label=True)
+            features2, interm_embeddings2, _ = self.image_encoder(self.input2, mk_p_label=True)
+        else:
+            features, interm_embeddings  = self.image_encoder(self.input1)
+            features2, interm_embeddings2 = self.image_encoder(self.input2)
 
         # Embed prompts
         sparse_embeddings = torch.empty((bs, 0, self.prompt_embed_dim), device=self.input1.device)
