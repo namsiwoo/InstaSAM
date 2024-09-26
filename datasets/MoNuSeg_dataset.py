@@ -410,7 +410,7 @@ class gt_with_weak_dataset(torch.utils.data.Dataset):
 
                 # box_label = Image.open(os.path.join('/media/NAS/nas_70/siwoo_data/UDA_citycapes/CoNSeP/masks', img_name))
                 # box_label = Image.open(os.path.join('/media/NAS/nas_70/siwoo_data/UDA_citycapes/TNBC/masks', img_name))
-                box_label = Image.open(os.path.join('/media/NAS/nas_70/siwoo_data/UDA_citycapes/TNBC_sam/masks', img_name))
+                box_label = Image.open(os.path.join('/media/NAS/nas_70/siwoo_data/UDA_citycapes/TNBC_sam2/masks', img_name))
 
                 # 3) do image augmentation
                 sample = [img, box_label, point]  # , new_mask
