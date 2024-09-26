@@ -169,11 +169,15 @@ class ImageEncoderViT(nn.Module):
                 x2 = prompt2[i].reshape(B, H, W, -1) + x2
                 x2 = blk(x2)
 
+                if blk.window_size == 0:
+                    interm_embeddings.append(x2.detach())
+            else:
+                if blk.window_size == 0:
+                    interm_embeddings.append(x.detach())
+
             if mk_p_label == True:
                 x_ori=blk(x_ori)
 
-            if blk.window_size == 0:
-                interm_embeddings.append(x.detach())
             if i in self.out_indices:
                 outs.append(x)
 
