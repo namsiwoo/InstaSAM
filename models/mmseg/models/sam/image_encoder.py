@@ -170,10 +170,10 @@ class ImageEncoderViT(nn.Module):
                 x2 = blk(x2)
 
                 if blk.window_size == 0:
-                    interm_embeddings.append(x2.detach())
+                    interm_embeddings.append(x2)
             else:
                 if blk.window_size == 0:
-                    interm_embeddings.append(x.detach())
+                    interm_embeddings.append(x)
 
             if mk_p_label == True:
                 x_ori=blk(x_ori)
