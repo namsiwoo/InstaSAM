@@ -196,6 +196,7 @@ class SAM(nn.Module):
         elif self.loss_mode == 'iou':
             self.criterionBCE = torch.nn.BCEWithLogitsLoss(reduction='none') # reduction='none' ,  pos_weight=torch.tensor(5)
             self.criterionMSE = torch.nn.MSELoss()
+            self.criterionL1 = torch.nn.L1Loss()
             self.criterionIOU = IOU()
 
         # self.pe_layer = PositionEmbeddingRandom(encoder_mode['prompt_embed_dim'] // 2)
@@ -207,7 +208,8 @@ class SAM(nn.Module):
 
         self.adapter2=False
 
-        self.recon_net = simple_unet.ConvAutoencoder(1, 1)
+        # self.recon_net = simple_unet.ConvAutoencoder(1, 1)
+        seff.recon_net = simple_unet.ResWNet34(2, 1)
         # self.HQ_model = MaskDecoderHQ('vit_h')
 
         # HQ_module = self.HQ_model.modules
@@ -635,8 +637,8 @@ class SAM(nn.Module):
         recon = self.recon_net(self.pred_mask)
         recon2 = self.recon_net(self.pred_mask2)
 
-        recon_loss1 = self.criterionMSE(recon, self.input1_L)
-        recon_loss2 = self.criterionMSE(recon2, self.input2_L)
+        recon_loss1 = self.criterionL1(recon, self.input1_L)
+        recon_loss2 = self.criterionL1(recon2, self.input2_L)
 
         return recon_loss1+recon_loss2
 
