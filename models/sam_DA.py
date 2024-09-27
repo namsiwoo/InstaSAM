@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models import register
+from models import register, simple_unet
 from .mmseg.models.sam import ImageEncoderViT, ImageEncoderViT_DA, MaskDecoder, TwoWayTransformer, PromptEncoder
 from .mmseg.models.sam.AQT_utils import Domain_adapt, GradientReversal, MLP, Discriminator
 from utils.loss_offset import offset_Loss, offset_Loss_sonnet
@@ -206,6 +206,8 @@ class SAM(nn.Module):
         self.embed_dim = encoder_mode['embed_dim']
 
         self.adapter2=False
+
+        self.recon_net = simple_unet.ConvAutoencoder(3, 3)
         # self.HQ_model = MaskDecoderHQ('vit_h')
 
         # HQ_module = self.HQ_model.modules
@@ -237,12 +239,15 @@ class SAM(nn.Module):
         self.image_encoder.make_adapter2()
         self.adapter2 = True
 
-    def set_input(self, input1, input2, gt_mask=None, clu=None, vor=None):
+    def set_input(self, input1, input2, input1_L, input2_L, gt_mask=None, clu=None, vor=None):
         self.input1 = input1.to(self.device)
         self.input1 = F.interpolate(self.input1, (self.inp_size, self.inp_size), mode='bilinear', align_corners=True)
 
         self.input2 = input2.to(self.device)
         self.input2 = F.interpolate(self.input2, (self.inp_size, self.inp_size), mode='bilinear', align_corners=True)
+
+        self.input1_L = input1_L.to(self.device)
+        self.input2_L = input2_L.to(self.device)
         if gt_mask is not None:
             self.gt_mask = gt_mask.to(self.device)
         if clu is not None:
@@ -623,11 +628,22 @@ class SAM(nn.Module):
 
         return space_loss, channel_loss
 
+    def backward_recon(self):
+        recon = self.recon_net(torch.cat([self.pred_mask, self.masks_hq], dim=1))
+        recon2 = self.recon_net(torch.cat([self.pred_mask2, self.masks_hq2], dim=1))
+
+        recon_loss1 = self.criterionMSE(recon, self.input1_L)
+        recon_loss2 = self.criterionMSE(recon2, self.input2_L)
+
+        return recon_loss1+recon_loss2
+
     def optimize_parameters(self, point_prompt=None, img_name=None, semi=False, epoch=0):
         #train Generator....
         self.forward() #point_prompt
         bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
         space_loss, channel_loss = self.backward_G_dis(offset_gt)
+        recon_loss = self.backward_recon()
+        self.loss_G = bce_loss + iou_loss + offset_loss + recon_loss
         if self.type ==3:
             self.loss_G = bce_loss + iou_loss + offset_loss + space_loss[0] + space_loss[1] + channel_loss[0] + channel_loss[1]
             # space_loss = space_loss[0]
