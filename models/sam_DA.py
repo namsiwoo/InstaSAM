@@ -208,7 +208,7 @@ class SAM(nn.Module):
 
         self.adapter2=False
 
-        self.recon_net = simple_unet.ConvAutoencoder(1, 1)
+        self.recon_net = simple_unet.ConvAutoencoder(3, 1)
         # self.recon_net = simple_unet.ResWNet34(2, 1)
         # self.HQ_model = MaskDecoderHQ('vit_h')
 
@@ -631,11 +631,11 @@ class SAM(nn.Module):
         return space_loss, channel_loss
 
     def backward_recon(self):
-        # recon = self.recon_net(torch.cat([self.pred_mask.detach(), self.masks_hq.detach()], dim=1))
-        # recon2 = self.recon_net(torch.cat([self.pred_mask2.detach(), self.masks_hq2.detach()], dim=1))
+        recon = self.recon_net(torch.cat([self.pred_mask.detach(), self.masks_hq.detach()], dim=1))
+        recon2 = self.recon_net(torch.cat([self.pred_mask2.detach(), self.masks_hq2.detach()], dim=1))
 
-        recon = self.recon_net(self.pred_mask)
-        recon2 = self.recon_net(self.pred_mask2)
+        # recon = self.recon_net(self.pred_mask)
+        # recon2 = self.recon_net(self.pred_mask2)
 
         recon_loss1 = self.criterionL1(recon, self.input1_L)
         recon_loss2 = self.criterionL1(recon2, self.input2_L)
