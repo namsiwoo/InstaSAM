@@ -632,8 +632,8 @@ class SAM(nn.Module):
         # recon = self.recon_net(torch.cat([self.pred_mask.detach(), self.masks_hq.detach()], dim=1))
         # recon2 = self.recon_net(torch.cat([self.pred_mask2.detach(), self.masks_hq2.detach()], dim=1))
 
-        recon = self.recon_net(self.pred_mask.detach())
-        recon2 = self.recon_net(self.pred_mask2.detach())
+        recon = self.recon_net(self.pred_mask)
+        recon2 = self.recon_net(self.pred_mask2)
 
         recon_loss1 = self.criterionMSE(recon, self.input1_L)
         recon_loss2 = self.criterionMSE(recon2, self.input2_L)
@@ -646,13 +646,13 @@ class SAM(nn.Module):
         bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
         space_loss, channel_loss = self.backward_G_dis(offset_gt)
         recon_loss = self.backward_recon()
-        self.loss_G = bce_loss + iou_loss + offset_loss + recon_loss
-        # if self.type ==3:
-        #     self.loss_G = bce_loss + iou_loss + offset_loss + space_loss[0] + space_loss[1] + channel_loss[0] + channel_loss[1] + recon_loss
-        #     # space_loss = space_loss[0]
-        #     # channel_loss = channel_loss[0]
-        # else:
-        #     self.loss_G = bce_loss + iou_loss + offset_loss +space_loss + channel_loss
+        # self.loss_G = bce_loss + iou_loss + offset_loss + recon_loss
+        if self.type ==3:
+            self.loss_G = bce_loss + iou_loss + offset_loss + space_loss[0] + space_loss[1] + channel_loss[0] + channel_loss[1] + recon_loss
+            # space_loss = space_loss[0]
+            # channel_loss = channel_loss[0]
+        else:
+            self.loss_G = bce_loss + iou_loss + offset_loss +space_loss + channel_loss
 
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
@@ -661,7 +661,7 @@ class SAM(nn.Module):
         del self.loss_G, self.pred_mask2, self.masks_hq2
         # train discriminator....
 
-        if epoch >100000 == 0:
+        if epoch % 5 == 0:
             self.forward()
             space_loss, channel_loss = self.backward_G_dis(offset_gt)
 
