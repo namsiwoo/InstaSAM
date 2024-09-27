@@ -210,7 +210,7 @@ def main(args):
             img2_L = batch[0][3]
             img_name = batch[1][0]
             if args.sup == True:
-                label = batch[0][2].squeeze(1)
+                label = batch[0][4].squeeze(1)
                 # point = batch[0][2]
                 sam_model.set_input(img, img2, img_L, img2_L, label)
                 low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, space_loss1, space_loss2, channel_loss1, channel_loss2, offset_gt = sam_model.optimize_parameters(epoch=epoch) # point, epoch, batch[1][0]

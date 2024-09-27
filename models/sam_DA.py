@@ -208,8 +208,8 @@ class SAM(nn.Module):
 
         self.adapter2=False
 
-        # self.recon_net = simple_unet.ConvAutoencoder(1, 1)
-        self.recon_net = simple_unet.ResWNet34(2, 1)
+        self.recon_net = simple_unet.ConvAutoencoder(1, 1)
+        # self.recon_net = simple_unet.ResWNet34(2, 1)
         # self.HQ_model = MaskDecoderHQ('vit_h')
 
         # HQ_module = self.HQ_model.modules
@@ -525,7 +525,7 @@ class SAM(nn.Module):
             _, interm_embeddings, features = self.image_encoder(self.input1, mk_p_label=True)
             features2, interm_embeddings2, _ = self.image_encoder(self.input2, mk_p_label=True)
         else:
-            features, interm_embeddings  = self.image_encoder(self.input1)
+            features, interm_embeddings = self.image_encoder(self.input1)
             features2, interm_embeddings2 = self.image_encoder(self.input2)
 
         # Embed prompts
@@ -648,13 +648,13 @@ class SAM(nn.Module):
         bce_loss, offset_loss, iou_loss, offset_gt = self.backward_G()  # calculate graidents for G
         space_loss, channel_loss = self.backward_G_dis(offset_gt)
         recon_loss = self.backward_recon()
-        # self.loss_G = bce_loss + iou_loss + offset_loss + recon_loss
-        if self.type ==3:
-            self.loss_G = bce_loss + iou_loss + offset_loss + space_loss[0] + space_loss[1] + channel_loss[0] + channel_loss[1] + recon_loss
-            # space_loss = space_loss[0]
-            # channel_loss = channel_loss[0]
-        else:
-            self.loss_G = bce_loss + iou_loss + offset_loss +space_loss + channel_loss
+        self.loss_G = bce_loss + iou_loss + offset_loss + recon_loss
+        # if self.type ==3:
+        #     self.loss_G = bce_loss + iou_loss + offset_loss + space_loss[0] + space_loss[1] + channel_loss[0] + channel_loss[1] + recon_loss
+        #     # space_loss = space_loss[0]
+        #     # channel_loss = channel_loss[0]
+        # else:
+        #     self.loss_G = bce_loss + iou_loss + offset_loss +space_loss + channel_loss
 
         self.optimizer.zero_grad()  # set G's gradients to zero
         self.loss_G.backward()
@@ -663,7 +663,7 @@ class SAM(nn.Module):
         del self.loss_G, self.pred_mask2, self.masks_hq2
         # train discriminator....
 
-        if epoch % 5 == 0:
+        if epoch > 5 == 0:
             self.forward()
             space_loss, channel_loss = self.backward_G_dis(offset_gt)
 
