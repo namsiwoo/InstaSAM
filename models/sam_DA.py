@@ -630,7 +630,7 @@ class SAM(nn.Module):
 
     def backward_recon(self):
         # recon = self.recon_net(torch.cat([self.pred_mask.detach(), self.masks_hq.detach()], dim=1))
-        recon2 = self.recon_net(torch.cat([self.pred_mask2.detach(), self.masks_hq2.detach()], dim=1))
+        # recon2 = self.recon_net(torch.cat([self.pred_mask2.detach(), self.masks_hq2.detach()], dim=1))
 
         recon = self.recon_net(self.pred_mask.detach())
         recon2 = self.recon_net(self.pred_mask2.detach())
