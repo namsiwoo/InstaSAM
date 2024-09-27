@@ -598,10 +598,10 @@ class SAM(nn.Module):
         else:
             dis_gt = self.netD_mask(self.gt_mask.unsqueeze(0).float())
             dis_offset = self.netD_offset(offset_gt.float())
-            space_query1 = self.netD_mask(self.pred_mask.detach())
-            space_query2 = self.netD_mask(self.pred_mask2.detach())
-            channel_query1 = self.netD_offset(self.masks_hq.detach())
-            channel_query2 = self.netD_offset(self.masks_hq2.detach())
+            space_query1 = self.netD_mask(self.pred_mask)
+            space_query2 = self.netD_mask(self.pred_mask2)
+            channel_query1 = self.netD_offset(self.masks_hq)
+            channel_query2 = self.netD_offset(self.masks_hq2)
 
             real_label = torch.ones_like(dis_gt).to(self.device)
             fake_label = torch.zeros_like(dis_gt).to(self.device)
