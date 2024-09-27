@@ -209,7 +209,7 @@ class SAM(nn.Module):
         self.adapter2=False
 
         # self.recon_net = simple_unet.ConvAutoencoder(1, 1)
-        seff.recon_net = simple_unet.ResWNet34(2, 1)
+        self.recon_net = simple_unet.ResWNet34(2, 1)
         # self.HQ_model = MaskDecoderHQ('vit_h')
 
         # HQ_module = self.HQ_model.modules
