@@ -237,7 +237,7 @@ class DA_dataset(torch.utils.data.Dataset): #MO, CPM, CoNSeP
                 box_label = np.array(Image.open(os.path.join(self.data1, 'labels_instance', self.split, img_name[:-4]+self.ext1)))
                 box_label = skimage.morphology.label(box_label)
                 box_label = Image.fromarray(box_label.astype(np.uint16))
-                sample = [img1.convert('L').convert('RGB'), img2.convert('L').convert('RGB'), img1.convert('L'), img2.convert('L'), box_label]
+                sample = [img1.convert('L').convert('RGB'), img2.convert('L').convert('RGB'), img1, img2, box_label]
             else:
                 point = Image.open(os.path.join(self.data1, 'labels_point', self.split, img_name[:-4]+self.ext1)).convert('L')
                 point = binary_dilation(np.array(point), iterations=2)
