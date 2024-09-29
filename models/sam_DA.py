@@ -631,8 +631,8 @@ class SAM(nn.Module):
         return space_loss, channel_loss
 
     def backward_recon(self):
-        recon = self.recon_net(torch.cat([self.pred_mask.detach(), self.masks_hq.detach()], dim=1))
-        recon2 = self.recon_net(torch.cat([self.pred_mask2.detach(), self.masks_hq2.detach()], dim=1))
+        recon = self.recon_net(torch.cat([self.pred_mask, self.masks_hq], dim=1))
+        recon2 = self.recon_net(torch.cat([self.pred_mask2, self.masks_hq2], dim=1))
 
         # recon = self.recon_net(self.pred_mask)
         # recon2 = self.recon_net(self.pred_mask2)
