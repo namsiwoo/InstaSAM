@@ -5,16 +5,16 @@ from PIL import Image
 import numpy as np
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from datasets.MoNuSeg_dataset import Crop_dataset, DeepCell_dataset, MoNuSeg_weak_dataset, Galaxy_dataset, gt_with_weak_dataset, IHC_dataset
+from datasets.MoNuSeg_dataset import Weak_dataset
 
 import models
 
 from utils.utils import accuracy_object_level, AJI_fast, average_precision, save_checkpoint, load_checkpoint, mk_colored, get_fast_pq
 from utils.vis_flow import flow_to_color
-from utils.hv_process import make_instance_hv, make_instance_sonnet, make_instance_marker
+from utils.hv_process import make_instance_hv
 
-def split_forward(sam_model, input, sam_input_size, device, num_hq_token, size=224):
-    # size = 224
+def split_forward(sam_model, input, sam_input_size, device, num_hq_token):
+    size = 224
     overlap = 80
 
     b, c, h0, w0 = input.size()
@@ -107,8 +107,6 @@ def main(args):
             para.requires_grad_(False)
         if "prompt_encoder" in name:
             para.requires_grad_(False)
-        # if "mask_decoder" in name:
-        #     para.requires_grad_(False)
 
     sam_model.make_HQ_model(model_type=args.model_type, num_token=args.num_hq_token)
     if args.adapter2:
@@ -119,8 +117,6 @@ def main(args):
         sam_model = load_checkpoint(sam_model, args.ck_point)
 
     sam_model = sam_model.cuda()
-
-
 
     print(torch.cuda.memory_allocated() / 1024 / 1024, '******')
     model_total_params = sum(p.numel() for p in sam_model.parameters())
@@ -133,28 +129,8 @@ def main(args):
         else:
             print('********', name)
 
-    if args.data_type == 'crop':
-        train_dataset = Crop_dataset(args, 'train', use_mask=args.sup, data=args.data)
-        val_dataset = Crop_dataset(args, 'val', use_mask=args.sup, data=args.data)
-    elif args.data_type == 'npy_c':
-        train_dataset = DeepCell_dataset(args, 'train', use_mask=args.sup, data='cell')
-        val_dataset = DeepCell_dataset(args, 'val', use_mask=args.sup, data='cell')
-    elif args.data_type == 'npy_n':
-        train_dataset = DeepCell_dataset(args, 'train', use_mask=args.sup, data='nuclei')
-        val_dataset = DeepCell_dataset(args, 'val', use_mask=args.sup, data='nuclei')
-    elif args.data_type == 'gal':
-        train_dataset = Galaxy_dataset(args, 'train', use_mask=args.sup, data='nuclei')
-        val_dataset = Galaxy_dataset(args, 'val', use_mask=args.sup, data='nuclei')
-    elif args.data == 'DeepLIIF' or args.data == 'DeepLIIF_BC':
-        train_dataset = IHC_dataset(args, 'train', use_mask=args.sup, data=args.data_type)
-        val_dataset = IHC_dataset(args, 'val', use_mask=args.sup, data=args.data_type)
-    else:
-        if args.semi ==True:
-            train_dataset = gt_with_weak_dataset(args, 'train', sup=args.sup)
-            val_dataset = gt_with_weak_dataset(args, 'val', sup=args.sup)
-        else:
-            train_dataset = MoNuSeg_weak_dataset(args, 'train', sup=args.sup)
-            val_dataset = MoNuSeg_weak_dataset(args, 'val', sup=args.sup)
+    train_dataset = Weak_dataset(args, 'train', sup=args.sup)
+    val_dataset = Weak_dataset(args, 'val', sup=args.sup)
 
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, drop_last=True, num_workers=8)
     val_dataloader = DataLoader(val_dataset)
@@ -162,47 +138,20 @@ def main(args):
     max_Dice, max_Aji, best_epoch = 0, 0, 0
     total_train_loss = []
     for epoch in range(args.epochs):
-        if args.resume != 0:
-            epoch += args.resume
-
-    # if (epoch + 1) % 20 == 0:
-    #     sam_model = load_checkpoint(sam_model, os.path.join(args.model, str(epoch)+ '_model.pth'))
-
-        os.makedirs(os.path.join(args.result, 'img', str(epoch)), exist_ok=True)
         sam_model.train()
         train_loss = 0
 
         for iter, batch in enumerate(train_dataloader): # batch[0]
             img = batch[0][0]
             img_name = batch[1][0]
-            if args.sup == True:
-                label = batch[0][1].squeeze(1)
-                # point = batch[0][2]
-                sam_model.set_input(img, label)
-                low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt = sam_model.optimize_parameters() # point, epoch, batch[1][0]
-                bce_local_loss, iou_local_loss = 0, 0
-            else:
-                if args.semi == True:
-                    label = batch[0][1].squeeze(1)
-                    point = batch[0][2]
-                    sam_model.set_input(img, label)
-                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters_semi(
-                        point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)
-                else:
-                    # label = batch[0][1].squeeze(1)
-                    point = batch[0][1]
-                    sam_model.set_input(img)
-                    low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
-                        point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)  # point, epoch, batch[1][0]
-            # clu_label = batch[0][3].squeeze(1)
-            # vor_label = batch[0][4].squeeze(1)
+            point = batch[0][1]
+            sam_model.set_input(img)
+            low_res_masks, hq_mask, bce_loss, offset_loss, iou_loss, offset_gt, bce_local_loss, iou_local_loss = sam_model.optimize_parameters(
+                point, os.path.join(args.result, 'img', str(epoch), img_name + '.png'), args.semi, epoch)  # point, epoch, batch[1][0]
 
-
-            # bce_loss, offset_gt, offset_loss, iou_loss = backwards
-            # bce_local_loss, iou_local_loss = backwards_local
             lr_scheduler.step()
 
-            loss = bce_loss + iou_loss + 5*offset_loss + bce_local_loss + iou_local_loss #sam_model.loss_G.item()
+            loss = bce_loss + iou_loss + offset_loss + bce_local_loss + iou_local_loss
 
             train_loss += loss / len(train_dataloader)
 
@@ -215,119 +164,13 @@ def main(args):
                                                                                                         iou_loss,
                                                                                                         offset_loss, bce_local_loss, iou_local_loss))
 
-                if args.plt == True:
-                    import matplotlib.pyplot as plt
-
-                    def norm(img):
-                        return (img - np.min(img)) / (np.max(img) - np.min(img))
-
-                    plt.clf()
-                    img1 = norm(batch[0][0].detach().cpu().numpy()[0].transpose(1, 2, 0))
-                    if args.num_hq_token == 1:
-                        plt.subplot(1, 5, 1)
-                        plt.imshow(img1)
-                        plt.subplot(1, 5, 2)
-                        plt.imshow(low_res_masks.detach().cpu().numpy()[0, 0])
-
-                        from scipy.ndimage.morphology import binary_dilation
-                        point = binary_dilation(point.detach().cpu().numpy()[0, 0], iterations=2)
-                        plt.subplot(1, 5, 3)
-                        plt.imshow(point)
-
-                        plt.subplot(1, 5, 4)
-                        plt.imshow(offset_gt.detach().cpu().numpy()[0])
-                        plt.colorbar()
-                        plt.subplot(1, 5, 5)
-                        plt.imshow(hq_mask.detach().cpu().numpy()[0, 1])
-                    else:
-                        plt.subplot(2, 4, 1)
-                        plt.imshow(img1)
-                        plt.subplot(2, 4, 2)
-                        # plt.imshow(label.detach().cpu().numpy()[0])
-                        plt.imshow(low_res_masks.detach().cpu().numpy()[0, 0])
-
-                        if args.num_hq_token >= 3:
-                            plt.subplot(2, 4, 3)
-                            # plt.imshow(low_res_masks.detach().cpu().numpy()[0,0])
-                            plt.imshow(hq_mask.detach().cpu().numpy()[0, -1])
-                            plt.colorbar()
-
-                            plt.subplot(2, 4, 4)
-                            plt.imshow(offset_gt.detach().cpu().numpy()[0][-1])
-                            plt.colorbar()
-
-                        # plt.subplot(2, 4, 3)
-                        # plt.imshow(offset_gt.detach().cpu().numpy()[0][0]>1)
-                        # plt.colorbar()
-                        #
-                        # plt.subplot(2, 4, 4)
-                        # plt.imshow(offset_gt.detach().cpu().numpy()[0][0]<-1)
-                        # plt.colorbar()
-
-                        plt.subplot(2, 4, 5)
-                        plt.imshow(hq_mask.detach().cpu().numpy()[0, 0])
-                        plt.colorbar()
-
-                        plt.subplot(2, 4, 6)
-                        plt.imshow(hq_mask.detach().cpu().numpy()[0, 1])
-                        plt.colorbar()
-
-                        plt.subplot(1, 4, 3)
-                        # plt.imshow(point.numpy()[0][0])
-                        plt.imshow(offset_gt.detach().cpu().numpy()[0][0])
-                        plt.colorbar()
-
-                        plt.subplot(1, 4, 4)
-                        plt.imshow(offset_gt.detach().cpu().numpy()[0][1])
-                        plt.colorbar()
-
-
-
-                        # def colorize(ch, vmin=None, vmax=None):
-                        #     """Will clamp value value outside the provided range to vmax and vmin."""
-                        #     cmap = plt.get_cmap("jet")
-                        #     ch = np.squeeze(ch.astype("float32"))
-                        #     vmin = vmin if vmin is not None else ch.min()
-                        #     vmax = vmax if vmax is not None else ch.max()
-                        #     ch[ch > vmax] = vmax  # clamp value
-                        #     ch[ch < vmin] = vmin
-                        #     ch = (ch - vmin) / (vmax - vmin + 1.0e-16)
-                        #     # take RGB from RGBA heat map
-                        #     ch_cmap = (cmap(ch)[..., :3] * 255).astype("uint8")
-                        #     return ch_cmap
-                        #
-                        # aaa = torch.sigmoid(low_res_masks).detach().cpu().numpy()[0, 0]
-                        # aaa = (aaa-np.min(aaa))/(np.max(aaa)-np.min(aaa))
-                        # aaa = Image.fromarray((aaa*255).astype(np.uint8))
-                        # aaa.save(os.path.join(args.result, str(epoch), img_name+ '_binary.png'))
-                        #
-                        # aaa = hq_mask.detach().cpu().numpy()[0, 1]
-                        # aaa = colorize(aaa)
-                        # aaa = Image.fromarray(aaa)
-                        # aaa.save(os.path.join(args.result, str(epoch), img_name+ '_h.png'))
-                        #
-                        # aaa = hq_mask.detach().cpu().numpy()[0, 0]
-                        # aaa = colorize(aaa)
-                        # aaa = Image.fromarray(aaa)
-                        # aaa.save(os.path.join(args.result, str(epoch), img_name+ '_v.png'))
-                        #
-                        # binary_map, instance_map, marker = make_instance_hv(torch.sigmoid(low_res_masks)[0][0].detach().cpu().numpy(),
-                        #                                                     hq_mask[0].detach().cpu().numpy())
-                        # instance_map = mk_colored(instance_map) * 255
-                        # instance_map = Image.fromarray((instance_map).astype(np.uint8))
-                        # instance_map.save(os.path.join(args.result, str(epoch), img_name+ '_inst.png'))
-
-                    plt.savefig(os.path.join(args.result, 'img', str(epoch), str(iter) + 'ex.png'))
-
             gc.collect()
             torch.cuda.empty_cache()
         total_train_loss.append(train_loss)
         print('{} epoch, mean train loss: {}'.format(epoch, total_train_loss[-1]))
 
-        # if epoch % 5 == 0:
-        #     save_checkpoint(os.path.join(args.result, 'model', str(epoch) + '_model.pth'), sam_model, epoch)
-
         if epoch >= args.start_val:
+            os.makedirs(os.path.join(args.result, 'img', str(epoch)), exist_ok=True)
             sam_model.eval()
             mean_dice, mean_iou, mean_aji = 0, 0, 0
 
@@ -336,30 +179,13 @@ def main(args):
                     input = pack[0][0]
                     mask = pack[0][1]
                     img_name = pack[1][0]
-                    if args.data == 'segpc':
-                        size = 1024
-                    else:
-                        size = 224
 
-                    output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token, size)
+                    output, output_offset = split_forward(sam_model, input, args.img_size, device, args.num_hq_token)
                     binary_mask = torch.sigmoid(output).detach().cpu().numpy()
 
-                    if args.num_hq_token == 2:
-                        pred_flow_vis = flow_to_color(output_offset[0].detach().cpu().numpy().transpose(1, 2, 0))
-                        binary_map, instance_map, marker = make_instance_hv(binary_mask[0][0],
-                                                                            output_offset[0].detach().cpu().numpy())
-                    elif args.num_hq_token == 1:
-                        pred_flow_vis = output_offset[0][1].detach().cpu().numpy()
-                        pred_flow_vis = (pred_flow_vis-np.min(pred_flow_vis))/(np.max(pred_flow_vis)-np.min(pred_flow_vis))*255
-                        binary_map, instance_map, marker = make_instance_marker(binary_mask[0][0], output_offset[0][
-                            1].detach().cpu().numpy(), args.ord_th)
-                    else:
-                        bg = torch.zeros(1, 1, 1000, 1000) + args.ord_th  # K 0.15
-                        bg = bg.to(device)
-                        output_offset = torch.argmax(torch.cat([bg, output_offset], dim=1), dim=1)
-                        pred_flow_vis = ((output_offset[0].detach().cpu().numpy() * 255) / 9).astype(np.uint8)
-                        binary_map, instance_map, marker = make_instance_sonnet(binary_mask[0][0],
-                                                                                output_offset[0].detach().cpu().numpy())
+                    pred_flow_vis = flow_to_color(output_offset[0].detach().cpu().numpy().transpose(1, 2, 0))
+                    binary_map, instance_map, marker = make_instance_hv(binary_mask[0][0],
+                                                                        output_offset[0].detach().cpu().numpy())
 
                     if len(np.unique(binary_map)) == 1:
                         dice, iou, aji = 0, 0, 0
@@ -647,32 +473,6 @@ if __name__ == '__main__':
             args.data_path = '/media/NAS/nas_70/open_dataset/CPM/CPM 17/via instance learning data_for_train/CPM 17'
         else:
             args.data_path = '/media/NAS/nas_70/open_dataset/CPM/CPM 17_shift{:s}/via instance learning data_for_train/CPM 17_shift{:s}'.format(args.shift)
-    elif args.data == "CoNSeP":
-        if args.shift == 0:
-            args.data_path = '/media/NAS/nas_70/open_dataset/CoNSeP/CoNSeP/via instance learning data_for_train/CoNSeP'
-    elif args.data == "TNBC":
-        if args.shift == 0:
-            args.data_path = '/media/NAS/nas_70/open_dataset/TNBC/TNBC_new/via instance learning data_for_train/TNBC_new'
-        else:
-            args.data_path = 'not yet'
-    elif args.data == "segpc":
-        if args.shift == 0:
-            args.data_path = '/media/NAS/nas_70/open_dataset/segpc/segpc'
-        else:
-            args.data_path = 'not yet'
-    elif args.data == 'pannuke':
-        if args.shift == 0:
-            args.data_path = '/media/NAS/nas_70/open_dataset/pannuke/Pannuke_patch'
-    elif args.data == 'cellpose':
-        args.data_path = '/media/NAS/nas_70/open_dataset/Cellpose'
-    elif args.data == 'DeepCell':
-        args.data_path = '/media/NAS/nas_70/open_dataset/DeepCell'
-    elif args.data == 'galaxy':
-        args.data_path = '/media/NAS/nas_187/datasets/galaxy_dataset_UNIST'
-    elif args.data == 'DeepLIIF':
-        args.data_path = '/media/NAS/nas_70/open_dataset/DeepLIIF/DeepLIIF'
-    elif args.data == 'DeepLIIF_BC':
-        args.data_path = '/media/NAS/nas_70/open_dataset/DeepLIIF/BC'
     else:
         print('wrong data name was entered')
 

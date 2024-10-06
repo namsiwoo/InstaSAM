@@ -1,6 +1,3 @@
-import warnings
-from typing import Tuple, Literal
-
 import cv2
 import numpy as np
 from scipy import ndimage
@@ -11,9 +8,6 @@ from skimage import measure
 from skimage.measure import label
 from skimage.segmentation import watershed
 import torch
-
-# from .tools import get_bounding_box, remove_small_objects
-
 def remove_small_objects(pred, min_size=64, connectivity=1):
     """Remove connected components smaller than the specified size.
 
@@ -160,101 +154,5 @@ def make_instance_hv(pred, hv_pred, object_size = 10, ksize = 21):
     marker = remove_small_objects(marker, min_size=object_size)
 
     proced_pred = watershed(dist, markers=marker, mask=blb)
-
-    return pred_labeled, proced_pred, marker
-
-def make_instance_sonnet(pred, pred_ord):
-    """
-    Process Nuclei Prediction with The ordinal map
-
-    Args:
-        pred: prediction output (NP branch)
-        pred_ord: ordinal prediction output (ordinal branch)
-    """
-
-    cutoff = 0.5
-    min_area = 20
-
-    pred = np.array(pred >= cutoff, dtype=np.int32)
-    # blb = measurements.label(blb)[0]  # ndimage.label(blb)[0]
-    # blb = remove_small_objects(blb, min_size=10)  # 10
-
-    pred_labeled = measure.label(pred)
-    pred_labeled = ski_morph.remove_small_objects(pred_labeled, min_area)
-    pred_labeled = binary_fill_holes(pred_labeled > 0)
-    pred_labeled = measure.label(pred_labeled)
-    blb = pred_labeled.copy()
-
-    blb[blb > 0] = 1
-
-
-
-    pred_ord = np.squeeze(pred_ord)
-    distance = -pred_ord
-    marker = np.copy(pred_ord)
-    marker[marker <= 4] = 0 # ori: 4
-    marker[marker > 4] = 1
-    marker = binary_dilation(marker, iterations=1)
-    # marker = binary_erosion(marker)
-    # marker = binary_erosion(marker)
-    # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5, 5))
-    # marker = cv2.morphologyEx(np.float32(marker), cv2.MORPH_OPEN, kernel)
-    marker = measure.label(marker)
-    marker = remove_small_objects(marker, min_size=10)
-
-
-    blb = measure.label(blb)
-    blb = remove_small_objects(blb, min_size=10)
-    blb[blb > 0] = 1  # background is 0 already
-
-    markers = marker * blb
-
-    proced_pred = watershed(distance, markers, mask=blb)
-
-    return pred_labeled, proced_pred, marker
-
-def make_instance_marker(pred, marker, th):
-    """
-    Process Nuclei Prediction with The ordinal map
-
-    Args:
-        pred: prediction output (NP branch)
-        pred_ord: ordinal prediction output (ordinal branch)
-    """
-
-    cutoff = 0.5
-    min_area = 20
-
-    pred = np.array(pred >= cutoff, dtype=np.int32)
-    # blb = measurements.label(blb)[0]  # ndimage.label(blb)[0]
-    # blb = remove_small_objects(blb, min_size=10)  # 10
-
-    pred_labeled = measure.label(pred)
-    pred_labeled = ski_morph.remove_small_objects(pred_labeled, min_area)
-    pred_labeled = binary_fill_holes(pred_labeled > 0)
-    pred_labeled = measure.label(pred_labeled)
-    blb = pred_labeled.copy()
-
-    blb[blb > 0] = 1
-
-    distance = -marker
-    marker[marker <= th] = 0 # ori: 4
-    marker[marker > th] = 1
-    marker = binary_dilation(marker, iterations=1)
-    # marker = binary_erosion(marker)
-    # marker = binary_erosion(marker)
-    # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5, 5))
-    # marker = cv2.morphologyEx(np.float32(marker), cv2.MORPH_OPEN, kernel)
-    marker = measure.label(marker)
-    marker = remove_small_objects(marker, min_size=10)
-
-
-    blb = measure.label(blb)
-    blb = remove_small_objects(blb, min_size=10)
-    blb[blb > 0] = 1  # background is 0 already
-
-    markers = marker * blb
-
-    proced_pred = watershed(distance, markers, mask=blb)
 
     return pred_labeled, proced_pred, marker

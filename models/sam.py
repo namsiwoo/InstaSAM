@@ -11,7 +11,7 @@ import torch_scatter
 
 from models import register
 from .mmseg.models.sam import ImageEncoderViT, MaskDecoder, TwoWayTransformer, PromptEncoder
-from utils.loss_offset import offset_Loss, offset_Loss_sonnet
+from utils.loss_offset import offset_Loss
 
 logger = logging.getLogger(__name__)
 from .iou_loss import IOU
