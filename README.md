@@ -1,10 +1,6 @@
 ## InstaSAM: Instance-aware Segment Any Nuclei Model with Point Annotations
 
-Siwoo Nam^(1,3), Hyun Namgung, Jaehoon Jeong, Miguel Luna, Soopil Kim, Philip Chikontwe, SangHyun Park
-
-<a href='https://www.kokoni3d.com/'> KOKONI, Moxin Technology (Huzhou) Co., LTD </a>, Zhejiang University, Singapore University of Technology and Design, Huzhou University, Beihang University.
-
-In Proceedings of the IEEE/CVF International Conference on Computer Vision (pp. 3367-3375).
+Siwoo Nam, Hyun Namgung, Jaehoon Jeong, Miguel Luna, Soopil Kim, Philip Chikontwe, SangHyun Park
 
 ## Dataset
 
